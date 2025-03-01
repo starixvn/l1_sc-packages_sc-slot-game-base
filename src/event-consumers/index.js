@@ -1,4 +1,3 @@
-import BoardCheatingConsumer from "./board-cheating-consumer";
 import BonusConsumer from "./bonus-consumer";
 import FreeSpinsConsumer from "./free-spins-consumer";
 import HallOfFameConsumer from "./hall-of-fame-consumer";
@@ -11,7 +10,6 @@ import SettleGameRoundConsumer from "./settle-game-round-consumer";
 import UserSignInConsumer from "./user-signin-consumer";
 
 export {
-    BoardCheatingConsumer,
     BonusConsumer,
     FreeSpinsConsumer,
     HallOfFameConsumer,

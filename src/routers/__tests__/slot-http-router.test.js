@@ -60,51 +60,6 @@ describe("init", () => {
     });
 });
 
-describe("handleSetBoard", () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it("should logError if params are invalid", () => {
-        // arrange
-        const router = new SlotHttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator);
-
-        // act
-        router.handleSetBoard({}, res);
-
-        // assert
-        expect(logService.logError).toHaveBeenCalled();
-        expect(res.send).toHaveBeenCalledWith({ error: true });
-    });
-
-    it("should logError if monitor result is invalid", () => {
-        // arrange
-        const router = new SlotHttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator);
-
-        // act
-        router.handleSetBoard({ name: "A", result: [] }, res);
-
-        // assert
-        expect(logService.logError).toHaveBeenCalled();
-        expect(res.send).toHaveBeenCalledWith({ error: true });
-    });
-
-    it("should assign monitoring result to settlement", () => {
-        // arrange
-        const router = new SlotHttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator);
-        const playerName = "A";
-        const result = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
-
-        // act
-        router.handleSetBoard({ name: playerName, result }, res);
-
-        // assert
-        expect(logService.logError).not.toHaveBeenCalled();
-        expect(res.send).toHaveBeenCalled();
-        expect(gameData.settlementResultFromAdmin[playerName]).toBe(result);
-    });
-});
-
 describe("handleGetOpeningBonus", () => {
     beforeEach(() => {
         jest.clearAllMocks();

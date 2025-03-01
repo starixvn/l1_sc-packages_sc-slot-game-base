@@ -56,37 +56,6 @@ describe("contribute", () => {
         expect(jackpotPublisher.publishLatestPool).not.toBeCalled();
     });
 
-    it("should update approriate contribution for bot and publish pool info", async () => {
-        // arrange
-        const consumer = initConsumer();
-        const bet = { pool, totalAmount: 5, roundId: gameData.roundId };
-        jackpotsRepository.findOneAndUpdate.mockReturnValueOnce({
-            amount: 12,
-        });
-
-        spyOn(consumer, "getBasePool").and.returnValue(1);
-        const contributeAmount = 5 * gameData.gameConfigs.slotsConfig.jackpot.botContributionRatio;
-        const poolAdjustment = {
-            amount: contributeAmount,
-            byBots: contributeAmount,
-            byMembers: 0,
-        };
-        const player = {};
-
-        // act
-        await consumer.contribute(player, bet);
-
-        // assert
-        expect(jackpotsRepository.findOneAndUpdate).toBeCalledWith(
-            runningPoolFilter,
-            {
-                $inc: poolAdjustment,
-            },
-            sort
-        );
-        expect(jackpotPublisher.publishLatestPool).toBeCalledWith({ pool, amount: 12 });
-    });
-
     it("should update approriate contribution for player and publish pool info", async () => {
         // arrange
         const consumer = initConsumer();
@@ -97,7 +66,6 @@ describe("contribute", () => {
         const contributeAmount = 5 * gameData.gameConfigs.slotsConfig.jackpot.playerContributionRatio;
         const poolAdjustment = {
             amount: contributeAmount,
-            byBots: 0,
             byMembers: contributeAmount,
         };
 
@@ -369,7 +337,6 @@ function stubGameData() {
             stakeLevels: [{ stake: 0.1 }, { stake: 1 }, { stake: 5 }],
             jackpot: {
                 playerContributionRatio: 0.025,
-                botContributionRatio: 0.005,
                 winningRatio: 0.98,
             },
         },

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { Core } from "sc-game-base";
 import { RoundResultPublisher, UserBetResultPublisher } from "sc-game-base/src/core/event-publishers";
 
-import { BoardCheatingConsumer, FreeSpinsConsumer, HallOfFameConsumer, JackpotConsumer, SettleGameRoundConsumer } from "..";
+import { FreeSpinsConsumer, HallOfFameConsumer, JackpotConsumer, SettleGameRoundConsumer } from "..";
 import odds from "../../../tests/odds";
 import { BoardGenerator, BonusBoardGenerator, PaylineCalculator } from "../../board";
 import { JackpotPublisher } from "../../event-publishers";
@@ -99,7 +99,6 @@ describe("settleRound", () => {
         const bet = { bet: 1, paylines: [1, 2, 3], name: player.profile.name };
         const board = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
         consumer.boardGenerator.generate.mockReturnValueOnce(board);
-        consumer.boardCheatingConsumer.consume.mockReturnValueOnce(board);
         spyOn(consumer, "queryBets").and.returnValue(bet);
         spyOn(consumer, "settleBets");
 
@@ -117,7 +116,6 @@ describe("settleRound", () => {
         const bet = { bet: 1, paylines: [1, 2, 3], name: player.profile.name };
         const board = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
         consumer.boardGenerator.generate.mockReturnValueOnce(board);
-        consumer.boardCheatingConsumer.consume.mockReturnValueOnce(board);
         spyOn(consumer, "queryBets").and.returnValue(bet);
         spyOn(consumer, "generateRoundResult").and.returnValue({ settlementResult: { bonus: { odds: 2 } } });
         spyOn(consumer, "processBonus");
@@ -136,7 +134,6 @@ describe("settleRound", () => {
         const bet = { bet: 1, paylines: [1, 2, 3], name: player.profile.name };
         const board = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
         consumer.boardGenerator.generate.mockReturnValueOnce(board);
-        consumer.boardCheatingConsumer.consume.mockReturnValueOnce(board);
         consumer.gameData.gameConfigs.slotsConfig.jackpot.enabled = true;
         spyOn(consumer, "queryBets").and.returnValue(bet);
         spyOn(consumer, "isUserEnableJackpot").and.returnValue(true);
@@ -164,7 +161,6 @@ describe("settleRound", () => {
             const bet = { bet: 1, paylines: [1, 2, 3], name: player.profile.name, freeSpin: testCase.freeSpin };
             const board = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
             consumer.boardGenerator.generate.mockReturnValueOnce(board);
-            consumer.boardCheatingConsumer.consume.mockReturnValueOnce(board);
             consumer.gameData.gameConfigs.slotsConfig.jackpot.enabled = testCase.enableJackpot;
             spyOn(consumer, "queryBets").and.returnValue(bet);
             spyOn(consumer, "isUserEnableJackpot").and.returnValue(testCase.userEnableJackpot);
@@ -763,7 +759,6 @@ function initDependencies() {
     const roundResultPublisher = stub(RoundResultPublisher);
     const userBetResultPublisher = stub(UserBetResultPublisher);
     const jackpotPublisher = stub(JackpotPublisher);
-    const boardCheatingConsumer = stub(BoardCheatingConsumer);
     const freeSpinsConsumer = stub(FreeSpinsConsumer);
     const hallOfFameConsumer = stub(HallOfFameConsumer);
     const jackpotConsumer = stub(JackpotConsumer);
@@ -780,7 +775,6 @@ function initDependencies() {
         roundResultPublisher,
         userBetResultPublisher,
         jackpotPublisher,
-        boardCheatingConsumer,
         freeSpinsConsumer,
         hallOfFameConsumer,
         jackpotConsumer,
@@ -811,7 +805,6 @@ function stubGameData() {
                 excludeTestCurrency: true,
                 winningRatio: 0.98,
                 playerContributionRatio: 0.025,
-                botContributionRatio: 0.005,
             },
             icons: odds,
             bigWinRatio: 4,

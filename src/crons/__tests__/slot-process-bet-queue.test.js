@@ -1,17 +1,6 @@
 import SlotProcessBetQueue from "../slot-process-bet-queue";
-import { Core } from "sc-game-base";
 
 describe("slot-process-bet-queue", () => {
-    describe("extends", () => {
-        it("should extend Core.Crons.BaseBot", () => {
-            // act
-            const cron = new SlotProcessBetQueue({});
-
-            // assert
-            expect(cron instanceof Core.Crons.ProcessBetQueue);
-        });
-    });
-
     describe("generatePlacingBetResult", () => {
         it("should return correct value", () => {
             // arrange

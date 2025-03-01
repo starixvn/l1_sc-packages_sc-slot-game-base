@@ -40,16 +40,6 @@ jest.mock("cron", () => {
 });
 
 describe("slot-game-cron", () => {
-    describe("extends", () => {
-        it("should extend Core.Crons.BaseBot", () => {
-            // act
-            const cron = new SlotGameCron({});
-
-            // assert
-            expect(cron instanceof Core.Crons.BaseGameCron);
-        });
-    });
-
     describe("start", () => {
         it("should call correct function", async () => {
             // arrange
@@ -284,7 +274,7 @@ describe("slot-game-cron", () => {
             expect(bonusConsumer.processExpiredBonus).toBeCalled();
         });
 
-        it("when remainingTime === durations.wholeRound and not have bot should checkGameStatus", async () => {
+        it("when remainingTime === durations.wholeRound and should checkGameStatus", async () => {
             // arrange
             const gameData = { remainingTime: 45 };
             const cron = new SlotGameCron({
@@ -304,29 +294,7 @@ describe("slot-game-cron", () => {
             expect(cron.checkGameStatus).toBeCalled();
         });
 
-        it("when remainingTime === durations.wholeRound and have bot should reset bot", async () => {
-            // arrange
-            const gameData = { remainingTime: 45 };
-            const bot = stub(Core.Crons.BaseBot);
-            const cron = new SlotGameCron({
-                definition,
-                gameData,
-                bonusConsumer,
-                bot,
-                currencyGroupGamesRepository,
-                currencyGroupRepository,
-                currencyRepository,
-            });
-            cron.checkGameStatus = jest.fn();
-
-            // act
-            await cron.proceed();
-
-            // assert
-            expect(bot.reset).toBeCalled();
-        });
-
-        it("when game not disabled and not have bot should reduce remainingTime", async () => {
+        it("when game not disabled should reduce remainingTime", async () => {
             // arrange
             const gameData = { remainingTime: 45 };
             const cron = new SlotGameCron({
@@ -346,7 +314,7 @@ describe("slot-game-cron", () => {
             expect(cron.gameData.remainingTime).toBe(44);
         });
 
-        it("when game disabled and not have bot should not reduce remainingTime", async () => {
+        it("when game disabled should not reduce remainingTime", async () => {
             // arrange
             const gameData = { remainingTime: 45, disabled: true };
             const cron = new SlotGameCron({
@@ -364,28 +332,6 @@ describe("slot-game-cron", () => {
 
             // assert
             expect(cron.gameData.remainingTime).toBe(45);
-        });
-
-        it("when game not disabled and have bot should run bot", async () => {
-            // arrange
-            const gameData = { remainingTime: 45 };
-            const bot = stub(Core.Crons.BaseBot);
-            const cron = new SlotGameCron({
-                definition,
-                gameData,
-                bonusConsumer,
-                bot,
-                currencyGroupGamesRepository,
-                currencyGroupRepository,
-                currencyRepository,
-            });
-            cron.checkGameStatus = jest.fn();
-
-            // act
-            await cron.proceed();
-
-            // assert
-            expect(bot.run).toBeCalled();
         });
 
         it("when remainingTime < 0 should call freeSpinsConsumer.reload", async () => {

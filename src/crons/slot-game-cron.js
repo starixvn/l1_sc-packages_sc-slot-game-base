@@ -2,7 +2,6 @@ import cron from "cron";
 import { logger } from "sc-common";
 import { Core } from "sc-game-base";
 
-import { SlotGameBot } from "./../crons";
 import * as EventConsumers from "./../event-consumers";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
@@ -12,7 +11,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
      * @param {Object} dependencies
      * @param {SlotGameDefinition} dependencies.definition
      * @param {SlotGameData} dependencies.gameData
-     * @param {SlotGameBot} dependencies.bot
      * @param {EventConsumers.SettleGameRoundConsumer} dependencies.settleGameRoundConsumer
      * @param {EventConsumers.FreeSpinsConsumer} dependencies.freeSpinsConsumer
      * @param {EventConsumers.BonusConsumer} dependencies.bonusConsumer
@@ -31,7 +29,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
     constructor({
         definition,
         gameData,
-        bot,
         settleGameRoundConsumer,
         freeSpinsConsumer,
         bonusConsumer,
@@ -53,7 +50,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         super({
             definition,
             gameData,
-            bot,
             settleGameRoundConsumer,
             gameStatusPublisher,
             runningRoundInfoPublisher,
@@ -133,12 +129,10 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
-            this.bot && (await this.bot.reset());
         }
 
         if (!this.gameData.disabled) {
             this.gameData.remainingTime--;
-            this.bot && (await this.bot.run());
         }
 
         if (this.gameData.remainingTime < 0) {
@@ -176,19 +170,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     mapToIngameData(bets) {
         return bets.reduce((ingame, bet) => {
-            const {
-                bonusChests,
-                result,
-                settlementResult,
-                id: roundId,
-                time,
-                uid: UID,
-                name,
-                jackpot,
-                playerId,
-                currency,
-                operatorId,
-            } = bet;
+            const { bonusChests, result, settlementResult, id: roundId, time, uid: UID, name, jackpot, playerId, currency, operatorId } = bet;
 
             const player = {
                 UID,

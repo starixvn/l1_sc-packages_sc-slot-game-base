@@ -40,9 +40,7 @@ export default class JackpotConsumer {
 
         const baseTotalAmount = totalAmount;
 
-        const contributionRatio = contributedByMember
-            ? this.gameData.gameConfigs.slotsConfig.jackpot.playerContributionRatio
-            : this.gameData.gameConfigs.slotsConfig.jackpot.botContributionRatio;
+        const contributionRatio = this.gameData.gameConfigs.slotsConfig.jackpot.playerContributionRatio;
         const contributionAmount = parseFloat((baseTotalAmount * contributionRatio).toFixed(4));
 
         const runningPoolFilter = {
@@ -56,7 +54,6 @@ export default class JackpotConsumer {
         };
         const poolAdjustment = {
             amount: contributionAmount,
-            byBots: contributedByMember ? 0 : contributionAmount,
             byMembers: contributedByMember ? contributionAmount : 0,
         };
         const latestJackpotProjection = { _id: false, amount: true };

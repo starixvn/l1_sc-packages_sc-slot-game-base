@@ -6,7 +6,6 @@ import { BoardGenerator, BonusBoardGenerator, PaylineCalculator } from "./../boa
 import { JackpotPublisher } from "./../event-publishers";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
-import BoardCheatingConsumer from "./board-cheating-consumer";
 import FreeSpinsConsumer from "./free-spins-consumer";
 import HallOfFameConsumer from "./hall-of-fame-consumer";
 import JackpotConsumer from "./jackpot-consumer";
@@ -19,7 +18,6 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
      * @param {Core.BaseEventPublisher.RoundResultPublisher} dependencies.roundResultPublisher
      * @param {Core.BaseEventPublisher.UserBetResultPublisher} dependencies.userBetResultPublisher
      * @param {JackpotPublisher} dependencies.jackpotPublisher
-     * @param {BoardCheatingConsumer} dependencies.boardCheatingConsumer
      * @param {FreeSpinsConsumer} dependencies.freeSpinsConsumer
      * @param {HallOfFameConsumer} dependencies.hallOfFameConsumer
      * @param {JackpotConsumer} dependencies.jackpotConsumer
@@ -38,7 +36,6 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         roundResultPublisher,
         userBetResultPublisher,
         jackpotPublisher,
-        boardCheatingConsumer,
         freeSpinsConsumer,
         hallOfFameConsumer,
         jackpotConsumer,
@@ -62,7 +59,6 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         });
 
         this.jackpotPublisher = jackpotPublisher;
-        this.boardCheatingConsumer = boardCheatingConsumer;
         this.freeSpinsConumer = freeSpinsConsumer;
         this.hallOfFameConsumer = hallOfFameConsumer;
         this.jackpotConsumer = jackpotConsumer;
@@ -140,7 +136,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         const { mode } = this.gameData.gameConfigs.slotsConfig;
         const board = this.boardGenerator.generate(mode);
 
-        return this.boardCheatingConsumer.consume(playerName, board);
+        return board;
     }
 
     async processFreeSpins(player, betTicket, settlementResult) {
