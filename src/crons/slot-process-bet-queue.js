@@ -155,7 +155,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             freeSpin: bet.freeSpin,
             bet: bet.amount,
             totalAmount: bet.totalAmount,
-            baseTotalAmount: math.round(bet.totalAmount * rate, 2),
+            baseTotalAmount: bet.totalAmount * rate,
             rate: rate,
             exchangeRateId: this.gameData.exchangeRates.exId,
         };
