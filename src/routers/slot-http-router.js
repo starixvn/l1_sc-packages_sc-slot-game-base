@@ -1,4 +1,4 @@
-import { logger, utils } from "sc-common";
+import { utils } from "sc-common";
 import { Core } from "sc-game-base";
 
 import { PaylineCalculator } from "./../board";
@@ -47,6 +47,7 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
 
                 return;
             }
+            console.log(params);
 
             const paylines = [...Array(this.paylineCalculator.definition.paylines.length).keys()];
             const odds = this.gameData.gameConfigs.slotsConfig.icons;
@@ -59,6 +60,7 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
             res.send(settlementResult);
         } catch (error) {
             this.logService.logError(error);
+            console.log(error);
             res.send({ error: true });
         }
     }

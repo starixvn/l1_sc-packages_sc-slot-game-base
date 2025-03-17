@@ -1,5 +1,4 @@
-import Chance from "chance";
-
+import { securePickOne, secureShuffle } from "sc-core-rng";
 import JackpotValidator from "../validators/jackpot-validator";
 import SlotGameDefinition from "./../slot-game-definition";
 
@@ -14,8 +13,6 @@ export default class JackpotPrizeGenerator {
         this.gameData = gameData;
         this.size = definition.jackpotSize ?? 10;
         this.jackpotValidator = jackpotValidator;
-
-        this.chance = new Chance();
     }
 
     generate(player) {
@@ -24,18 +21,20 @@ export default class JackpotPrizeGenerator {
         }
 
         const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
-        const prizes = Object.keys(pools);
-        const weights = Object.values(pools).map((pool) => (pool.playerSettings.alloc > 0 ? pool.playerSettings.alloc : 1));
+        const weightedPrizes = [];
+        for (const [prize, settings] of Object.entries(pools)) {
+            weightedPrizes.push(...Array(settings.playerSettings.alloc > 0 ? settings.playerSettings.alloc : 1).fill(prize));
+        }
 
         let jackpotBoard = [];
 
         for (let counter = 0; counter < this.size; counter++) {
-            jackpotBoard.push(this.chance.weighted(prizes, weights));
+            jackpotBoard.push(securePickOne(weightedPrizes));
         }
 
-        jackpotBoard = this.chance.shuffle(jackpotBoard);
-        jackpotBoard = this.chance.shuffle(jackpotBoard);
-        jackpotBoard = this.chance.shuffle(jackpotBoard);
+        jackpotBoard = secureShuffle(jackpotBoard);
+        jackpotBoard = secureShuffle(jackpotBoard);
+        jackpotBoard = secureShuffle(jackpotBoard);
 
         return jackpotBoard;
     }

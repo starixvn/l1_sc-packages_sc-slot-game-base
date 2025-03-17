@@ -7,7 +7,6 @@ import SlotGameData from "../../slot-game-data";
 import SlotGameDefinition from "../../slot-game-definition";
 import {
     betsRepository,
-    boardCheatingConsumer,
     boardGenerator,
     bonusBoardGenerator,
     freeSpinsConsumer,
@@ -910,7 +909,6 @@ function initDependencies() {
         roundResultPublisher,
         userBetResultPublisher,
         jackpotPublisher,
-        boardCheatingConsumer,
         freeSpinsConsumer,
         hallOfFameConsumer,
         jackpotConsumer,
@@ -942,7 +940,6 @@ function stubGameData() {
                 excludeTestCurrency: true,
                 winningRatio: 0.98,
                 playerContributionRatio: 0.025,
-                botContributionRatio: 0.005,
             },
             icons: odds,
             bigWinRatio: 4,

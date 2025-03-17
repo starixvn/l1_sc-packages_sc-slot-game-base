@@ -12,7 +12,6 @@ const jackpotSchema = new mongoose.Schema({
     winnerName: { type: String },
     winnerId: { type: Number },
 
-    byBots: { type: Number, default: 0 },
     byMembers: { type: Number, default: 0 },
 
     createdAt: { type: Number, required: true }, // ticket's ID from which the jackpot pool was created.

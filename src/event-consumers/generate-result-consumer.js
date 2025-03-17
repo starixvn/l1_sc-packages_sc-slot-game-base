@@ -3,7 +3,6 @@ import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
 
 import { BoardGenerator, BonusBoardGenerator, JackpotPrizeGenerator, PaylineCalculator } from "./../board";
-import BoardCheatingConsumer from "./board-cheating-consumer";
 
 export default class GenerateResultConsumer {
     /**
@@ -13,23 +12,12 @@ export default class GenerateResultConsumer {
      * @param {BoardGenerator} dependencies.boardGenerator
      * @param {BonusBoardGenerator} dependencies.bonusBoardGenerator
      * @param {PaylineCalculator} dependencies.paylineCalculator
-     * @param {BoardCheatingConsumer} dependencies.boardCheatingConsumer
      * @param {JackpotPrizeGenerator} dependencies.jackpotPrizeGenerator
      */
 
-    constructor({
-        definition,
-        gameData,
-        boardGenerator,
-        bonusBoardGenerator,
-        paylineCalculator,
-        boardCheatingConsumer,
-        boardDefinition,
-        jackpotPrizeGenerator,
-    }) {
+    constructor({ definition, gameData, boardGenerator, bonusBoardGenerator, paylineCalculator, boardDefinition, jackpotPrizeGenerator }) {
         this.definition = definition;
         this.gameData = gameData;
-        this.boardCheatingConsumer = boardCheatingConsumer;
         this.boardGenerator = boardGenerator;
         this.bonusBoardGenerator = bonusBoardGenerator;
         this.paylineCalculator = paylineCalculator;
@@ -53,9 +41,8 @@ export default class GenerateResultConsumer {
 
     generateResult(playerName) {
         const { mode } = this.gameData.gameConfigs.slotsConfig;
-        const board = this.boardGenerator.generate(mode);
 
-        return this.boardCheatingConsumer.consume(playerName, board);
+        return this.boardGenerator.generate(mode);
     }
 
     settleWinningPaylines(settlementResult) {

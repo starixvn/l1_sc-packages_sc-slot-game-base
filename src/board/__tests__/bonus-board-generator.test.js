@@ -23,18 +23,14 @@ describe("BonusBoardGenerator", () => {
         describe("when apply new bonus calculator", () => {
             const boardGenerator = new BonusBoardGenerator({ bonusSize, applyNewBonusCalculation: true }, { paylines: boardPaylines });
 
-            beforeEach(() => {
-                boardGenerator.calculateBonusRateRange = jest.fn();
-            });
-
             it("should call calculateBonusRateRange", () => {
                 // arrange
-
+                const spy = jest.spyOn(boardGenerator, "calculateBonusRateRange");
                 // act
                 boardGenerator.generate(amount, minRate, maxRate, numberOfPaylines);
 
                 // assert
-                expect(boardGenerator.calculateBonusRateRange).toHaveBeenCalledWith(minRate, maxRate, numberOfPaylines);
+                expect(spy).toHaveBeenCalledWith(minRate, maxRate, numberOfPaylines);
             });
         });
 

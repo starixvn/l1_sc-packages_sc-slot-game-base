@@ -1,6 +1,6 @@
-import Chance from "chance";
 import moment from "moment";
 
+import { secureRandomRange } from "sc-core-rng";
 import { JackpotPublisher } from "./../event-publishers";
 import SlotNoticeHelper from "./../helpers/slot-notice-helper";
 import SlotGameData from "./../slot-game-data";
@@ -22,8 +22,6 @@ export default class JackpotGameConsumer {
         this.settleGameRoundConsumer = settleGameRoundConsumer;
         this.roundsRepository = roundsRepository;
         this.logService = logService;
-
-        this.chance = new Chance();
     }
 
     async consume(player, payload) {
@@ -48,7 +46,7 @@ export default class JackpotGameConsumer {
 
         if (jackpot && jackpot.prizes?.length > 0) {
             if (!chest) {
-                chest = this.chance.integer({ min: 0, max: jackpot.prizes.length - 1 });
+                chest = secureRandomRange(0, jackpot.prizes.length - 1);
             }
 
             const bet = await this.roundsRepository.findOneAndUpdate(

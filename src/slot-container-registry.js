@@ -3,7 +3,7 @@ import { hitJackpot } from "sc-base-apis";
 import { gameNotifications } from "sc-base-database";
 import { Core, Table } from "sc-game-base";
 import * as Board from "./board";
-import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
+import { SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters, Jackpots } from "./models";
@@ -79,7 +79,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         super.registerConsumers();
 
         this.container.register({
-            boardCheatingConsumer: asClass(EventConsumers.BoardCheatingConsumer).singleton(),
             bonusConsumer: asClass(EventConsumers.BonusConsumer).singleton(),
             freeSpinsConsumer: asClass(EventConsumers.FreeSpinsConsumer).singleton(),
             hallOfFameConsumer: asClass(EventConsumers.HallOfFameConsumer).singleton(),
@@ -98,7 +97,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         super.registerCrons();
 
         this.container.register({
-            bot: asClass(SlotGameBot).singleton().proxy(),
             gameCron: asClass(SlotGameCron).singleton().proxy(),
             processBetQueue: asClass(SlotProcessBetQueue).singleton().proxy(),
         });

@@ -39,7 +39,7 @@ describe("init", () => {
     it("should call supper init", () => {
         // arrange
         const router = new SlotHttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator);
-        spyOn(HttpRouter.prototype, "init");
+        jest.spyOn(HttpRouter.prototype, "init");
 
         // act
         router.init(app);
@@ -87,21 +87,6 @@ describe("handleSetBoard", () => {
         // assert
         expect(logService.logError).toHaveBeenCalled();
         expect(res.send).toHaveBeenCalledWith({ error: true });
-    });
-
-    it("should assign monitoring result to settlement", () => {
-        // arrange
-        const router = new SlotHttpRouter(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator);
-        const playerName = "A";
-        const result = [1, 2, 2, 1, 4, 4, 1, 9, 3, 4, 1, 2, 7, 2, 2];
-
-        // act
-        router.handleSetBoard({ name: playerName, result }, res);
-
-        // assert
-        expect(logService.logError).not.toHaveBeenCalled();
-        expect(res.send).toHaveBeenCalled();
-        expect(gameData.settlementResultFromAdmin[playerName]).toBe(result);
     });
 });
 
@@ -163,6 +148,6 @@ function stubGameData() {
             icons: odds,
         },
     };
-
+    
     return gameData;
 }

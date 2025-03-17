@@ -48,27 +48,4 @@ describe("BoardGenerator", () => {
             expect(board.length).toEqual(defaultDefinition.numberOfRows * defaultDefinition.numberOfColumns);
         });
     });
-
-    describe("generateForBots", () => {
-        describe("when jackpot enabled", () => {
-            it("should generate appropriate board base on definition ", () => {
-                // Act
-                const board = boardGenerator.generateForBots(true);
-
-                // Assert
-                expect(board.length).toEqual(defaultDefinition.numberOfRows * defaultDefinition.numberOfColumns);
-            });
-        });
-
-        describe("when jackpot disable", () => {
-            it("should generate appropriate board base on definition ", () => {
-                // Act
-                const board = boardGenerator.generateForBots(false);
-
-                // Assert
-                expect(board.length).toEqual(defaultDefinition.numberOfRows * defaultDefinition.numberOfColumns);
-            });
-        });
-    });
-
 });

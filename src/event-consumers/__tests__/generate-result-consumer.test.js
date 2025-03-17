@@ -1,5 +1,5 @@
-import { boardGenerator, boardCheatingConsumer, paylineCalculator, bonusBoardGenerator, jackpotPrizeGenerator } from "./stubs";
 import GenerateResultConsumer from "./../generate-result-consumer";
+import { boardGenerator, bonusBoardGenerator, jackpotPrizeGenerator, paylineCalculator } from "./stubs";
 
 describe("GenerateResultConsumer", () => {
     let consumer;
@@ -24,7 +24,6 @@ describe("GenerateResultConsumer", () => {
             boardGenerator,
             bonusBoardGenerator,
             paylineCalculator,
-            boardCheatingConsumer,
             jackpotPrizeGenerator,
         });
     });
@@ -33,44 +32,16 @@ describe("GenerateResultConsumer", () => {
         const playerName = "player1";
         const mode = "normal";
         const generatedBoard = { board: "board1" };
-        const consumedBoard = { consumedBoard: "consumedBoard1" };
 
         it("should generate board with mode", () => {
             // Arrange
             boardGenerator.generate.mockReturnValueOnce(generatedBoard);
-            boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
 
             // Act
             consumer.generateResult(playerName);
 
             // Assert
             expect(boardGenerator.generate).toHaveBeenCalledWith(mode);
-        });
-
-        it("should pass generated board to control result", () => {
-            // Arrange
-            boardGenerator.generate.mockReturnValueOnce(generatedBoard);
-            boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
-
-            // Act
-            consumer.generateResult(playerName);
-
-            // Assert
-            expect(boardCheatingConsumer.consume).toHaveBeenCalledWith(playerName, generatedBoard);
-        });
-
-        it("should return result from boardCheatingConsumer", () => {
-            // Arrange
-            boardGenerator.generate.mockReturnValueOnce(generatedBoard);
-            boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
-
-            // Act
-            const result = consumer.generateResult(playerName);
-
-            // Assert
-            expect(result).toEqual(consumedBoard);
-            expect(boardGenerator.generate).toHaveBeenCalledWith(mode);
-            expect(boardCheatingConsumer.consume).toHaveBeenCalledWith(playerName, generatedBoard);
         });
     });
 
@@ -144,7 +115,6 @@ describe("GenerateResultConsumer", () => {
 
         beforeEach(() => {
             boardGenerator.generate.mockReturnValueOnce(generatedBoard);
-            boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
         });
 
         it("always generate result with player name", () => {
@@ -167,7 +137,7 @@ describe("GenerateResultConsumer", () => {
             consumer.generateSettlementResult(player, bet, odds);
 
             // Assert
-            expect(paylineCalculator.calculate).toHaveBeenCalledWith(consumedBoard, bet.paylines, odds);
+            expect(paylineCalculator.calculate).toHaveBeenCalledWith(generatedBoard, bet.paylines, odds);
         });
 
         it("always settle winning from settlement result", () => {
@@ -190,7 +160,7 @@ describe("GenerateResultConsumer", () => {
             const { result, settlementResult } = consumer.generateSettlementResult(player, bet, odds);
 
             // Assert
-            expect(result).toEqual(consumedBoard);
+            expect(result).toEqual(generatedBoard);
             expect(settlementResult).toEqual({
                 ...calculatedResult,
                 winningPaylines: paylines,

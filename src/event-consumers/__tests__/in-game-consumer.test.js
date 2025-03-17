@@ -64,7 +64,7 @@ describe("IngameConsumer", () => {
                 // arrange
                 jackpotValidator.canAccessJackpot.mockReturnValueOnce(false);
                 consumer.gameData.gameConfigs.slotsConfig.jackpot.enabled = false;
-                spyOn(consumer, "getPools");
+                jest.spyOn(consumer, "getPools");
 
                 // act
                 await consumer.buildPayload({ session: { currencyGroupId: "617a650628b7a500016388f5" } });
@@ -238,17 +238,14 @@ function stubGameData() {
                     minor: {
                         init: 5000,
                         playerSettings: { contrib: 0.1, alloc: 90 },
-                        botSettings: { contrib: 0.01, alloc: 80 },
                     },
                     major: {
                         init: 25000,
                         playerSettings: { contrib: 0.15, alloc: 9 },
-                        botSettings: { contrib: 0.015, alloc: 15 },
                     },
                     grand: {
                         init: 50000,
                         playerSettings: { contrib: 0.25, alloc: 1 },
-                        botSettings: { contrib: 0.025, alloc: 5 },
                     },
                 },
             },

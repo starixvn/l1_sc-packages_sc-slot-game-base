@@ -1,6 +1,5 @@
-import Chance from "chance";
 import moment from "moment";
-
+import { securePickSet } from "sc-core-rng";
 import { BonusPublisher } from "./../event-publishers";
 import SlotNoticeHelper from "./../helpers/slot-notice-helper";
 import SlotGameData from "./../slot-game-data";
@@ -20,7 +19,6 @@ export default class BonusConsumer {
         this.bonusPublisher = bonusPublisher;
         this.settleGameRoundConsumer = settleGameRoundConsumer;
 
-        this.chance = new Chance();
     }
 
     async consume(player, payload) {
@@ -53,7 +51,7 @@ export default class BonusConsumer {
             }
 
             const remainingChests = finish.settlementResult.bonus.odds - (this.definition.bonusSize - unpickedChests.length);
-            const autoPickedChests = this.chance.pickset(unpickedChests, remainingChests);
+            const autoPickedChests = securePickSet(unpickedChests, remainingChests);
 
             autoPickedChests.forEach((chest) => {
                 const chestIndex = bonusChests.indexOf(chest);

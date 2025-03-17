@@ -5,7 +5,12 @@ import JackpotGameConsumer from "../jackpot-game-consumer";
 
 import moment from "moment";
 
+import { secureRandomRange } from "sc-core-rng";
 import { jackpotPublisher, roundsRepository, settleConsumer } from "../__tests__/stubs";
+
+jest.mock("sc-core-rng", () => ({
+    secureRandomRange: jest.fn(),
+}));
 
 const gameDefinition = stubGameDefinition();
 
@@ -138,16 +143,10 @@ describe("JackpotGameConsumer", () => {
 
     describe("pickJackpotAndUpdateBet", () => {
         const mockJackpot = { picked: false, prizes: ["minor", "major", "grand"], winningLine: 5 };
-        let chanceMock;
 
         beforeEach(() => {
             consumer.gameData.ingame["player1"] = { finish: { settlementResult: { jackpot: { ...mockJackpot } } } };
             consumer.gameData.ingame["player2"] = { finish: { settlementResult: { jackpot: null } } };
-
-            chanceMock = {
-                integer: jest.fn(),
-            };
-            consumer.chance = chanceMock;
         });
 
         afterEach(() => {
@@ -217,20 +216,20 @@ describe("JackpotGameConsumer", () => {
                 // Arrange
                 const chest = undefined;
                 roundsRepository.findOneAndUpdate.mockReturnValueOnce(bet);
-                chanceMock.integer.mockReturnValue(2);
+                secureRandomRange.mockReturnValueOnce(2);
 
                 // Act
                 await consumer.pickJackpotAndUpdateBet({ player, chest });
 
                 // Assert
-                expect(chanceMock.integer).toHaveBeenCalledWith({ min: 0, max: 2 });
+                expect(secureRandomRange).toHaveBeenCalledWith(0, 2);
             });
 
             it("should return the correct prize when chest is generated", async () => {
                 // Arrange
                 const chest = undefined;
                 roundsRepository.findOneAndUpdate.mockReturnValueOnce(bet);
-                chanceMock.integer.mockReturnValue(2);
+                secureRandomRange.mockReturnValueOnce(2);
 
                 // Act
                 const result = await consumer.pickJackpotAndUpdateBet({ player, chest });

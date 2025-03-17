@@ -1,5 +1,4 @@
-import Chance from "chance";
-
+import { secureRandomRange, secureShuffle } from "sc-core-rng";
 import SlotGameDefinition from "./../slot-game-definition";
 import defaultDefinition from "./default-definition";
 
@@ -9,7 +8,6 @@ export default class BonusBoardGenerator {
      * @param {defaultDefinition} boardDefinition
      */
     constructor(definition, boardDefinition) {
-        this.chance = new Chance();
         this.size = definition.bonusSize;
         this.totalPaylines = (boardDefinition ?? defaultDefinition).paylines.length;
         this.applyNewBonusCalculation = definition.applyNewBonusCalculation;
@@ -17,21 +15,20 @@ export default class BonusBoardGenerator {
 
     generate(betAmount, minRate, maxRate, numberOfPaylines) {
         let bonusBoard = [];
-
+        const bonusRate = this.applyNewBonusCalculation
+            ? secureRandomRange(...Object.values(this.calculateBonusRateRange(minRate, maxRate, numberOfPaylines)))
+            : secureRandomRange(minRate, maxRate);
+            
         for (let counter = 0; counter < this.size; counter++) {
-            const bonusRate = this.applyNewBonusCalculation
-                ? this.chance.natural(this.calculateBonusRateRange(minRate, maxRate, numberOfPaylines))
-                : this.chance.natural({ min: minRate, max: maxRate });
-
             const amount = parseFloat((bonusRate * betAmount).toFixed(2));
             const bonus = { amount, picked: false };
 
             bonusBoard.push(bonus);
         }
 
-        bonusBoard = this.chance.shuffle(bonusBoard);
-        bonusBoard = this.chance.shuffle(bonusBoard);
-        bonusBoard = this.chance.shuffle(bonusBoard);
+        bonusBoard = secureShuffle(bonusBoard);
+        bonusBoard = secureShuffle(bonusBoard);
+        bonusBoard = secureShuffle(bonusBoard);
 
         return bonusBoard;
     }

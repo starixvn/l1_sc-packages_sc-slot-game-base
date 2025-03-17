@@ -5,7 +5,7 @@ import SlotProcessBetQueue from "../slot-process-bet-queue";
 
 describe("slot-process-bet-queue", () => {
     describe("extends", () => {
-        it("should extend Core.Crons.BaseBot", () => {
+        it("should extend Core.Crons.ProcessBetQueue", () => {
             // act
             const cron = new SlotProcessBetQueue({});
 
@@ -287,17 +287,14 @@ describe("slot-process-bet-queue", () => {
                                 minor: {
                                     init: 5000,
                                     playerSettings: { contrib: 0.1, alloc: 90 },
-                                    botSettings: { contrib: 0.01, alloc: 80 },
                                 },
                                 major: {
                                     init: 25000,
                                     playerSettings: { contrib: 0.15, alloc: 9 },
-                                    botSettings: { contrib: 0.015, alloc: 15 },
                                 },
                                 grand: {
                                     init: 50000,
                                     playerSettings: { contrib: 0.25, alloc: 1 },
-                                    botSettings: { contrib: 0.025, alloc: 5 },
                                 },
                             },
                         },

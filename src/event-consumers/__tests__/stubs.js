@@ -2,14 +2,13 @@ import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { RoundResultPublisher, UserBetResultPublisher } from "sc-game-base/src/core/event-publishers";
 import {
-    BoardCheatingConsumer,
     BonusConsumer,
     FreeSpinsConsumer,
     GenerateResultConsumer,
     HallOfFameConsumer,
     JackpotConsumer,
     JackpotGameConsumer,
-    SettleGameRoundConsumer,
+    SettleGameRoundConsumer
 } from "../";
 import { BoardGenerator, BonusBoardGenerator, JackpotPrizeGenerator, PaylineCalculator } from "../../board";
 import { JackpotPublisher } from "../../event-publishers";
@@ -20,7 +19,6 @@ const jackpotPublisher = stub(JackpotPublisher);
 const jackpotGameConsumer = stub(JackpotGameConsumer);
 const roundResultPublisher = stub(RoundResultPublisher);
 const userBetResultPublisher = stub(UserBetResultPublisher);
-const boardCheatingConsumer = stub(BoardCheatingConsumer);
 const freeSpinsConsumer = stub(FreeSpinsConsumer);
 const hallOfFameConsumer = stub(HallOfFameConsumer);
 const jackpotConsumer = stub(JackpotConsumer);
@@ -40,7 +38,6 @@ const betsRepository = stubMongoose(mongoose.Model);
 
 export {
     betsRepository,
-    boardCheatingConsumer,
     boardGenerator,
     bonusBoardGenerator,
     bonusConsumer,
@@ -58,3 +55,4 @@ export {
     settleConsumer,
     userBetResultPublisher
 };
+

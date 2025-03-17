@@ -4,7 +4,6 @@
 ### Bug Fixes
 
 * add try catch for process expired jackpot ([435e2c1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/435e2c10bd147c030af5d0a0e6926d6e612681fb))
-* bot contribution - ignore validation ([d7d705d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d7d705d96ef575ed39a432c6982f0811f0816218))
 * calculate bonus duration after jackpot ([adf0406](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/adf040606ae7f4a8e62ed8603531776ca5cb1a1e))
 * check bonus before generating ([ffc7e1a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ffc7e1a6014d35d129c7e3c79d9112a162b58abc))
 * expired time compare ([beac41a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/beac41aba666f6df4f4c527452dc2505c1bfb33b))
@@ -23,7 +22,6 @@
 * register jackpot-game-consumer ([14e22f6](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/14e22f6345f46a9ee96c3afa123d2a176368eefb))
 * remove pool filter from runningPoolFilter ([284152b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/284152b4a28d418978756a147dd4861c2e7453b6))
 * remove required pool in jackpot model ([ac58dc7](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ac58dc7240f94a8f65008fe4eb3e83d56c700c69))
-* resetAllBotData - filter group with betLevels >0 ([53a33ea](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/53a33ea1b8452ea5f6718d278474e3617d4327ac))
 * return bonus board when player have bonus ([4f0a24e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4f0a24ee1e825c357494361b464ab6b58da8f0ce))
 * return if auto pick but not exist bet ([fbc2a79](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/fbc2a79c5f33764f7ee7177bff90c62c79ad351e))
 * store jackpot prizes to ticket ([0b08a0e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0b08a0ea3fe74026726962266fb4a7cbcd2d48bc))
@@ -64,7 +62,6 @@
 * add new socket route for jackpot game ([4d45d18](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4d45d1889b2a1c8084f8e2d8f80e999a6eb723a9))
 * add openedJackpot error code ([8878428](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/8878428fce470c10858a4bbbe6f5be55637cde7e))
 * add prize to jackpot collection ([ded0818](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ded081848e4063230e73c93a2f2b3c1197b1f0bf))
-* bot contribution & jackpot mini game ([2b3d59e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/2b3d59ea55ae0fe7bba0a5c6b296b84754e9dd3e))
 * call bet.save in processJackpot ([de64556](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/de64556b48be980051c9b0becb541e5dff26627b))
 * centralize generate result logic to consumer ([c0be114](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c0be114c65aea26c4314db953374e70389c386ac))
 * contribute bet to all pools with corresponding rate ([ab28b46](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ab28b464c76ac2f49ca9550166e68de151995883))
@@ -81,9 +78,7 @@
 * process bet queue - calculate contribution rate ([cf707ed](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/cf707edaad25f5d3da1bb670fb3aecb06b9400e0))
 * process expired jackpot ([3d23652](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3d2365231200a24cd7de2a1603dbc0081b6cc074))
 * return jackpot prize pool configurations when ingame ([af0f15b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/af0f15b33f8931fbdc75e57601471867f3458185))
-* set default player & bot alloc ([4e74ae6](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4e74ae6e74e4b4175a9023e5eda7f26a86de3aae))
 * settle jackpot win for normal case ([945800c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/945800ce970373231d6e5214196d85e3d050aaef))
-* update bot contribution ([eaf7318](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/eaf7318f6867b7096c02ecf654d3cfde23dbd7fc))
 * update collectJackpotResult ([160affc](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/160affc2bbe756db2861b43b8a7f001ef868cc01))
 * update jackpot & bonus durations, add defaultBetLevel ([8f2c117](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/8f2c1171a49e093af145eeee0ada4e53c3489051))
 * update jackpot notification ([90d393d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/90d393d4abbb18e2d17dfe1517c0511c3050b755))
@@ -225,9 +220,6 @@
 ### Bug Fixes
 
 * destruct awilix ([2617598](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/261759897220af8d88b8bd69f93551d4fb51dda6))
-* get correct stake track for bot ([b42b61d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/b42b61d5ed98f5ad24a6364a64d2fe8631a677b8))
-* update default botRatio ([aebc79c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/aebc79c27df4e1a08b9625a228a74fedd3d40580))
-* update jackpot possibility for bot ([aefc146](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/aefc146f266c5d205c922bee9b93fca036ffe4f5))
 
 # [1.4.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v1.3.0...v1.4.0) (2022-05-05)
 
@@ -281,7 +273,6 @@
 
 ### Bug Fixes
 
-* base pool for bot ([f1f44fa](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f1f44fac3f7b0647baed1ee5ad6c43b8bb52eb11))
 * big winner - not support scs ([08284b9](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/08284b94987543bfb61ac22fdf98ee7361ddf19b))
 * ingame consumer - return rate|multiplier ([ac8bfbf](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ac8bfbfbf437648f8215e1b7883852f076176d60))
 * ingame consumer - return rate|multiplier ([a933188](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a933188e432300b6e40b5b993fa2fc5bf19772ca))
@@ -413,11 +404,6 @@
 
 ## [1.0.2](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v1.0.1...v1.0.2) (2021-04-08)
 
-
-### Bug Fixes
-
-* avoid bot hit jackpot if it was disabled ([9ba3677](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/9ba3677bc54f2d7f243efc4ac1c48f6ccc9989fa))
-
 ## [1.0.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v1.0.0...v1.0.1) (2021-03-29)
 
 
@@ -474,7 +460,6 @@
 * change to calculate on winning lines instead of paylines ([fe0b407](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/fe0b4075085edbd034c9c8847c568b8687af7bda))
 * change to use roundRepository instead of betRepository ([d08e7cc](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d08e7cc7cd26ac18e802a605f428309065d0cffe))
 * change to user signin consumer of table game ([cfa5ad3](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/cfa5ad3f96aae7c78992e82bf0d37c420b436c74))
-* check enabled before run bot ([fca9769](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/fca97694bbe2b98a556b4c68e69dec463b43f0cc))
 * check if model IdCounter exists or not before initializing it ([363ab8c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/363ab8c9f2784f46c50840564a0c56cb298d3684))
 * check settlement result when process expired bonus ([384b18a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/384b18a6f54469ab66778356136c64c00cb99d6b))
 * code smells ([4e37594](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4e3759477b48de6b5bd0cbedbd4057dc0917a062))
@@ -511,7 +496,6 @@
 * correct place bet, bonus error notice ([e183a56](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e183a56792aef5b9cd97771defac305a2a549eaf))
 * correct process free spins ([630d420](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/630d42047a8b0a39f0b188eb7ec592a17dde56b3))
 * correct queryJackpotWinners ([dea591b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/dea591b40d77354fd57e50c9f21e7c6b3c0a2bf3))
-* correct reseting bots flow ([509f6fb](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/509f6fbae17b126cbac19edc04e8948c74a4e727))
 * correct result parameter name ([bd4336c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/bd4336c77da540a689529f80786d465075dfc0ab))
 * correct results and paylines in settlement ([bad262d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/bad262d061f44a6f870134640ba65855e5e48580))
 * correct running jackpot fool filter in jackpot-consumer's hit ([f4e6ae8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f4e6ae89b11306939de7c76cb63b280748cb251d))
@@ -520,12 +504,10 @@
 * correct the finish data when settling ([8e47cee](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/8e47ceeb7029f12e29115c169ea9235e1ae85d37))
 * correct the Jackpots import in the in-game-consumer ([14ee024](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/14ee024b44b5f99efc56729bfca2b86e2a86ad97))
 * correct the loading free spins flow in free-spins-consumer ([3918914](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3918914195ed40a0086c3abd6e40e0ae2f78ab7a))
-* correct userInfosRepository reference in slot-game-bot ([af66289](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/af662891134fe517317e3e7d5efc31a3418570a1))
 * correct using namespaces ([dc160fa](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/dc160fa9ad82cb875101cfe427e0d58ea56afb68))
 * correct uus check, send bonus result to client ([d5baceb](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d5baceb8ed0c6f0c724dadf01118a64be4ef789f))
 * correct winning lines return ([7e78251](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/7e78251e3d96713b49a6d51bc35cf02331a6a39f))
 * delete game notification when outing game if there is no free spin left ([e251dba](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e251dba8b440c53e596fc97abd0b3cddeffd2203))
-* exclude bot which already in room ([f9ab3b3](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f9ab3b3b85d03110b4a77b9085ce6a0321faa66b))
 * exclude uus contribute jackpot, update map ingame data when restart ([f9294a0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f9294a094a58936824f75f4440a7238a4d9b06e5))
 * exclude uus user from jackpot ([6cdad73](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/6cdad733e0e721e9491f860785cf2d0cbcd7db83))
 * export models ([5ffa373](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/5ffa373e0850cc31905cc0c8d47715ad82efb4d2))
@@ -540,14 +522,13 @@
 * get latest round id from game config disabled round ([f529654](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f529654e8e98593c8c2714cd5f1a49f6274796a1))
 * get number of bonus from finish ([3112598](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/31125982847be4bb43cb8fcb73413a0a55802a5b))
 * get picked bonus from undefined ([a59bb5e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a59bb5e13f756f39aaec143266c92b324a3b1e29))
-* handle board sent from admin, use board-cheating-consumer in settle ([9d4aaff](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/9d4aafffe5b61a5cdf288cf1fa58ec34e8e82e04))
 * idcounter may be missing in case the first start of the game ([c25b78a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c25b78af074f3974345006503e30ea1fe3c52214))
 * import cron ([c97095d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c97095db7da63899a5a4bb5f29ff1ce0bd4aeb2d))
 * import free-spins-consumer to bet queue ([7649386](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/76493862bb242dd23688fdbe0fc5221cb78e795e))
 * import logger in cron ([59e027d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/59e027d5d894d3c1b19ab1c86e283b598913b739))
 * include bonus to bigwin ([d90337c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d90337cea9d7375540faa7d6c33e73f486ef8a64))
 * include round id in auto settle ([68a236e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/68a236e4106ab2e1a61497d516159a2a55f52d04))
-* increase roundId before bots place bets ([935a9a0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/935a9a0dd6fb7ba15bf70f38bf4a7c1c14be5c5e))
+* increase roundId before s place bets ([935a9a0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/935a9a0dd6fb7ba15bf70f38bf4a7c1c14be5c5e))
 * init betQueue when process remaining bonus ([05a5f2e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/05a5f2e009f8487c85bab3302a5c1bc40186043f))
 * init betqueue when reload freespins ([5ee7eca](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/5ee7eca4465c411ad5c9cc6f90be33a6033d4479))
 * init crons, game data, definition and startup ([0c86926](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0c86926414613f7af03aa6c8ea05ed84317f7203))
@@ -565,7 +546,6 @@
 * only projecting necessary fields when loading unsettled bets ([a87237b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a87237bfb4e4bcc16409944e6b226e9bac78c84e))
 * only upsert bets after deducing free spins successfully ([b6aedeb](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/b6aedeb159ccf44af5b54ece1afaaad6e32b5483))
 * override adjust bet track to empty ([f6881b5](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f6881b584d7604c50596336fe22b3678610ed7db))
-* pass userInfosRepository to BaseBot's constructor ([aee30e8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/aee30e83ee94b57632ec5ba39d0a1e948430e63d))
 * payline-calculator returns jackpot winning payline instead of true/false ([5b19aa3](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/5b19aa3a0c09e2ff32dd9a942172f46fe174c129))
 * prioritize process free spins ([a9c73d7](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a9c73d73acd86be70b194d2088b021e80588b38d))
 * process expired bonus ([36fadca](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/36fadcaddbe9c4356e3ca2897f6e87be1ac86254))
@@ -626,7 +606,6 @@
 * update destruct ingame in bonus-consumer ([842b17c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/842b17c23d3869259ab41f961079a9d3759cd8f0))
 * update difficulties value ([0f246c7](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0f246c743c854ca211b6c84d2ef57ecfcc916ef2))
 * update free spin ([aa24c53](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/aa24c53723d66d533d481b0c40ac18fec257ad76))
-* update game bot ([547c104](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/547c104e5c9942200da150181d354fe75746481d))
 * update init free spin consumer ([0fcf68a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0fcf68af86e7bd4414f47ad9c09d68a9a9521c0e))
 * update init settle consumer in bonus ([c8ede88](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c8ede88df03a9855ff3dea9173f1fce33ca5172d))
 * update jackpot hit, check bigWin ([fede73d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/fede73d1c9336d9bd8cfb55a405c83afcad37e56))
@@ -640,14 +619,12 @@
 * update total amount for freeSpin, validate bet ([a1398d5](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a1398d5aa6d2f0f7bc137c9228d1b907d6934de5))
 * update use free spins in bet queue ([45f2e68](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/45f2e68f2d81793eda2ea190bd29093d97c58966))
 * update validate bonus ([cdec9f2](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/cdec9f2ee7c19a874d9aafbffba07101f2e920f6))
-* upgrade new base-bot, remove duplicates with base-bot ([dc3ee1c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/dc3ee1ca98f23a196e421da38746247cbcc93ea8))
 * upgrade sc-base-apis and sc-game-base packages ([51b9a46](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/51b9a4653445c663d1ffc07c82548f3604b0982d))
 * upgrade sc-base-database and sc-game-base packages ([d1952df](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d1952df23b6f487d0b410b6ccff2573c7eb03834))
 * upgrade sc-game-base ([0746b4e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0746b4e15171ca8814c1d637cc922b7a510343e1))
 * upgrade sc-game-base package ([68d9c7b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/68d9c7b9954e0a08a08d239540954b4fdf7d88f9))
 * upgrade sc-game-base package ([82efacb](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/82efacb6391c809584f7b9b1ff080a09532584a4))
 * upgrade sc-game-base package ([a4806f2](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/a4806f25c7becb070fb90e7951dbf7bb7d583876))
-* upgrade sc-game-base, init cron, bot and app ([4a8edd6](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4a8edd6e5e1d9ac24d26ecfdef7691979e9f2081))
 * use free spin consumer in settlement ([d87cdb8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d87cdb88bd12af74a922040394f57a48631d9d9d))
 * validate bonus chest ([f0c24dd](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/f0c24ddce3a12aca35926fc755bdfc8d6cb4d6ae))
 * validate bonus undefined ([28a529a](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/28a529ae94aaa4716a05cbf5dff3d03422e5bd96))
@@ -661,7 +638,6 @@
 
 ### Features
 
-* add board-cheating-consumer ([151407c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/151407c1e4597f8534ca08a07cda56ccb6b1513f))
 * add demo code ([dc54d0e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/dc54d0e771216986dec5aa00466ef5c776f75ed7))
 * add demo code (cont) ([7d18097](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/7d18097bf55df5271c0f825e50ac650c17c152de))
 * add free-spins-consumer ([3e6bfa7](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3e6bfa7b57e007f8e18a2c2356a3c12a2dbdc1a5))
@@ -684,7 +660,6 @@
 * cleanup game-notifications once free spins expired ([1470c9b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/1470c9b9d4bc611df91639b475387e102b497ec5))
 * expose board-calculator as an authorized API ([d6b60b9](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/d6b60b9100fe8c9b2346f00e406abc95aa05a80f))
 * implement board-generator ([63f0d40](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/63f0d40f01bd58eab13083b6af03c7a09a1ecb51))
-* implement bot ([dee7293](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/dee7293eb27a716d8f37fc123a9df18ac0f0279f))
 * implement jackpot consumer ([e57b0db](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e57b0dbf07313a81ce9be0c5ba518de9cec20630))
 * implement paylines calculator ([8226a3d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/8226a3da4f6fe338b55574b627fd9be0c43b30d8))
 * init jackpot pools when starting game ([3bf410f](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3bf410f22115a297d8bd6fc5cf844814cbbba68a))
@@ -693,4 +668,3 @@
 * register slot-socket-router ([c24a6b0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c24a6b0f9335577dee6a97266bd1b6c0293a6919))
 * return the settlementResult when calling set-board (from Admin) ([b5db33c](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/b5db33c81da600e9da29ea7646ec79761fbfd233))
 * send jackpot winner to main game server ([4a83e35](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4a83e3549aa436ade7dc055d524b765d7865ef74))
-* update idcounters when bots place bets ([0190c83](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/0190c833ef751b950685fd06bd199600b1d9530e))
