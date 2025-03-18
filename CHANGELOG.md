@@ -1,3 +1,10 @@
+## [2.1.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.1.0...v2.1.1) (2025-03-18)
+
+
+### Bug Fixes
+
+* remove unnecessary rounding in bet calculations ([e225b48](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e225b48652f85dbc454026f1cc51dc14a960c167))
+
 # [2.1.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.0.0...v2.1.0) (2024-08-27)
 
 
