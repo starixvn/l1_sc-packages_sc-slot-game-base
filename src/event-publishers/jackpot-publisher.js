@@ -2,6 +2,7 @@ import { Core } from "sc-game-base";
 import authenticationHelpers from "sc-game-base/src/core/helpers/authentication-helpers";
 
 import SlotGameData from "./../slot-game-data";
+import JackpotValidator from "../validators/jackpot-validator";
 
 export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEventPublisher {
     /**
@@ -9,19 +10,21 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
      * @param {String} gameName
      * @param {SlotGameData} gameData
      * @param {Object} appConfigs
-     * @param {logger} logService
+     * @param {logger} logService\
+     * @param {JackpotValidator} jackpotValidator
      */
 
-    constructor(gameId, gameName, gameData, appConfigs, logService) {
+    constructor(gameId, gameName, gameData, appConfigs, logService, jackpotValidator) {
         super(gameName, gameData);
 
         this.gameId = gameId;
         this.appConfigs = appConfigs;
         this.logService = logService;
+        this.jackpotValidator = jackpotValidator;
     }
 
-    publishLatestPool(pool) {
-        this.publishToEligibleUsers({ jackpotPool: pool });
+    publishLatestPool({ jackpotPool, poolInfo }) {
+        this.publishToEligibleUsers({ jackpotPool, poolInfo });
     }
 
     async publishWinner(playerId, winner) {
@@ -31,9 +34,13 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
         await this.sendJackpotWinner(winner);
     }
 
-    publishToEligibleUsers(payload) {
+    publishToEligibleUsers(payload, poolInfo) {
         const socketPlayers = Object.values(this.gameData.realPlayers)
-            .filter((player) => !player.session.disableJackpotGames)
+            .filter(
+                (player) =>
+                    this.jackpotValidator.canAccessJackpot(player) &&
+                    (!poolInfo.isSeparatePool || (player.session.operatorId === poolInfo.operatorId && player.session.siteName === poolInfo.siteName))
+            )
             .map((player) => player.socketClient);
 
         socketPlayers.forEach((socket) => {

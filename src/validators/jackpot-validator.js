@@ -4,9 +4,15 @@ export default class JackpotValidator {
     }
 
     canAccessJackpot(player) {
-        const { jackpot } = this.gameData.gameConfigs.slotsConfig;
+        const { jackpot, jackpotConfigs } = this.gameData.gameConfigs.slotsConfig;
 
-        if (jackpot.enabled) {
+        const isSeparatePool = jackpotConfigs.some((config) => config.operatorId === player.session.operatorId);
+
+        const jackpotConfig = jackpotConfigs.find(
+            (config) => config.siteName === player.session.siteName && config.operatorId === player.session.operatorId
+        );
+
+        if (jackpot.enabled && (!isSeparatePool || jackpotConfig)) {
             return !player.session.disableJackpotGames;
         }
 

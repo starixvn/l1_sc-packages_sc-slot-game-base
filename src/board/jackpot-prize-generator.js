@@ -1,5 +1,4 @@
 import Chance from "chance";
-
 import JackpotValidator from "../validators/jackpot-validator";
 import SlotGameDefinition from "./../slot-game-definition";
 

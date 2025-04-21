@@ -26,22 +26,37 @@ export default class JackpotConsumer {
     async contribute(player, { totalAmount, roundId, rate, freeSpin }) {
         const contributedByMember = !!player.session;
 
-        if (contributedByMember && !this.jackpotValidator.canContributeJackpotPools(player, freeSpin)) {
-            return;
-        }
+        if (!contributedByMember || this.jackpotValidator.canContributeJackpotPools(player, freeSpin)) {
+            const isSeparatePool = this.gameData.gameConfigs.slotsConfig.jackpotConfigs.find(
+                (config) => config.operatorId === player.session.operatorId
+            );
+            const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
+            const poolConfigs = isSeparatePool ? this.getSiteJackpotPools(player) : pools;
 
-        const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
+            const baseTotalAmount = totalAmount * rate;
 
-        const baseTotalAmount = totalAmount * rate;
-        const jackpotPrizes = Object.keys(pools);
+            const jackpotPrizes = Object.keys(poolConfigs);
 
-        for (const prize of jackpotPrizes) {
-            await this.contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, pool: pools[prize] });
+            for (const prize of jackpotPrizes) {
+                await this.contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, poolConfigs, isSeparatePool, player });
+            }
         }
     }
 
-    async contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, pool }) {
-        const poolAdjustment = this.calculatePoolAdjustment({ contributedByMember, poolConfig: pool, baseTotalAmount });
+    getSiteJackpotPools(player) {
+        return this.gameData.gameConfigs.slotsConfig.jackpotConfigs.find(
+            (config) => config.operatorId === player.session.operatorId && config.siteName === player.session.siteName
+        )?.pools;
+    }
+
+    async contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, poolConfigs, isSeparatePool, player }) {
+        const poolConfig = poolConfigs?.[prize];
+
+        if (!poolConfig) {
+            return;
+        }
+
+        const poolAdjustment = this.calculatePoolAdjustment({ contributedByMember, poolConfig, baseTotalAmount });
 
         const runningPoolFilter = {
             gameId: this.definition.id,
@@ -49,11 +64,11 @@ export default class JackpotConsumer {
             winnerName: { $exists: false },
             createdAt: { $lte: roundId },
         };
-        const nearestPoolOrder = {
-            createdAt: -1,
-        };
 
-        const latestJackpotProjection = { _id: false, amount: true };
+        if (isSeparatePool) {
+            Object.assign(runningPoolFilter, { offerOperator: player.session.operatorId, offerSite: player.session.siteName, isSeparatePool: true });
+        }
+
         const latestJackpotPool = await this.jackpotsRepository.findOneAndUpdate(
             runningPoolFilter,
             {
@@ -63,12 +78,24 @@ export default class JackpotConsumer {
             {
                 new: true,
                 lean: true,
-                fields: latestJackpotProjection,
-                sort: nearestPoolOrder,
+                fields: { _id: false, amount: true },
+                sort: {
+                    createdAt: -1,
+                },
             }
         );
 
-        this.jackpotPublisher.publishLatestPool({ pool: prize, amount: latestJackpotPool.amount });
+        this.jackpotPublisher.publishLatestPool({
+            jackpotPool: {
+                pool: prize,
+                amount: latestJackpotPool.amount,
+            },
+            poolInfo: {
+                isSeparatePool,
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+            },
+        });
     }
 
     calculatePoolAdjustment({ contributedByMember, poolConfig, baseTotalAmount }) {

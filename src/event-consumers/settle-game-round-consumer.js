@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { Core } from "sc-game-base";
-
 import math from "lodash/math";
 import defaultDefinition from "../board/default-definition";
 import { JackpotPrizeGenerator } from "./../board";
