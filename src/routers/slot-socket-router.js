@@ -1,6 +1,6 @@
 import { Core } from "sc-game-base";
 
-import { BonusConsumer, InGameConsumer, PlaceBetConsumer, JackpotGameConsumer } from "./../event-consumers";
+import { BonusConsumer, InGameConsumer, PlaceBetConsumer } from "./../event-consumers";
 import { HallOfFameQuery, SlotHistoryQuery } from "./../query-apis";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
@@ -36,6 +36,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         logService,
         playGamePermissionValidator,
         jackpotGameConsumer,
+        promotionManagement,
     }) {
         super({
             definition,
@@ -53,6 +54,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         this.bonusConsumer = bonusConsumer;
         this.hallOfFameQuery = hallOfFameQuery;
         this.jackpotGameConsumer = jackpotGameConsumer;
+        this.promotionManagement = promotionManagement;
     }
 
     /**
@@ -65,6 +67,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         this.socketClient.on("getJackpotWinners", this.handleGettingJackpotWinners.bind(this));
         this.socketClient.on("bonus", this.handleBonus.bind(this));
         this.socketClient.on("jackpot", this.handleJackpotGame.bind(this));
+        this.socketClient.on("joinPromotion", this.handleJoinPromotion.bind(this));
     }
 
     async handleGettingBigWinningWinners(payload) {
@@ -125,6 +128,22 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
     async handleDisconnect() {
         try {
             await this.userDisconnectConsumer.consume(this.socketClient);
+        } catch (error) {
+            this.logService.logError(error);
+        }
+    }
+
+    async handleJoinPromotion() {
+        try {
+            if (!this.verify()) {
+                return;
+            }
+
+            const player = this.gameData.realPlayers[this.socketClient.id];
+            const promotion = await this.promotionManagement.joinPromotion(player);
+            player.promotion = promotion;
+            
+            this.socketClient.emit(this.definition.name, { promotion: { remainingBonusItems: promotion.remainingBonusItems } });
         } catch (error) {
             this.logService.logError(error);
         }
