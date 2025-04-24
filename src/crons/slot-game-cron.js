@@ -1,5 +1,6 @@
 import cron from "cron";
 import { Core } from "sc-game-base";
+import { getOrDefault } from "sc-game-base/src/core/game-management-api";
 
 import { SlotGameBot } from "./../crons";
 import * as EventConsumers from "./../event-consumers";
@@ -20,12 +21,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
      * @param {Core.BaseEventPublishers.GameStatusPublisher} dependencies.gameStatusPublisher
      * @param {Core.BaseEventPublishers.RunningRoundInfoPublisher} dependencies.runningRoundInfoPublisher
      * @param {logger} dependencies.logService
-     * @param {mongoose.Model} dependencies.gameConfigsRepository
      * @param {mongoose.Model} dependencies.roundsRepository
-     * @param {mongoose.Model} dependencies.archiveStatusesRepository
-     * @param {mongoose.Model} dependencies.notificationRepository
-     * @param {mongoose.Model} dependencies.exchangeRatesRepository
-     * @param {mongoose.Model} dependencies.partnerConfigRepository
      * @param {EventConsumers.JackpotGameConsumer} dependencies.jackpotGameConsumer
      */
     constructor({
@@ -40,16 +36,10 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         gameStatusPublisher,
         runningRoundInfoPublisher,
         logService,
-        gameConfigsRepository,
         roundsRepository,
-        archiveStatusesRepository,
-        notificationRepository,
-        exchangeRatesRepository,
-        currencyGroupGamesRepository,
-        partnerConfigRepository,
-        currencyGroupRepository,
-        currencyRepository,
         jackpotGameConsumer,
+        roundIdConsumer,
+        gameManagementApiClientFactory,
     }) {
         super({
             definition,
@@ -59,15 +49,8 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
             gameStatusPublisher,
             runningRoundInfoPublisher,
             logService,
-            gameConfigsRepository,
-            roundsRepository,
-            archiveStatusesRepository,
-            notificationRepository,
-            exchangeRatesRepository,
-            currencyGroupGamesRepository,
-            partnerConfigRepository,
-            currencyGroupRepository,
-            currencyRepository,
+            gameManagementApiClientFactory,
+            roundIdConsumer,
         });
 
         this.freeSpinsConsumer = freeSpinsConsumer;
@@ -75,6 +58,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         this.idCountersConsumer = idCountersConsumer;
         this.jackpotConsumer = jackpotConsumer;
         this.jackpotGameConsumer = jackpotGameConsumer;
+        this.roundsRepository = roundsRepository;
     }
 
     async start() {
@@ -122,7 +106,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     async getLastArchiveRound(jackpotEnabled) {
         const { configName } = this.definition;
-        const archiveStatus = await this.archiveStatusesRepository.findOne({ name: configName }, "lastArcId").lean().exec();
+        const archiveStatus = await getOrDefault(this.gameManagementApiClient.archiveStatus.getArchiveStatus(configName));
         const latestJackpotRoundId = jackpotEnabled ? await this.jackpotConsumer.getLatestRoundId() : 0;
 
         const roundId = archiveStatus && archiveStatus.lastArcId["_rounds"] > 0 ? archiveStatus.lastArcId["_rounds"] : 0;
@@ -220,12 +204,5 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
             return ingame;
         }, {});
-    }
-
-    async updateCurrencyGroupGames() {
-        this.gameData.currencyGroupGames = await this.currencyGroupGamesRepository
-            .find({ gameId: this.definition.id, enabled: true }, "groupId minBet maxBet maxBetPerChoices chips betLevels defaultBetLevel")
-            .lean()
-            .exec();
     }
 }

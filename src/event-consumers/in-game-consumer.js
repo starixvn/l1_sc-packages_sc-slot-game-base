@@ -25,11 +25,11 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
         publisher,
         freeSpinsConsumer,
         getBalance,
-        userInfosRepository,
         jackpotsRepository,
         jackpotValidator,
+        gameManagementApiClientFactory,
     }) {
-        super(definition, gameData, roundQuery, publisher, getBalance, userInfosRepository);
+        super(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory);
 
         this.freeSpinsConsumer = freeSpinsConsumer;
         this.jackpotsRepository = jackpotsRepository;
@@ -46,7 +46,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
         await this.getBalance(realPlayer, true);
 
-        const user = await this.getUserInfo(realPlayer.UID);
+        const user = await this.getUserInfo(realPlayer);
 
         const { rate, multiplier } = this.getExchangeRate(session);
 

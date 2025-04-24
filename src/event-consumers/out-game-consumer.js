@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
 import { Core } from "sc-game-base";
 
+import { post } from "sc-game-base/src/core/game-management-api";
 import SlotGameData from "./../slot-game-data";
 import BonusConsumer from "./bonus-consumer";
 import FreeSpinsConsumer from "./free-spins-consumer";
@@ -12,17 +12,23 @@ export default class OutGameConsumer extends Core.BaseEventConsumers.UserDisconn
      * @param {SlotGameData} gameData
      * @param {BonusConsumer} bonusConsumer
      * @param {FreeSpinsConsumer} freeSpinsConsumer
-     * @param {mongoose.Model} gameNotificationsRepository
      * @param {JackpotGameConsumer} jackpotGameConsumer
      */
-    constructor(gameId, gameData, bonusConsumer, freeSpinsConsumer, gameNotificationsRepository, jackpotGameConsumer) {
+    constructor(
+        gameId,
+        gameData,
+        bonusConsumer,
+        freeSpinsConsumer,
+        jackpotGameConsumer,
+        gameManagementApiClientFactory
+    ) {
         super(gameData);
 
         this.gameId = gameId;
         this.bonusConsumer = bonusConsumer;
         this.freeSpinsConsumer = freeSpinsConsumer;
-        this.gameNotificationsRepository = gameNotificationsRepository;
         this.jackpotGameConsumer = jackpotGameConsumer;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     /**
@@ -42,21 +48,24 @@ export default class OutGameConsumer extends Core.BaseEventConsumers.UserDisconn
 
     async upsertFreeSpinNotification(realPlayer) {
         const latestExpiredFreeSpinSet = this.freeSpinsConsumer.getLatestExpiredFreeSpinSet(realPlayer);
-        const filter = {
-            uid: realPlayer.UID,
-            gameId: this.gameId,
-        };
-
+        
         if (latestExpiredFreeSpinSet) {
-            const adjustment = {
-                gameInfo: {
-                    freeSpinExpiryTime: latestExpiredFreeSpinSet.expiryTime,
-                },
-            };
-
-            await this.gameNotificationsRepository.updateOne(filter, { $set: adjustment }, { upsert: true });
+            await post(
+                this.gameManagementApiClient.gameNotifications.updateGameNotification({
+                    gameId: this.gameId,
+                    uid: realPlayer.UID,
+                    gameInfo: {
+                        freeSpinExpiryTime: latestExpiredFreeSpinSet.expiryTime,
+                    },
+                })
+            );
         } else {
-            await this.gameNotificationsRepository.deleteOne(filter);
+            await post(
+                this.gameManagementApiClient.gameNotifications.deleteGameNotification({
+                    gameId: this.gameId,
+                    uid: realPlayer.UID,
+                })
+            );
         }
     }
 }

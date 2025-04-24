@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 
+import GameManagementApiClientFactory, { post } from "sc-game-base/src/core/game-management-api";
 import SlotGameData from "./../slot-game-data";
 
 export default class FreeSpinsConsumer {
@@ -7,15 +8,15 @@ export default class FreeSpinsConsumer {
      * @param {Number} gameId
      * @param {SlotGameData} gameData
      * @param {mongoose.Model} freeSpinsRepository
-     * @param {mongoose.Model} gameNotificationsRepository
      * @param {EventConsumers.IdCountersConsumer} dependencies.idCountersConsumer
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      */
-    constructor(gameId, gameData, freeSpinsRepository, gameNotificationsRepository, idCountersConsumer) {
+    constructor(gameId, gameData, freeSpinsRepository, idCountersConsumer, gameManagementApiClientFactory) {
         this.gameId = gameId;
         this.gameData = gameData;
         this.freeSpinsRepository = freeSpinsRepository;
-        this.gameNotificationsRepository = gameNotificationsRepository;
         this.idCountersConsumer = idCountersConsumer;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     hasFreeSpin(player) {
@@ -162,21 +163,25 @@ export default class FreeSpinsConsumer {
     async cleanUpGameNotifications(freeSpinsGroupedByUIDs) {
         const excludingUIDs = Object.keys(freeSpinsGroupedByUIDs);
 
-        await this.gameNotificationsRepository.deleteMany({ gameId: this.gameId, uid: { $nin: excludingUIDs } });
+        await post(
+            this.gameManagementApiClient.gameNotifications.clearGameNotification({
+                gameId: this.gameId,
+                excludingUIDs,
+            })
+        );
+
         await Promise.all(
             Object.entries(freeSpinsGroupedByUIDs).map(async ([uid, freeSpins]) => {
-                const filter = {
-                    uid,
-                    gameId: this.gameId,
-                };
                 const latestExpiredFreeSpinSet = freeSpins[freeSpins.length - 1];
-                const adjustment = {
-                    gameInfo: {
-                        freeSpinExpiryTime: latestExpiredFreeSpinSet.expiryTime,
-                    },
-                };
-
-                await this.gameNotificationsRepository.updateOne(filter, { $set: adjustment }, { upsert: true });
+                await post(
+                    this.gameManagementApiClient.gameNotifications.updateGameNotification({
+                        gameId: this.gameId,
+                        uid,
+                        gameInfo: {
+                            freeSpinExpiryTime: latestExpiredFreeSpinSet.expiryTime,
+                        },
+                    })
+                );
             })
         );
     }

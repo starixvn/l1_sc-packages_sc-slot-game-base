@@ -1,6 +1,5 @@
-import mongoose from "mongoose";
 import { Core } from "sc-game-base";
-
+import GameManagementApiClientFactory, { getOrDefault } from "sc-game-base/src/core/game-management-api";
 import * as Board from "./../board";
 import * as EventConsumers from "./../event-consumers";
 import SlotGameData from "./../slot-game-data";
@@ -17,7 +16,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
      * @param {EventConsumers.BoardCheatingConsumer} dependencies.boardCheatingConsumer
      * @param {Board.BoardGenerator} dependencies.boardGenerator
      * @param {Board.PaylineCalculator} dependencies.paylineCalculator
-     * @param {mongoose.Model} dependencies.userInfosRepository
+     * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
      */
     constructor({
         definition,
@@ -28,9 +27,9 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         boardCheatingConsumer,
         boardGenerator,
         paylineCalculator,
-        userInfosRepository,
+        gameManagementApiClientFactory,
     }) {
-        super(definition, gameData, userInfosRepository);
+        super(definition, gameData, gameManagementApiClientFactory);
 
         this.idCountersConsumer = idCountersConsumer;
         this.jackpotConsumer = jackpotConsumer;
@@ -43,20 +42,12 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.odds = {};
         this.bigWinRatio = 0;
         this.groupTracks = [];
+        this.baseBots = [];
     }
 
-    async reset() {
-        await super.reset();
-
-        const configs = this.gameData.gameConfigs;
-
-        if (configs?.botenabled) {
-            const bots = await this.userInfosRepository.find({ type: true, disabled: false, inRoom: false }, "id name").lean().exec();
-
-            this.bots = this.chance.shuffle(this.standardizeBots(bots)).slice(0, this.maxNumberOfBots);
-        } else {
-            this.bots = [];
-        }
+    async updateBotList() {
+        this.baseBots = await getOrDefault(this.gameManagementApiClient.users.getAllBots(this.maxNumberOfBots, true), this.baseBots);
+        this.bots = this.standardizeBots(this.chance.shuffle(this.baseBots));
     }
 
     standardizeBots(bots) {

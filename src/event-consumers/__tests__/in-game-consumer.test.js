@@ -2,6 +2,7 @@ import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { BaseEventPublishers, RoundQuery } from "sc-game-base/src/core";
 
+import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
 import { FreeSpinsConsumer, InGameConsumer } from "../";
 import SlotGameData from "../../slot-game-data";
 import SlotGameDefinition from "../../slot-game-definition";
@@ -12,7 +13,13 @@ const userInfosRepository = stubMongoose(mongoose.Model);
 /** @type {mongoose.Model}*/
 const jackpotsRepository = stubMongoose(mongoose.Model);
 const currencyGroupGamesRepository = stubMongoose(mongoose.Model);
-const getBalance = jest.fn();
+const getBalance = jest.fn(() => ({ isOk: true, response: { red: 1000 } }));
+const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+gameManagementApiClientFactory.instance.mockReturnValue({
+    users: {
+        setBalance: jest.fn(() => ({ isSuccessful: true, data: {  } })),
+    },
+});
 
 describe("IngameConsumer", () => {
     const gameData = stubGameData();
@@ -36,6 +43,7 @@ describe("IngameConsumer", () => {
             jackpotsRepository,
             currencyGroupGamesRepository,
             jackpotValidator,
+            gameManagementApiClientFactory,
         });
     });
 
@@ -64,7 +72,7 @@ describe("IngameConsumer", () => {
                 // arrange
                 jackpotValidator.canAccessJackpot.mockReturnValueOnce(false);
                 consumer.gameData.gameConfigs.slotsConfig.jackpot.enabled = false;
-                spyOn(consumer, "getPools");
+                jest.spyOn(consumer, "getPools");
 
                 // act
                 await consumer.buildPayload({ session: { currencyGroupId: "617a650628b7a500016388f5" } });

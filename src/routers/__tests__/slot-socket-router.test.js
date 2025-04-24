@@ -56,7 +56,7 @@ describe("init", () => {
         router.init(socketClient);
 
         // assert
-        expect(socketClient.on).toHaveBeenCalledTimes(9);
+        expect(socketClient.on).toHaveBeenCalledTimes(11);
     });
 });
 
@@ -68,8 +68,8 @@ describe("handleGettingBigWinningWinners", () => {
     it("should not call hallOfFameQuery when invalid request", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(false);
-        spyOn(fameQuery, "queryBigWinningWinners");
+        jest.spyOn(router, "verify").mockReturnValue(false);
+        jest.spyOn(fameQuery, "queryBigWinningWinners");
 
         // act
         await router.handleGettingBigWinningWinners({});
@@ -90,8 +90,8 @@ describe("handleGettingBigWinningWinners", () => {
                 pageSize: 10,
             },
         };
-        spyOn(router, "verify").and.returnValue(true);
-        spyOn(fameQuery, "queryBigWinningWinners").and.returnValue(bigWinners);
+        jest.spyOn(router, "verify").mockReturnValue(true);
+        jest.spyOn(fameQuery, "queryBigWinningWinners").mockReturnValue(bigWinners);
 
         // act
         await router.handleGettingBigWinningWinners({});
@@ -104,8 +104,8 @@ describe("handleGettingBigWinningWinners", () => {
     it("should log error when have exception", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(true);
-        spyOn(fameQuery, "queryBigWinningWinners").and.throwError("error");
+        jest.spyOn(router, "verify").mockReturnValue(true);
+        jest.spyOn(fameQuery, "queryBigWinningWinners").mockRejectedValueOnce("error");
 
         // act
         await router.handleGettingBigWinningWinners({});
@@ -129,8 +129,8 @@ describe("handleGettingJackpotWinners", () => {
     it("should not call hallOfFameQuery when invalid request", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(false);
-        spyOn(fameQuery, "queryJackpotWinners");
+        jest.spyOn(router, "verify").mockReturnValue(false);
+        jest.spyOn(fameQuery, "queryJackpotWinners");
 
         // act
         await router.handleGettingJackpotWinners({});
@@ -142,8 +142,8 @@ describe("handleGettingJackpotWinners", () => {
     it("should not call hallOfFameQuery when disableJackpotGames=true", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(true);
-        spyOn(fameQuery, "queryJackpotWinners");
+        jest.spyOn(router, "verify").mockReturnValue(true);
+        jest.spyOn(fameQuery, "queryJackpotWinners");
         gameData.realPlayers[socketClient.id].session.disableJackpotGames = true;
 
         // act
@@ -165,8 +165,8 @@ describe("handleGettingJackpotWinners", () => {
                 pageSize: 10,
             },
         };
-        spyOn(router, "verify").and.returnValue(true);
-        spyOn(fameQuery, "queryJackpotWinners").and.returnValue(jackpotWinners);
+        jest.spyOn(router, "verify").mockReturnValue(true);
+        jest.spyOn(fameQuery, "queryJackpotWinners").mockReturnValue(jackpotWinners);
 
         // act
         await router.handleGettingJackpotWinners({});
@@ -179,8 +179,8 @@ describe("handleGettingJackpotWinners", () => {
     it("should log error when have exception", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(true);
-        spyOn(fameQuery, "queryJackpotWinners").and.throwError("error");
+        jest.spyOn(router, "verify").mockReturnValue(true);
+        jest.spyOn(fameQuery, "queryJackpotWinners").mockRejectedValueOnce("error");
 
         // act
         await router.handleGettingJackpotWinners({});
@@ -198,8 +198,8 @@ describe("handleBonus", () => {
     it("should not call bonusConsumer when invalid request", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(false);
-        spyOn(bonusConsumer, "consume");
+        jest.spyOn(router, "verify").mockReturnValue(false);
+        jest.spyOn(bonusConsumer, "consume");
 
         // act
         await router.handleBonus({});
@@ -212,7 +212,7 @@ describe("handleBonus", () => {
         // arrange
         const router = initRouter();
         router.init(socketClient);
-        spyOn(router, "verify").and.returnValue(true);
+        jest.spyOn(router, "verify").mockReturnValue(true);
         gameData.realPlayers = [];
 
         // act
@@ -225,7 +225,7 @@ describe("handleBonus", () => {
     it("should log error when have exception", async () => {
         // arrange
         const router = initRouter();
-        spyOn(router, "verify").and.returnValue(true);
+        jest.spyOn(router, "verify").mockReturnValue(true);
 
         // act
         await router.handleBonus({});
@@ -254,7 +254,7 @@ describe("handleDisconnect", () => {
     it("should log error when have exception", async () => {
         // arrange
         const router = initRouter();
-        spyOn(userDisconnectConsumer, "consume").and.throwError("error");
+        jest.spyOn(userDisconnectConsumer, "consume").mockRejectedValueOnce("error");
 
         // act
         await router.handleDisconnect({});

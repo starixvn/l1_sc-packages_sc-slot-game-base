@@ -1,6 +1,7 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { Core } from "sc-game-base";
+import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
 import { BoardGenerator, PaylineCalculator } from "../../board";
 import { BoardCheatingConsumer, HallOfFameConsumer, IdCountersConsumer, JackpotConsumer } from "../../event-consumers";
 import SlotGameBot from "../slot-game-bot";
@@ -14,6 +15,7 @@ const boardGenerator = stub(BoardGenerator);
 const paylineCalculator = stub(PaylineCalculator);
 const hallOfFameConsumer = stub(HallOfFameConsumer);
 const jackpotConsumer = stub(JackpotConsumer);
+const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
 
 const gameData = {
     gameConfigs: {
@@ -64,46 +66,13 @@ describe("SlotGameBot", () => {
             hallOfFameConsumer,
             jackpotConsumer,
             userInfosRepository,
+            gameManagementApiClientFactory,
         });
     });
     describe("extends", () => {
         it("should extend Core.Crons.BaseBot", () => {
             // Assert
             expect(bot instanceof Core.Crons.BaseBot);
-        });
-    });
-
-    describe("reset", () => {
-        const testCases = [{ gameConfigs: { botenabled: false } }];
-        beforeEach(() => {
-            bot.resetAllBotData = jest.fn();
-        });
-
-        it.each(testCases)("when bot disabled should empty bot", async (testCase) => {
-            // Arrange
-            bot.gameData = { gameConfigs: testCase.gameConfigs };
-
-            // Act
-            await bot.reset();
-
-            // Assert
-            expect(bot.bots).toStrictEqual([]);
-        });
-
-        it("when bot enabled should have bot list", async () => {
-            // Arrange
-            bot.gameData = { gameConfigs: { botenabled: true, maxbot: 10 } };
-            userInfosRepository
-                .find()
-                .lean()
-                .exec.mockReturnValueOnce([{ id: 1 }]);
-            userInfosRepository.countDocuments().exec.mockReturnValueOnce(2);
-
-            // Act
-            await bot.reset();
-
-            // Assert
-            expect(bot.bots.length).toBe(1);
         });
     });
 

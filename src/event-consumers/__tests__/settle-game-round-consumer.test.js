@@ -11,6 +11,7 @@ import {
     boardGenerator,
     bonusBoardGenerator,
     freeSpinsConsumer,
+    gameManagementApiClientFactory,
     generateResultConsumer,
     hallOfFameConsumer,
     jackpotConsumer,
@@ -923,6 +924,7 @@ function initDependencies() {
         betsRepository,
         logService,
         generateResultConsumer,
+        gameManagementApiClientFactory,
     };
 }
 

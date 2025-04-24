@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
+import { getOrDefault } from "sc-game-base/src/core/game-management-api";
 
 export default class HallOfFameQuery {
     /**
      * @param {Number} gameId
      * @param {mongoose.Model} famesRepository
      * @param {mongoose.Model} jackpotsRepository
-     * @param {mongoose.Model} exchangeRatesRepository
      */
-    constructor(gameId, famesRepository, jackpotsRepository, exchangeRatesRepository) {
+    constructor(gameId, famesRepository, jackpotsRepository, gameManagementApiClientFactory) {
         this.gameId = gameId;
         this.famesRepository = famesRepository;
         this.jackpotsRepository = jackpotsRepository;
-        this.exchangeRatesRepository = exchangeRatesRepository;
+        this.gameManagementApiClient = gameManagementApiClientFactory.instance();
     }
 
     async queryBigWinningWinners(player, page, pageSize = 10) {
@@ -99,15 +99,6 @@ export default class HallOfFameQuery {
     }
 
     async getExchangeRates(exIds) {
-        const filter = {
-            exId: { $in: exIds },
-        };
-        const projection = {
-            _id: false,
-            exId: true,
-            code: true,
-        };
-
-        return this.exchangeRatesRepository.find(filter, projection).lean().exec();
+        return await getOrDefault(this.gameManagementApiClient.exchangeRates.getExchangeRatesByExIds(exIds), [])
     }
 }

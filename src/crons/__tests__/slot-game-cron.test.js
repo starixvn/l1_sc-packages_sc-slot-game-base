@@ -1,17 +1,30 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { Core } from "sc-game-base";
+import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
 import { JackpotGameConsumer } from "../../event-consumers";
 import SlotGameCron from "../slot-game-cron";
 
 const roundsRepository = stubMongoose(mongoose.Model);
-const archiveStatusesRepository = stubMongoose(mongoose.Model);
 const exchangeRatesRepository = stubMongoose(mongoose.Model);
 const currencyGroupGamesRepository = stubMongoose(mongoose.Model);
 const partnerConfigRepository = stubMongoose(mongoose.Model);
 const currencyGroupRepository = stubMongoose(mongoose.Model);
 const currencyRepository = stubMongoose(mongoose.Model);
 const jackpotGameConsumer = stub(JackpotGameConsumer);
+const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+const gameManagementApiClient = {
+    archiveStatus: {
+        getArchiveStatus: jest.fn(),
+    },
+    aggregation: {
+        getSettingForNewRound: jest.fn(),
+    },
+    exchangeRates: {
+        getExchangeRates: jest.fn(),
+    },
+};
+gameManagementApiClientFactory.instance.mockReturnValue(gameManagementApiClient);
 
 jest.mock("cron", () => {
     const mScheduleJob = {
@@ -45,7 +58,7 @@ describe("slot-game-cron", () => {
     describe("extends", () => {
         it("should extend Core.Crons.BaseBot", () => {
             // act
-            const cron = new SlotGameCron({});
+            const cron = new SlotGameCron({ gameManagementApiClientFactory });
 
             // assert
             expect(cron instanceof Core.Crons.BaseGameCron);
@@ -78,12 +91,15 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             roundsRepository
                 .find()
                 .lean()
                 .exec.mockReturnValue([{ id: 1 }]);
 
+            gameManagementApiClient.aggregation.getSettingForNewRound.mockResolvedValueOnce({ isSuccessful: true, data: {} });
+            gameManagementApiClient.exchangeRates.getExchangeRates.mockResolvedValueOnce({ isSuccessful: true, data: [] });
             // act
             await cron.start();
 
@@ -117,12 +133,14 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             roundsRepository
                 .find()
                 .lean()
                 .exec.mockReturnValue([{ id: 1 }]);
-
+            gameManagementApiClient.aggregation.getSettingForNewRound.mockResolvedValueOnce({ isSuccessful: true, data: {} });
+            gameManagementApiClient.exchangeRates.getExchangeRates.mockResolvedValueOnce({ isSuccessful: true, data: [] });
             // act
             await cron.start();
 
@@ -156,6 +174,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.getLastArchiveRound = jest.fn();
             cron.getLastArchiveRound.mockReturnValueOnce({ roundId: 3, freeSpinId: 5 });
@@ -164,7 +183,8 @@ describe("slot-game-cron", () => {
                 .find()
                 .lean()
                 .exec.mockReturnValue([{ id: 1 }]);
-
+            gameManagementApiClient.aggregation.getSettingForNewRound.mockResolvedValueOnce({ isSuccessful: true, data: {} });
+            gameManagementApiClient.exchangeRates.getExchangeRates.mockResolvedValueOnce({ isSuccessful: true, data: [] });
             // act
             await cron.start();
 
@@ -201,6 +221,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.getLastArchiveRound = jest.fn();
             cron.getLastArchiveRound.mockReturnValueOnce({ roundId: 3, freeSpinId: 5 });
@@ -210,6 +231,8 @@ describe("slot-game-cron", () => {
                 .lean()
                 .exec.mockReturnValue([{ id: 1 }]);
 
+            gameManagementApiClient.aggregation.getSettingForNewRound.mockResolvedValueOnce({ isSuccessful: true, data: {} });
+            gameManagementApiClient.exchangeRates.getExchangeRates.mockResolvedValueOnce({ isSuccessful: true, data: [] });
             // act
             await cron.start();
 
@@ -250,14 +273,14 @@ describe("slot-game-cron", () => {
 
             const cron = new SlotGameCron({
                 definition,
-                archiveStatusesRepository,
                 jackpotConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
-            archiveStatusesRepository.findOne().lean().exec.mockReturnValueOnce(testCase.archiveStatus);
+            gameManagementApiClient.archiveStatus.getArchiveStatus.mockResolvedValueOnce({ isSuccessful: true, data: testCase.archiveStatus });
 
             // act
             const actualValue = await cron.getLastArchiveRound(testCase.jackpotEnabled);
@@ -282,6 +305,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -303,6 +327,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -326,6 +351,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -347,6 +373,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -368,6 +395,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -391,6 +419,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 
@@ -414,6 +443,7 @@ describe("slot-game-cron", () => {
                 currencyGroupRepository,
                 currencyRepository,
                 jackpotGameConsumer,
+                gameManagementApiClientFactory,
             });
             cron.checkGameStatus = jest.fn();
 

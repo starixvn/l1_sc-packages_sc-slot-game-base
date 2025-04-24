@@ -1,17 +1,23 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
+import { GameManagementApiClientFactory } from "sc-game-base/src/core/game-management-api";
 import { FreeSpinsConsumer, IdCountersConsumer } from "..";
 import SlotGameData from "../../slot-game-data";
-
 const gameData = stubGameData();
 
 /** @type {mongoose.Model}*/
 const freeSpinsRepository = stubMongoose(mongoose.Model);
 
-/** @type {mongoose.Model}*/
-const gameNotificationsRepository = stubMongoose(mongoose.Model);
-
+const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+const gameManagementApiClient = {
+    gameNotifications: {
+        updateGameNotification: jest.fn(() => ({ isSuccessful: true })),
+        deleteGameNotification: jest.fn(() => ({ isSuccessful: true })),
+        clearGameNotification: jest.fn(() => ({ isSuccessful: true })),
+    },
+};
+gameManagementApiClientFactory.instance.mockReturnValue(gameManagementApiClient);
 const idCountersConsumer = stub(IdCountersConsumer);
 
 describe("hasFreeSpin", () => {
@@ -66,7 +72,7 @@ describe("useFreeSpin", () => {
         // gameData.ingame[player.profile.name] = {
         //     freeSpins: [availableSpin],
         // };
-        spyOn(consumer, "getSoonestExpiredFreeSpinSet").and.returnValue(availableSpin);
+        jest.spyOn(consumer, "getSoonestExpiredFreeSpinSet").mockReturnValue(availableSpin);
 
         // act
         await consumer.useFreeSpin(player);
@@ -80,7 +86,7 @@ describe("useFreeSpin", () => {
         // arrange
         const consumer = initConsumer();
         const player = stubPlayer();
-        spyOn(consumer, "getSoonestExpiredFreeSpinSet").and.returnValue(undefined);
+        jest.spyOn(consumer, "getSoonestExpiredFreeSpinSet").mockReturnValue(undefined);
 
         // act
         await consumer.useFreeSpin(player);
@@ -253,8 +259,8 @@ describe("reload", () => {
     it("should cleanUpGameNotifications", async () => {
         // arrange
         const consumer = initConsumer();
-        spyOn(consumer, "queryFreeSpins").and.returnValue([]);
-        spyOn(consumer, "cleanUpGameNotifications");
+        jest.spyOn(consumer, "queryFreeSpins").mockResolvedValue([]);
+        jest.spyOn(consumer, "cleanUpGameNotifications");
 
         // act
         await consumer.reload();
@@ -266,7 +272,7 @@ describe("reload", () => {
     it("should load free spins to game data", async () => {
         // arrange
         const consumer = initConsumer();
-        spyOn(consumer, "queryFreeSpins").and.returnValue([
+        jest.spyOn(consumer, "queryFreeSpins").mockResolvedValue([
             { id: 1, name: "A", available: 2, total: 3 },
             { id: 2, name: "B", available: 4, total: 5 },
         ]);
@@ -305,7 +311,7 @@ describe("cleanUpGameNotifications", () => {
         gameData.ingame = {};
     });
 
-    it("always call gameNotificationsRepository to delete", async () => {
+    it("always call gameManagementApiClient.gameNotifications.clearGameNotification to delete", async () => {
         // arrange
         const consumer = initConsumer();
         freeSpinsRepository.find().lean().exec.mockReturnValueOnce({});
@@ -314,7 +320,7 @@ describe("cleanUpGameNotifications", () => {
         await consumer.cleanUpGameNotifications({});
 
         // assert
-        expect(gameNotificationsRepository.deleteMany).toBeCalledWith({ gameId: consumer.gameId, uid: { $nin: [] } });
+        expect(gameManagementApiClient.gameNotifications.clearGameNotification).toHaveBeenCalledWith({ gameId: consumer.gameId, excludingUIDs: [] });
     });
 
     it("should update notification with latest expiry time of spin", async () => {
@@ -329,12 +335,12 @@ describe("cleanUpGameNotifications", () => {
         await consumer.cleanUpGameNotifications(freeSpinsGroupedByUIDs);
 
         // assert
-        expect(gameNotificationsRepository.updateOne).toBeCalledTimes(2);
+        expect(gameManagementApiClient.gameNotifications.updateGameNotification).toHaveBeenCalledTimes(2);
     });
 });
 
 function initConsumer() {
-    return new FreeSpinsConsumer(1, gameData, freeSpinsRepository, gameNotificationsRepository, idCountersConsumer);
+    return new FreeSpinsConsumer(1, gameData, freeSpinsRepository, idCountersConsumer, gameManagementApiClientFactory);
 }
 
 function stubGameData() {

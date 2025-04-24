@@ -1,20 +1,23 @@
-import { stubMongoose } from "jest-micro-auto-stub";
+import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
+import { GameManagementApiClientFactory } from "sc-game-base/src/core/game-management-api";
 import { HallOfFameQuery } from "..";
-
 const famesRepository = stubMongoose(mongoose.Model);
 const jackpotsRepository = stubMongoose(mongoose.Model);
-const exchangeRatesRepository = stubMongoose(mongoose.Model);
-exchangeRatesRepository
-    .find()
-    .lean()
-    .exec.mockReturnValue([{ exId: 1, code: { US: 1 } }]);
+
+const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+const gameManagementApiClient = {
+    exchangeRates: {
+        getExchangeRatesByExIds: jest.fn(() => ({ isSuccessful: true, data: [{ exId: 1, code: { US: 1 } }] })),
+    },
+};
+gameManagementApiClientFactory.instance.mockReturnValue(gameManagementApiClient);
 
 describe("queryBigWinningWinners", () => {
     it("should return empty when page < 1", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
         const player = {};
 
         // act
@@ -26,7 +29,7 @@ describe("queryBigWinningWinners", () => {
 
     it("when not have big winners should return empty", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
 
         famesRepository.find().lean().exec.mockReturnValueOnce(null);
         famesRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
@@ -43,7 +46,7 @@ describe("queryBigWinningWinners", () => {
 
     it("should return data when page >= 1", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
 
         famesRepository
             .find()
@@ -67,7 +70,7 @@ describe("queryBigWinningWinners", () => {
 
     it("should convert amount to base amount", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
 
         famesRepository
             .find()
@@ -95,7 +98,7 @@ describe("queryBigWinningWinners", () => {
                     exchangeRateId: 1,
                 },
             ]);
- 
+
         famesRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
         famesRepository.countDocuments().exec.mockReturnValueOnce(2);
         const player = { session: { currencyCode: "US" } };
@@ -153,7 +156,7 @@ describe("queryJackpotWinners", () => {
     const player = { session: { currencyCode: "US" } };
     it("should return empty when page < 1", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
 
         // act
         const actualResult = await fameQuery.queryJackpotWinners(player, 0);
@@ -164,7 +167,7 @@ describe("queryJackpotWinners", () => {
 
     it("should return data when page >= 1", async () => {
         // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, exchangeRatesRepository);
+        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
         jackpotsRepository
             .find()
             .lean()

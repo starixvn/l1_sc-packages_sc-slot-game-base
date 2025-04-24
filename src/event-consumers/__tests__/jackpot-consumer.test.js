@@ -32,13 +32,20 @@ describe("JackpotConsumer", () => {
         const bet = { pool, totalAmount: 5, roundId: gameData.roundId, rate: 1 };
 
         describe("when player can contribute", () => {
+
+            beforeAll(() => {
+                jackpotsRepository.findOneAndUpdate.mockReturnValue({
+                    amount: 12,
+                });
+            });
+
             beforeEach(() => {
                 jackpotValidator.canContributeJackpotPools.mockReturnValueOnce(true);
             });
 
             it("should call contribute with approriate prize and base amount", async () => {
                 // arrange
-                spyOn(consumer, "contributeToPool");
+                const spy = jest.spyOn(consumer, "contributeToPool");
                 const poolConfigs = { init: 5000, playerSettings: { contrib: 0.1, alloc: 90 }, botSettings: { contrib: 0.01, alloc: 80 } };
                 const expectedParams = {
                     baseTotalAmount: 5,
@@ -47,23 +54,28 @@ describe("JackpotConsumer", () => {
                     roundId: gameData.roundId,
                     pool: poolConfigs,
                 };
-
+ 
+    
                 // act
                 await consumer.contribute(player, bet);
 
                 // assert
-                expect(consumer.contributeToPool).toHaveBeenCalledWith(expectedParams);
+                expect(spy).toHaveBeenCalledWith(expectedParams);
             });
 
             it("should call contribute for all prizes", async () => {
                 // arrange
-                spyOn(consumer, "contributeToPool");
+                const spy = jest.spyOn(consumer, "contributeToPool");
 
                 // act
                 await consumer.contribute(player, bet);
 
                 // assert
-                expect(consumer.contributeToPool).toHaveBeenCalledTimes(3);
+                expect(spy).toHaveBeenCalledTimes(3);
+            });
+
+            afterAll(() => {
+                jackpotsRepository.findOneAndUpdate.mockReset();
             });
         });
 
@@ -74,7 +86,7 @@ describe("JackpotConsumer", () => {
 
             it("should NOT contribute to pool", async () => {
                 // arrange
-                spyOn(consumer, "contributeToPool");
+                jest.spyOn(consumer, "contributeToPool");
                 const poolConfigs = { init: 5000, playerSettings: { contrib: 0.1, alloc: 90 }, botSettings: { contrib: 0.01, alloc: 80 } };
 
                 // act
@@ -170,7 +182,7 @@ describe("JackpotConsumer", () => {
 
         it("should call calculatePoolAdjustment with approriate params", async () => {
             // arrange
-            spyOn(consumer, "calculatePoolAdjustment");
+            jest.spyOn(consumer, "calculatePoolAdjustment");
             jackpotsRepository.findOneAndUpdate.mockReturnValueOnce({
                 amount: 12,
             });
@@ -205,7 +217,7 @@ describe("JackpotConsumer", () => {
                 amount: 12,
             });
 
-            spyOn(consumer, "calculatePoolAdjustment").and.returnValue(poolAdjustment);
+            jest.spyOn(consumer, "calculatePoolAdjustment").mockReturnValue(poolAdjustment);
 
             // act
             await consumer.contributeToPool({ ...betContribution, prize: jackpotPrize });
@@ -229,7 +241,7 @@ describe("JackpotConsumer", () => {
                 amount: latestJackpot,
             });
 
-            spyOn(consumer, "calculatePoolAdjustment").and.returnValue({});
+            jest.spyOn(consumer, "calculatePoolAdjustment").mockReturnValue({});
 
             // act
             await consumer.contributeToPool({ ...betContribution, prize: jackpotPrize });
@@ -245,7 +257,7 @@ describe("JackpotConsumer", () => {
             const session = { playerId: 12, currencyGroupId: "617a650628b7a500016388f5" };
             const player = { profile: { name: "A" }, session };
             const bet = { prize: "minor", roundId: gameData.roundId };
-            spyOn(consumer, "initializeNewPool");
+            jest.spyOn(consumer, "initializeNewPool");
 
             // act
             await consumer.hit(player, bet);
@@ -259,7 +271,7 @@ describe("JackpotConsumer", () => {
             const session = { playerId: 12, currencyGroupId: "617a650628b7a500016388f5" };
             const player = { profile: { name: "A" }, session };
             const bet = { prize: "minor", roundId: gameData.roundId };
-            spyOn(consumer, "initializeNewPool");
+            jest.spyOn(consumer, "initializeNewPool");
 
             // act
             await consumer.hit(player, bet);
@@ -279,7 +291,7 @@ describe("JackpotConsumer", () => {
                     amount: winningJackpot.amount * gameData.gameConfigs.slotsConfig.jackpot.winningRatio,
                     pool: "minor",
                 };
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 jackpotsRepository.findOneAndUpdate.mockReturnValueOnce(winningJackpot);
 
@@ -298,7 +310,7 @@ describe("JackpotConsumer", () => {
                 const bet = { prize: "minor", roundId: gameData.roundId };
                 const winningJackpot = { amount: 12000 };
                 const expectedJackpot = { amount: winningJackpot.amount * gameData.gameConfigs.slotsConfig.jackpot.winningRatio };
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 jackpotsRepository.findOneAndUpdate.mockReturnValueOnce(winningJackpot);
 
@@ -316,7 +328,7 @@ describe("JackpotConsumer", () => {
                 const session = { playerId: 12, currencyGroupId: "617a650628b7a500016388f5" };
                 const player = { profile: { name: "A" }, session };
                 const bet = { prize: "minor", roundId: gameData.roundId };
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 // act
                 await consumer.hit(player, bet);
@@ -330,7 +342,7 @@ describe("JackpotConsumer", () => {
                 const session = { playerId: 12, currencyGroupId: "617a650628b7a500016388f5" };
                 const player = { profile: { name: "A" }, session };
                 const bet = { prize: "minor", roundId: gameData.roundId };
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 // act
                 await consumer.hit(player, bet);
@@ -345,7 +357,7 @@ describe("JackpotConsumer", () => {
                 const player = { profile: { name: "A" }, session };
                 const bet = { prize: "minor", roundId: gameData.roundId };
                 const expectedJackpot = { amount: 0 };
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 // act
                 const actual = await consumer.hit(player, bet);
@@ -387,7 +399,7 @@ describe("JackpotConsumer", () => {
                     // arrange
                     jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
                     jackpotsRepository.countDocuments().exec.mockReturnValue(2);
-                    spyOn(consumer, "initializeNewPool");
+                    jest.spyOn(consumer, "initializeNewPool");
 
                     // act
                     await consumer.initialize();
@@ -399,7 +411,7 @@ describe("JackpotConsumer", () => {
                     // arrange
                     jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
                     jackpotsRepository.countDocuments().exec.mockReturnValue(2);
-                    spyOn(consumer, "initializeNewPool");
+                    jest.spyOn(consumer, "initializeNewPool");
 
                     // act
                     await consumer.initialize();
@@ -414,7 +426,7 @@ describe("JackpotConsumer", () => {
                     // arrange
                     jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
                     jackpotsRepository.countDocuments().exec.mockReturnValue(0);
-                    spyOn(consumer, "initializeNewPool");
+                    jest.spyOn(consumer, "initializeNewPool");
 
                     // act
                     await consumer.initialize();
@@ -440,7 +452,7 @@ describe("JackpotConsumer", () => {
             it("should not init new pool", async () => {
                 // arrange
                 consumer.gameData.gameConfigs.slotsConfig.jackpot.pools = null;
-                spyOn(consumer, "initializeNewPool");
+                jest.spyOn(consumer, "initializeNewPool");
 
                 // act
                 await consumer.initialize();
