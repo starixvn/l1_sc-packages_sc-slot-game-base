@@ -4,19 +4,14 @@ export default class JackpotValidator {
     }
 
     canAccessJackpot(player) {
-        const { jackpot, jackpotConfigs } = this.gameData.gameConfigs.slotsConfig;
+        const { jackpotConfigs } = this.gameData.gameConfigs.slotsConfig;
 
-        const isSeparatePool = jackpotConfigs.some((config) => config.operatorId === player.session.operatorId);
+        const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
+        const offerSites = operatorJackpotConfig?.siteNames;
 
-        const jackpotConfig = jackpotConfigs.find(
-            (config) => config.siteName === player.session.siteName && config.operatorId === player.session.operatorId
+        return (
+            operatorJackpotConfig && (offerSites.length == 0 || offerSites.includes(player.session.siteName)) && !player.session.disableJackpotGames
         );
-
-        if (jackpot.enabled && (!isSeparatePool || jackpotConfig)) {
-            return !player.session.disableJackpotGames;
-        }
-
-        return false;
     }
 
     canContributeJackpotPools(player, freeSpin) {

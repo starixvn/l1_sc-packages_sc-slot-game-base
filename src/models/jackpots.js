@@ -23,12 +23,10 @@ const jackpotSchema = new mongoose.Schema({
 
     rate: { type: Number },
     exchangeRateId: { type: Number },
-    operatorId: { type: String },
     currency: { type: String },
 
-    isSeparatePool: { type: Boolean, default: false },
-    offerSite: { type: String },
-    offerOperator: { type: String },
+    operatorId: { type: String },
+    siteNames: { type: [String] },
 });
 
 export default mongoose.model("Jackpot", jackpotSchema);

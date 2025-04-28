@@ -23,6 +23,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
      * @param {logger} dependencies.logService
      * @param {mongoose.Model} dependencies.roundsRepository
      * @param {EventConsumers.JackpotGameConsumer} dependencies.jackpotGameConsumer
+     * @param {mongoose.Model} dependencies.jackpotConfigsRepository
      */
     constructor({
         definition,
@@ -40,6 +41,8 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         jackpotGameConsumer,
         roundIdConsumer,
         gameManagementApiClientFactory,
+        jackpotConfigsRepository,
+        botConfigsRepository,
     }) {
         super({
             definition,
@@ -59,6 +62,8 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         this.jackpotConsumer = jackpotConsumer;
         this.jackpotGameConsumer = jackpotGameConsumer;
         this.roundsRepository = roundsRepository;
+        this.jackpotConfigsRepository = jackpotConfigsRepository;
+        this.botConfigsRepository = botConfigsRepository;
     }
 
     async start() {
@@ -204,5 +209,22 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
             return ingame;
         }, {});
+    }
+
+    async getSettingForNewRound() {
+        await this.updateCurrencyGroupGames();
+        await this.updatePartnerGameSiteExclusions();
+        await this.updateCurrencyGroups();
+        await this.updateCurrencies();
+        await this.updateJackpotConfigs();
+        await this.updateBotConfigs();
+    }
+
+    async updateJackpotConfigs() {
+        this.gameData.jackpotConfigs = await this.jackpotConfigsRepository.find({ gameId: this.definition.id, enabled: true }).lean().exec();
+    }
+
+    async updateBotConfigs() {
+        this.gameData.botConfigs = await this.botConfigsRepository.find({ gameId: this.definition.id, enabled: true }).lean().exec();
     }
 }
