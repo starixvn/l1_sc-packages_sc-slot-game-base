@@ -33,7 +33,7 @@ export default class JackpotConsumer {
             const jackpotPrizes = Object.keys(pools);
 
             for (const prize of jackpotPrizes) {
-                await this.contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, pools, player });
+                await this.contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, jackpotConfig });
             }
         }
     }
@@ -42,12 +42,6 @@ export default class JackpotConsumer {
         return this.gameData.jackpotConfigs.find(
             (config) => config.operatorId === operatorId && (config.siteNames.includes(siteName) || config.siteNames.length == 0)
         );
-    }
-
-    getSiteJackpotPools(player) {
-        return this.gameData.gameConfigs.slotsConfig.jackpotConfigs.find(
-            (config) => config.operatorId === player.session.operatorId && config.siteName === player.session.siteName
-        )?.pools;
     }
 
     async contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, jackpotConfig }) {
@@ -108,14 +102,10 @@ export default class JackpotConsumer {
     }
 
     async hit(player, { prize, roundId, exchangeRateId, rate, operatorId, currency }) {
-        const isSeparatePool = this.isSeparatePool(operatorId);
-        const winningRatio = isSeparatePool
-            ? this.gameData.gameConfigs.slotsConfig.jackpot.winningRatio
-            : this.gameData.gameConfigs.slotsConfig.jackpotConfigs.find(
-                  (config) => config.operatorId === operatorId && config.siteName === player.session.siteName
-              )?.winningRatio;
+        const jackpotConfig = this.getJackpotConfig(operatorId, player.session.siteName);
+        const winningRatio = jackpotConfig.winningRatio;
 
-        const runningPoolFilter = this.getRunningPoolFilter(prize, roundId);
+        const runningPoolFilter = this.getRunningPoolFilter(prize, roundId, jackpotConfig);
         const nearestRunningPoolOrder = {
             createdAt: -1,
         };
@@ -139,7 +129,7 @@ export default class JackpotConsumer {
             }
         );
 
-        await this.initializeNewPool(prize, roundId);
+        await this.initializeNewPool(prize, roundId, jackpotConfig);
 
         if (!winningJackpot) {
             this.logService.logCritical(`Couldn't find any running jackpot pool associated with: ${JSON.stringify(runningPoolFilter)}`);
@@ -149,7 +139,7 @@ export default class JackpotConsumer {
 
         winningJackpot.amount *= winningRatio;
 
-        await this.jackpotPublisher.publishWinner(player.UID, { ...winningJackpot, pool: prize });
+        await this.jackpotPublisher.publishWinner(player.UID, { ...winningJackpot, pool: prize }, jackpotConfig);
 
         return winningJackpot;
     }
@@ -168,48 +158,54 @@ export default class JackpotConsumer {
         };
     }
 
-    getRunningPoolFilter(prize, roundId) {
+    getRunningPoolFilter(prize, roundId, jackpotConfig) {
         return {
             gameId: this.definition.id,
             prize,
             winnerName: { $exists: false },
             createdAt: { $lt: roundId },
+            operatorId: jackpotConfig.operatorId,
+            siteNames: jackpotConfig.siteNames,
         };
     }
 
     async initialize() {
-        const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
+        const jackpotConfigs = this.gameData.jackpotConfigs;
 
-        if (pools === null || pools === undefined) {
+        if (jackpotConfigs === null || jackpotConfigs === undefined) {
             this.logService.logCritical(`NOT FOUND jackpot pools configurations of ${this.gameData.gameConfigs.name}`);
             return;
         }
 
         const roundId = this.gameData.roundId;
-        const prizes = Object.keys(pools);
 
         await Promise.all(
-            prizes.map(async (prize) => {
-                const runningPoolFilter = {
-                    gameId: this.definition.id,
-                    prize: prize,
-                    winnerName: { $exists: false },
-                };
-                const numberOfExistingPools = await this.jackpotsRepository.countDocuments(runningPoolFilter).exec();
+            jackpotConfigs.map(async (jackpotConfig) => {
+                const prizes = Object.keys(jackpotConfig.pools);
 
-                if (numberOfExistingPools === 0) {
-                    await this.initializeNewPool(prize, roundId);
-                    return;
+                for (const prize of prizes) {
+                    const runningPoolFilter = {
+                        gameId: this.definition.id,
+                        prize: prize,
+                        winnerName: { $exists: false },
+                        operatorId: jackpotConfig.operatorId,
+                        siteNames: jackpotConfig.siteNames,
+                    };
+                    const numberOfExistingPools = await this.jackpotsRepository.countDocuments(runningPoolFilter).exec();
+
+                    if (numberOfExistingPools === 0) {
+                        await this.initializeNewPool(prize, roundId, jackpotConfig);
+                        return;
+                    }
+
+                    this.logService.logCritical(`Found ${numberOfExistingPools} running jackpot pool for prize ${prize}`);
                 }
-
-                this.logService.logCritical(`Found ${numberOfExistingPools} running jackpot pool for prize ${prize}`);
             })
         );
     }
 
-    async initializeNewPool(prize, roundId) {
-        const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
-        const initAmount = pools[prize].init;
+    async initializeNewPool(prize, roundId, jackpotConfig) {
+        const initAmount = jackpotConfig.pools[prize].init;
 
         this.logService.log(`Init new jackpot prize ${prize} at round ${roundId}`);
 
@@ -221,6 +217,8 @@ export default class JackpotConsumer {
             amount: initAmount,
             createdAt: roundId,
             createdTime: new Date(),
+            operatorId: jackpotConfig.operatorId,
+            siteNames: jackpotConfig.siteNames,
         });
     }
 

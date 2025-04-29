@@ -27,11 +27,11 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
         this.publishToEligibleUsers({ jackpotPool, poolInfo });
     }
 
-    async publishWinner(playerId, winner) {
+    async publishWinner(playerId, winner, poolInfo) {
         this.publishToUser(playerId, { winningJackpot: winner });
-        this.publishToEligibleUsers({ jackpotWinner: winner });
+        this.publishToEligibleUsers({ jackpotWinner: winner }, poolInfo);
 
-        await this.sendJackpotWinner(winner);
+        await this.sendJackpotWinner(winner, poolInfo);
     }
 
     publishToEligibleUsers(payload, poolInfo) {
@@ -39,7 +39,8 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
             .filter(
                 (player) =>
                     this.jackpotValidator.canAccessJackpot(player) &&
-                    (!poolInfo.isSeparatePool || (player.session.operatorId === poolInfo.operatorId && player.session.siteName === poolInfo.siteName))
+                    player.session.operatorId === poolInfo.operatorId &&
+                    (poolInfo.siteNames == [] || poolInfo.siteNames.includes(player.session.siteName))
             )
             .map((player) => player.socketClient);
 
@@ -48,12 +49,14 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
         });
     }
 
-    async sendJackpotWinner(winner) {
+    async sendJackpotWinner(winner, poolInfo) {
         try {
             const notificationServiceUrl = this.appConfigs.notificationServiceSettings.url;
             const params = {
                 gameId: this.gameId,
                 ...winner,
+                operatorId: poolInfo.operatorId,
+                siteNames: poolInfo.siteNames,
             };
 
             await authenticationHelpers.post(`${notificationServiceUrl}${"/jackpotWinner"}`, params);
