@@ -32,6 +32,7 @@ export default class HallOfFameConsumer {
             fame.currency = player.session.currencyName;
             fame.operatorId = player.session.operatorId;
             fame.playerId = player.session.playerId;
+            fame.siteName = player.session.siteName;
         }
 
         await this.famesRepository.create(fame);

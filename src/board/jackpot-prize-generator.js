@@ -18,11 +18,17 @@ export default class JackpotPrizeGenerator {
     }
 
     generate(player) {
-        if (!this.jackpotValidator.canHitJackpot(player)) {
+        const jackpotConfig = this.gameData.jackpotConfigs.find(
+            (config) =>
+                config.operatorId === player.session.operatorId &&
+                (config.siteNames.includes(player.session.siteName) || config.siteNames.length === 0)
+        );
+
+        if (!this.jackpotValidator.canHitJackpot(player) || !jackpotConfig) {
             return [];
         }
 
-        const { pools } = this.gameData.gameConfigs.slotsConfig.jackpot;
+        const { pools } = jackpotConfig;
         const prizes = Object.keys(pools);
         const weights = Object.values(pools).map((pool) => (pool.playerSettings.alloc > 0 ? pool.playerSettings.alloc : 1));
 

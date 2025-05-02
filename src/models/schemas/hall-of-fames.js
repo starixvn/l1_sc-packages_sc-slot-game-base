@@ -17,5 +17,6 @@ export default new mongoose.Schema({
     exchangeRateId: { type: Number, required: false },
 
     operatorId: { type: String, required: false },
+    siteName: { type: String, required: false },
     playerId: { type: String },
 });

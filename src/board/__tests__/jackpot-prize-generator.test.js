@@ -5,15 +5,20 @@ describe("JackpotGenerator", () => {
     let gameData;
     let jackpotSize;
     let generator;
-
-    const player = "player1";
+    let player;
 
     beforeEach(() => {
+        player = {
+            session: {
+                operatorId: "operator1",
+                siteName: "site1",
+            },
+        };
         gameData = createStubGameData();
         jackpotSize = 6;
         generator = new JackpotPrizeGenerator({ jackpotSize }, gameData, jackpotValidator);
 
-        jest.spyOn(generator.chance, "pickone");
+        jest.spyOn(generator.chance, "weighted");
         jest.spyOn(generator.chance, "shuffle");
     });
 
@@ -47,78 +52,102 @@ describe("JackpotGenerator", () => {
 
     describe("when player can hit jackpot", () => {
         beforeEach(() => {
-            jackpotValidator.canHitJackpot.mockReturnValueOnce(true);
+            jackpotValidator.canHitJackpot.mockReturnValue(true);
         });
 
-        it("should generate a board with the correct size", () => {
+        it("should call weighted selection correct number of times", () => {
+            // Act
+            generator.generate(player);
+
+            // Assert
+            expect(generator.chance.weighted).toHaveBeenCalledTimes(jackpotSize);
+        });
+
+        it("should use correct prizes and weights for selection", () => {
+            // Act
+            generator.generate(player);
+
+            // Assert
+            expect(generator.chance.weighted).toHaveBeenCalledWith(["minor", "major", "grand"], [90, 9, 1]);
+        });
+
+        it("should return empty board when no matching jackpot configuration exists", () => {
             // Arrange
-            generator.chance.pickone.mockReturnValueOnce("prizeA").mockReturnValueOnce("prizeB").mockReturnValueOnce("prizeC");
-            generator.chance.shuffle.mockImplementation((arr) => arr);
+            player.session.operatorId = "nonexistent";
+
+            // Act
+            const result = generator.generate(player);
+
+            // Assert
+            expect(result).toBeArrayOfSize(0);
+        });
+
+        it("should return empty board when site name doesn't match", () => {
+            // Arrange
+            player.session.siteName = "nonexistent-site";
+
+            // Act
+            const result = generator.generate(player);
+
+            // Assert
+            expect(result).toBeArrayOfSize(0);
+        });
+
+        it("should work with site-agnostic configurations", () => {
+            // Arrange
+            gameData.jackpotConfigs[0].siteNames = [];
 
             // Act
             const result = generator.generate(player);
 
             // Assert
             expect(result).toHaveLength(jackpotSize);
-            expect(generator.chance.shuffle).toHaveBeenCalledTimes(3);
         });
 
-        it("should generate a board with valid prizes", () => {
+        it("should maintain correct board size after shuffling", () => {
             // Arrange
-            const prizes = ["minor", "major", "grand"];
-            generator.chance.pickone.mockImplementation(() => prizes[Math.floor(Math.random() * prizes.length)]);
-            generator.chance.shuffle.mockImplementation((arr) => arr);
+            generator.chance.weighted.mockReturnValue("minor");
 
             // Act
-            const result = generator.generate();
+            const result = generator.generate(player);
 
             // Assert
-            result.forEach((prize) => {
-                expect(prizes).toContain(prize);
-            });
+            expect(result).toHaveLength(jackpotSize);
         });
 
-        it("should shuffle the board three times", () => {
+        it("should maintain prize distribution after shuffling", () => {
             // Arrange
-            generator.chance.pickone.mockReturnValue("prizeA");
-            generator.chance.shuffle.mockImplementation((arr) => arr.reverse());
+            const mockPrizes = Array(jackpotSize).fill("minor");
+            generator.chance.weighted.mockReturnValue("minor");
 
             // Act
-            generator.generate();
+            const result = generator.generate(player);
 
             // Assert
-            expect(generator.chance.shuffle).toHaveBeenCalledTimes(3);
+            expect(result).toEqual(expect.arrayContaining(mockPrizes));
         });
     });
 });
 
 const createStubGameData = () => ({
-    gameConfigs: {
-        slotsConfig: {
-            betLevels: [0.1, 1, 5],
-            jackpot: {
-                enabled: true,
-                excludeTestCurrency: false,
-                winningRatio: 0.98,
-                pools: {
-                    minor: {
-                        init: 5000,
-                        playerSettings: { contrib: 0.1, alloc: 90 },
-                        botSettings: { contrib: 0.01, alloc: 80 },
-                    },
-                    major: {
-                        init: 25000,
-                        playerSettings: { contrib: 0.15, alloc: 9 },
-                        botSettings: { contrib: 0.015, alloc: 15 },
-                    },
-                    grand: {
-                        init: 50000,
-                        playerSettings: { contrib: 0.25, alloc: 1 },
-                        botSettings: { contrib: 0.025, alloc: 5 },
-                    },
+    jackpotConfigs: [
+        {
+            operatorId: "operator1",
+            siteNames: ["site1", "site2"],
+            pools: {
+                minor: {
+                    init: 5000,
+                    playerSettings: { contrib: 0.1, alloc: 90 },
                 },
-                allowedCurrency: "INH",
+                major: {
+                    init: 25000,
+                    playerSettings: { contrib: 0.15, alloc: 9 },
+                },
+                grand: {
+                    init: 50000,
+                    playerSettings: { contrib: 0.25, alloc: 1 },
+                },
             },
         },
-    },
+    ],
 });
