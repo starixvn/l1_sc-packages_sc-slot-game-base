@@ -54,7 +54,6 @@ export default class JackpotConsumer {
         const poolAdjustment = this.calculatePoolAdjustment({ contributedByMember, poolConfig, baseTotalAmount });
 
         const runningPoolFilter = {
-            gameId: this.definition.id,
             prize: prize,
             winnerName: { $exists: false },
             createdAt: { $lte: roundId },
@@ -65,7 +64,6 @@ export default class JackpotConsumer {
         const latestJackpotPool = await this.jackpotsRepository.findOneAndUpdate(
             runningPoolFilter,
             {
-                gameId: this.definition.id,
                 $inc: poolAdjustment,
             },
             {
@@ -160,7 +158,6 @@ export default class JackpotConsumer {
 
     getRunningPoolFilter(prize, roundId, jackpotConfig) {
         return {
-            gameId: this.definition.id,
             prize,
             winnerName: { $exists: false },
             createdAt: { $lt: roundId },
@@ -185,7 +182,6 @@ export default class JackpotConsumer {
 
                 for (const prize of prizes) {
                     const runningPoolFilter = {
-                        gameId: this.definition.id,
                         prize: prize,
                         winnerName: { $exists: false },
                         operatorId: jackpotConfig.operatorId,
@@ -210,8 +206,6 @@ export default class JackpotConsumer {
         this.logService.log(`Init new jackpot prize ${prize} at round ${roundId}`);
 
         await this.jackpotsRepository.create({
-            gameId: this.definition.id,
-            gameName: this.definition.name,
             prize: prize,
             initAmount,
             amount: initAmount,
@@ -224,7 +218,6 @@ export default class JackpotConsumer {
 
     async getLatestRoundId() {
         const runningPoolFilter = {
-            gameId: this.definition.id,
             winnerName: { $exists: false },
         };
 

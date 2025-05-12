@@ -1,16 +1,14 @@
 import mongoose from "mongoose";
 
 const jackpotSchema = new mongoose.Schema({
-    gameId: { type: Number, required: true },
-    gameName: { type: String, required: true },
-    pool: { type: Number },
-    prize: { type: String },
+    pool: { type: Number }, // pool associated with each bet amount, such as 100, 100, etc.
+    prize: { type: String, required: true }, // jackpot prizes such as minor, major, grand....
     initAmount: { type: Number, required: true },
     amount: { type: Number, default: 0 },
     winningRatio: { type: Number },
 
     winnerName: { type: String },
-    winnerId: { type: String },
+    winnerId: { type: Number },
 
     byBots: { type: Number, default: 0 },
     byMembers: { type: Number, default: 0 },
