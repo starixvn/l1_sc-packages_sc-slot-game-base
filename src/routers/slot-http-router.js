@@ -11,12 +11,12 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
      * @param {PaylineCalculator} paylineCalculator
      * @param {logger} logService
      */
-    constructor(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator) {
+    constructor(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator, runningJackpotQuery) {
         super(appConfigs, gameData, historyQuery, metricQuery, logService);
 
         this.paylineCalculator = paylineCalculator;
+        this.runningJackpotQuery = runningJackpotQuery;
     }
-
     init(app) {
         super.init(app);
 
@@ -37,6 +37,18 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
             }),
             (_req, res) => this.handleGetOpeningBonus(res)
         );
+
+        app.post("/api/get-running-jackpot", (_req, res) => this.handleGetRunningJackpot(_req.body, res));
+    }
+
+    async handleGetRunningJackpot(params, res) {
+        try {
+            const runningJackpot = await this.runningJackpotQuery.queryRunningJackpot(params.operatorId, params.siteName);
+            res.send(runningJackpot);
+        } catch (error) {
+            this.logService.logError(error);
+            res.send({ error: true });
+        }
     }
 
     handleSetBoard(params, res) {
