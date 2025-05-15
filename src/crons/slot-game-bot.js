@@ -45,9 +45,18 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.baseBots = [];
     }
 
+    async reset() {
+        await super.reset();
+
+        const configs = this.gameData.gameConfigs;
+
+        if (configs.botenabled) {
+            this.bots = this.standardizeBots(this.chance.shuffle(this.baseBots));
+        }
+    }
+
     async updateBotList() {
         this.baseBots = await getOrDefault(this.gameManagementApiClient.users.getAllBots(this.maxNumberOfBots, true), this.baseBots);
-        this.bots = this.standardizeBots(this.chance.shuffle(this.baseBots));
     }
 
     standardizeBots(bots) {
