@@ -1,3 +1,11 @@
+# [2.2.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.1.1...v2.2.0) (2025-05-19)
+
+
+### Features
+
+* update bot reset, update schemas - convert player id type to string ([7f324aa](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/7f324aa2b4781683c6054fd5ec704e94424e499f))
+* update code for new game base version BREAKING CHANGES: sc-game-base@5.4.0 ([117bc71](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/117bc71e76d315b1166e11e929d7d9f0a4a3f2e1))
+
 ## [2.1.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.1.0...v2.1.1) (2025-03-18)
 
 
