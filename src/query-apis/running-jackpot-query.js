@@ -1,27 +1,31 @@
 export default class RunningJackpotQuery {
-    constructor(gameId, jackpotRepository) {
+    constructor(gameId, jackpotsRepository, gameData) {
         this.gameId = gameId;
-        this.jackpotRepository = jackpotRepository;
+        this.jackpotsRepository = jackpotsRepository;
+        this.gameData = gameData;
     }
 
     async queryRunningJackpot(operatorId, siteName) {
+        const jackpotConfig = this.gameData.jackpotConfigs?.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+
+        if (!jackpotConfig) {
+            return [];
+        }
+
         const runningPoolsFilter = {
             winnerName: { $exists: false },
-            gameId: this.gameId,
-            operatorId: operatorId,
-            siteNames: siteName,
+            jackpotConfigId: jackpotConfig._id,
         };
 
         const projection = {
             _id: false,
-            gameId: true,
             pool: "$prize",
             p: "$pool",
             amount: true,
         };
 
-        const jackpot = await this.jackpotRepository
-            .find(runningPoolsFilter, projection, { sort: { gameId: 1, pool: 1 } })
+        const jackpot = await this.jackpotsRepository
+            .find(runningPoolsFilter, projection, { sort: { pool: 1 } })
             .lean()
             .exec();
 
