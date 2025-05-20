@@ -1,6 +1,5 @@
 export default class RunningJackpotQuery {
-    constructor(gameId, jackpotsRepository, gameData) {
-        this.gameId = gameId;
+    constructor(jackpotsRepository, gameData) {
         this.jackpotsRepository = jackpotsRepository;
         this.gameData = gameData;
     }
