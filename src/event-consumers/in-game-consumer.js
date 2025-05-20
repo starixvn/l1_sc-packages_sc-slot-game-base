@@ -42,7 +42,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
         const gameConfigs = this.getSlotGameConfig(realPlayer, canAccessJackpot);
         const freeSpins = this.getAvailableFreeSpins(realPlayer);
-        const jackpotPools = canAccessJackpot ? await this.getPools() : [];
+        const jackpotPools = canAccessJackpot ? await this.getPools(realPlayer) : [];
 
         await this.getBalance(realPlayer, true);
 
@@ -103,10 +103,14 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
         };
     }
 
-    async getPools() {
+    async getPools(realPlayer) {
+        const { operatorId, siteName } = realPlayer.session;
+        const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+
         const runningPoolsFilter = {
             gameId: this.definition.id,
             winnerName: { $exists: false },
+            jackpotConfigId: jackpotConfig._id,
         };
         const projection = {
             _id: false,
