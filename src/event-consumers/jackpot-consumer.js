@@ -57,8 +57,7 @@ export default class JackpotConsumer {
             prize: prize,
             winnerName: { $exists: false },
             createdAt: { $lte: roundId },
-            operatorId: jackpotConfig.operatorId,
-            siteNames: jackpotConfig.siteNames,
+            jackpotConfigId: jackpotConfig._id.toString(),
         };
 
         const latestJackpotPool = await this.jackpotsRepository.findOneAndUpdate(
@@ -161,8 +160,7 @@ export default class JackpotConsumer {
             prize,
             winnerName: { $exists: false },
             createdAt: { $lt: roundId },
-            operatorId: jackpotConfig.operatorId,
-            siteNames: jackpotConfig.siteNames,
+            jackpotConfigId: jackpotConfig._id.toString(),
         };
     }
 
@@ -211,8 +209,7 @@ export default class JackpotConsumer {
             amount: initAmount,
             createdAt: roundId,
             createdTime: new Date(),
-            operatorId: jackpotConfig.operatorId,
-            siteNames: jackpotConfig.siteNames,
+            jackpotConfigId: jackpotConfig._id.toString(),
         });
     }
 

@@ -41,8 +41,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         jackpotGameConsumer,
         roundIdConsumer,
         gameManagementApiClientFactory,
-        jackpotConfigsRepository,
-        botConfigsRepository,
     }) {
         super({
             definition,
@@ -62,8 +60,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         this.jackpotConsumer = jackpotConsumer;
         this.jackpotGameConsumer = jackpotGameConsumer;
         this.roundsRepository = roundsRepository;
-        this.jackpotConfigsRepository = jackpotConfigsRepository;
-        this.botConfigsRepository = botConfigsRepository;
     }
 
     async start() {
@@ -212,19 +208,24 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
     }
 
     async getSettingForNewRound() {
-        await this.updateCurrencyGroupGames();
-        await this.updatePartnerGameSiteExclusions();
-        await this.updateCurrencyGroups();
-        await this.updateCurrencies();
+        await super.getSettingForNewRound();
         await this.updateJackpotConfigs();
         await this.updateBotConfigs();
     }
 
     async updateJackpotConfigs() {
-        this.gameData.jackpotConfigs = await this.jackpotConfigsRepository.find({ gameId: this.definition.id, enabled: true }).lean().exec();
+        const data = await getOrDefault(this.gameManagementApiClient.jackpotConfig.getJackpotConfig(this.definition.id), {
+            jackpotConfigs: this.gameData.jackpotConfigs,
+        });
+
+        this.gameData.jackpotConfigs = data.jackpotConfigs;
     }
 
     async updateBotConfigs() {
-        this.gameData.botConfigs = await this.botConfigsRepository.find({ gameId: this.definition.id, enabled: true }).lean().exec();
+        const data = await getOrDefault(this.gameManagementApiClient.botConfig.getBotConfig(this.definition.id), {
+            botConfigs: this.gameData.botConfigs,
+        });
+
+        this.gameData.botConfigs = data.botConfigs;
     }
 }

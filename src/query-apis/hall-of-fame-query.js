@@ -6,12 +6,15 @@ export default class HallOfFameQuery {
      * @param {Number} gameId
      * @param {mongoose.Model} famesRepository
      * @param {mongoose.Model} jackpotsRepository
+     * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
+     * @param {GameData} gameData
      */
-    constructor(gameId, famesRepository, jackpotsRepository, gameManagementApiClientFactory) {
+    constructor(gameId, famesRepository, jackpotsRepository, gameManagementApiClientFactory, gameData) {
         this.gameId = gameId;
         this.famesRepository = famesRepository;
         this.jackpotsRepository = jackpotsRepository;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
+        this.gameData = gameData;
     }
 
     async queryBigWinningWinners(player, page, pageSize = 10) {
@@ -19,8 +22,15 @@ export default class HallOfFameQuery {
             return { bigWinningWinners: {} };
         }
 
+        const { operatorId, siteName } = player.session;
+        const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+
+        const filter = {
+            siteName: { $in: jackpotConfig.siteNames },
+        };
+
         const numberOfSkippedWinners = (page - 1) * pageSize;
-        const total = await this.famesRepository.countDocuments().exec();
+        const total = await this.famesRepository.countDocuments(filter).exec();
         const projection = {
             _id: false,
             time: true,
@@ -36,7 +46,7 @@ export default class HallOfFameQuery {
 
         const winners =
             (await this.famesRepository
-                .find({}, projection, { sort: { time: -1 }, skip: numberOfSkippedWinners, limit: pageSize })
+                .find(filter, projection, { sort: { time: -1 }, skip: numberOfSkippedWinners, limit: pageSize })
                 .lean()
                 .exec()) ?? [];
 
@@ -46,14 +56,20 @@ export default class HallOfFameQuery {
     }
 
     async queryJackpotWinners(player, page, pageSize = 10) {
+        const { operatorId, siteName } = player.session;
+
         if (page < 1 || pageSize < 1) {
             return { jackpotWinners: {} };
         }
 
+        const jpConfigId = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName))?._id;
+
         const filter = {
             gameId: this.gameId,
             winnerName: { $exists: true },
+            jackpotConfigId: jpConfigId,
         };
+
         const numberOfSkippedWinners = (page - 1) * pageSize;
         const total = await this.jackpotsRepository.countDocuments(filter).exec();
         const projection = {
@@ -99,6 +115,6 @@ export default class HallOfFameQuery {
     }
 
     async getExchangeRates(exIds) {
-        return await getOrDefault(this.gameManagementApiClient.exchangeRates.getExchangeRatesByExIds(exIds), [])
+        return await getOrDefault(this.gameManagementApiClient.exchangeRates.getExchangeRatesByExIds(exIds), []);
     }
 }

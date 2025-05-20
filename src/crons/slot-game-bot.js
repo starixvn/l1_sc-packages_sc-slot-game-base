@@ -61,13 +61,17 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
 
     standardizeBots(bots) {
         const botConfigs = this.gameData.botConfigs;
-        const botRatios = botConfigs.map((config) => ({
-            session: {
-                operatorId: config.operatorId,
-                siteName: this.chance.pickone(config.siteNames),
-            },
-            weight: helpers.configHelper.getMaxBotForCurrentHour(config),
-        }));
+        const botRatios = botConfigs.map((config) => {
+            const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp._id === config.jackpotConfigId);
+
+            return {
+                session: {
+                    operatorId: jackpotConfig.operatorId,
+                    siteName: this.chance.pickone(jackpotConfig.siteNames),
+                },
+                weight: helpers.configHelper.getMaxBotForCurrentHour(config),
+            };
+        });
         const sessions = botRatios.map((ratio) => ratio.session);
         const weights = botRatios.map((ratio) => ratio.weight);
 
