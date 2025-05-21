@@ -218,7 +218,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
             jackpotConfigs: this.gameData.jackpotConfigs,
         });
 
-        this.gameData.jackpotConfigs = data.jackpotConfigs;
+        this.gameData.jackpotConfigs = data;
     }
 
     async updateBotConfigs() {
@@ -226,6 +226,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
             botConfigs: this.gameData.botConfigs,
         });
 
-        this.gameData.botConfigs = data.botConfigs;
+        this.gameData.botConfigs = data;
     }
 }
