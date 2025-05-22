@@ -28,7 +28,7 @@ export default class JackpotConsumer {
 
         if (!contributedByMember || this.jackpotValidator.canContributeJackpotPools(player, freeSpin)) {
             const jackpotConfig = this.getJackpotConfig(player.session.operatorId, player.session.siteName);
-            const { pools } = jackpotConfig?.pools;
+            const pools = jackpotConfig?.pools;
             const baseTotalAmount = totalAmount * rate;
             const jackpotPrizes = Object.keys(pools);
 
