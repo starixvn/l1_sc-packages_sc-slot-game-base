@@ -105,7 +105,9 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
     async getPools(realPlayer) {
         const { operatorId, siteName } = realPlayer.session;
-        const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+        const jackpotConfig = this.gameData.jackpotConfigs.find(
+            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
+        );
 
         const runningPoolsFilter = {
             gameId: this.definition.id,

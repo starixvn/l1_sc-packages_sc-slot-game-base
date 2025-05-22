@@ -5,7 +5,9 @@ export default class RunningJackpotQuery {
     }
 
     async queryRunningJackpot(operatorId, siteName) {
-        const jackpotConfig = this.gameData.jackpotConfigs?.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+        const jackpotConfig = this.gameData.jackpotConfigs?.find(
+            (jp) => jp.operatorId === operatorId && (jp.siteName.length === 0 || jp.siteNames.includes(siteName))
+        );
 
         if (!jackpotConfig) {
             return [];

@@ -23,7 +23,9 @@ export default class HallOfFameQuery {
         }
 
         const { operatorId, siteName } = player.session;
-        const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName));
+        const jackpotConfig = this.gameData.jackpotConfigs.find(
+            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
+        );
 
         const filter = {
             siteName: { $in: jackpotConfig.siteNames },
@@ -62,7 +64,9 @@ export default class HallOfFameQuery {
             return { jackpotWinners: {} };
         }
 
-        const jpConfigId = this.gameData.jackpotConfigs.find((jp) => jp.operatorId === operatorId && jp.siteNames.includes(siteName))?._id;
+        const jpConfigId = this.gameData.jackpotConfigs.find(
+            (jp) => jp.operatorId === operatorId && (jp.siteName.length === 0 || jp.siteNames.includes(siteName))
+        )?._id;
 
         const filter = {
             gameId: this.gameId,

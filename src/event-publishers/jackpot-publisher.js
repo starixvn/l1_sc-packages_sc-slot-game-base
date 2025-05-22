@@ -40,7 +40,7 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
                 (player) =>
                     this.jackpotValidator.canAccessJackpot(player) &&
                     player.session.operatorId === poolInfo.operatorId &&
-                    (poolInfo.siteNames == [] || poolInfo.siteNames.includes(player.session.siteName))
+                    (poolInfo.siteNames.length === 0 || poolInfo.siteNames.includes(player.session.siteName))
             )
             .map((player) => player.socketClient);
 
