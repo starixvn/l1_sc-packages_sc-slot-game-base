@@ -4,6 +4,7 @@ import * as Board from "./../board";
 import * as EventConsumers from "./../event-consumers";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
+import { helpers } from "sc-common";
 
 export default class SlotGameBot extends Core.Crons.BaseBot {
     /**
