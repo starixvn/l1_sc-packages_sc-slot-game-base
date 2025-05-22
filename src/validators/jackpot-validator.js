@@ -4,7 +4,7 @@ export default class JackpotValidator {
     }
 
     canAccessJackpot(player) {
-        const { jackpotConfigs } = this.gameData.gameConfigs.slotsConfig;
+        const jackpotConfigs = this.gameData.jackpotConfigs;
 
         const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
         const offerSites = operatorJackpotConfig?.siteNames;
@@ -15,26 +15,28 @@ export default class JackpotValidator {
     }
 
     canContributeJackpotPools(player, freeSpin) {
-        const { jackpot } = this.gameData.gameConfigs.slotsConfig;
+        const jackpotConfigs = this.gameData.jackpotConfigs;
+        const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
 
         if (this.canAccessJackpot(player)) {
             const { session } = player;
             const isTestCurrency = this.gameData.currencies.some((currency) => currency.name === session.currencyName && currency.isTest);
 
-            return !freeSpin && (!isTestCurrency || !jackpot.excludeTestCurrency);
+            return !freeSpin && (!isTestCurrency || !operatorJackpotConfig.excludeTestCurrency);
         }
 
         return false;
     }
 
     canHitJackpot(player) {
-        const { jackpot } = this.gameData.gameConfigs.slotsConfig;
+        const jackpotConfigs = this.gameData.jackpotConfigs;
+        const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
 
         if (this.canAccessJackpot(player)) {
             const { session } = player;
             const isTestCurrency = this.gameData.currencies.some((currency) => currency.name === session.currencyName && currency.isTest);
 
-            return !isTestCurrency || !jackpot.excludeTestCurrency;
+            return !isTestCurrency || !operatorJackpotConfig.excludeTestCurrency;
         }
 
         return false;

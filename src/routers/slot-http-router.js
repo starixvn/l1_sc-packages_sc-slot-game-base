@@ -38,7 +38,7 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
             (_req, res) => this.handleGetOpeningBonus(res)
         );
 
-        app.post("/api/get-running-jackpot", (_req, res) => this.handleGetRunningJackpot(_req.body, res));
+        app.get("/api/get-running-jackpot", (_req, res) => this.handleGetRunningJackpot(_req.params, res));
     }
 
     async handleGetRunningJackpot(params, res) {

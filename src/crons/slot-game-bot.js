@@ -43,16 +43,32 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.bigWinRatio = 0;
         this.groupTracks = [];
         this.baseBots = [];
+        this.betGroupRatio = [50, 30, 15, 5];
     }
 
     async reset() {
-        await super.reset();
-
         const configs = this.gameData.gameConfigs;
 
         if (configs.botenabled) {
+            const botRatio = configs.botConfigs.reduce((acc, config) => acc + helpers.configHelper.getMaxBotForCurrentHour(config), 0);
+
+            if (this.currentBotRatio !== botRatio) {
+                this.currentBotRatio = botRatio;
+
+                this.totalBots = await getOrDefault(this.gameManagementApiClient.users.getTotalBots(), this.totalBots);
+
+                this.maxNumberOfBots = Math.floor(this.totalBots * this.currentBotRatio);
+                await this.updateBotList();
+            }
+
+            await this.processDisabledBots();
+
             this.bots = this.standardizeBots(this.chance.shuffle(this.baseBots));
+        } else {
+            await this.removeAllBots();
         }
+
+        this.resetAllBotData();
     }
 
     async updateBotList() {
