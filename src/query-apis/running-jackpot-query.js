@@ -23,6 +23,7 @@ export default class RunningJackpotQuery {
             pool: "$prize",
             p: "$pool",
             amount: true,
+            jackpotConfigId: false,
         };
 
         const jackpot = await this.jackpotsRepository

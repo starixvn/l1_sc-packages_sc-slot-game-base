@@ -182,15 +182,14 @@ export default class JackpotConsumer {
                     const runningPoolFilter = {
                         prize: prize,
                         winnerName: { $exists: false },
-                        operatorId: jackpotConfig.operatorId,
-                        siteNames: jackpotConfig.siteNames,
+                        jackpotConfigId: jackpotConfig._id.toString(),
                     };
                     const numberOfExistingPools = await this.jackpotsRepository.countDocuments(runningPoolFilter).exec();
 
                     if (numberOfExistingPools === 0) {
                         await this.initializeNewPool(prize, roundId, jackpotConfig);
                         this.logService.logCritical(
-                            `Initialized new jackpot pool for prize ${prize} operatorId ${jackpotConfig.operatorId} sites ${jackpotConfig.siteNames}`
+                            `Initialized new jackpot pool for prize ${prize} jackpotConfigId ${jackpotConfig._id.toString()}`
                         );
                     }
                 }
