@@ -50,7 +50,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         const configs = this.gameData.gameConfigs;
 
         if (configs.botenabled) {
-            const botRatio = configs.botConfigs.reduce((acc, config) => acc + helpers.configHelper.getMaxBotForCurrentHour(config), 0);
+            const botRatio = this.gameData.botConfigs.reduce((acc, config) => acc + helpers.configHelper.getMaxBotForCurrentHour(config), 0);
 
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
