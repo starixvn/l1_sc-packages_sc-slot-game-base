@@ -189,10 +189,10 @@ export default class JackpotConsumer {
 
                     if (numberOfExistingPools === 0) {
                         await this.initializeNewPool(prize, roundId, jackpotConfig);
-                        return;
+                        this.logService.logCritical(
+                            `Initialized new jackpot pool for prize ${prize} operatorId ${jackpotConfig.operatorId} sites ${jackpotConfig.siteNames}`
+                        );
                     }
-
-                    this.logService.logCritical(`Found ${numberOfExistingPools} running jackpot pool for prize ${prize}`);
                 }
             })
         );

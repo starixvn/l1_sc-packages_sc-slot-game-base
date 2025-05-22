@@ -87,10 +87,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
 
-        if (this.gameData.gameConfigs.slotsConfig?.jackpot.enabled) {
-            await this.jackpotConsumer.initialize();
-        }
-
         const job = new cron.CronJob(
             "* * * * * *",
             () => this.proceed().catch(this.logService.logError),
@@ -209,8 +205,8 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     async getSettingForNewRound() {
         await super.getSettingForNewRound();
-        await this.updateJackpotConfigs();
         await this.updateBotConfigs();
+        await this.updateJackpotConfigs();
     }
 
     async updateJackpotConfigs() {
@@ -219,6 +215,10 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         });
 
         this.gameData.jackpotConfigs = data;
+
+        if (this.gameData.gameConfigs.slotsConfig?.jackpot.enabled) {
+            await this.jackpotConsumer.initialize();
+        }
     }
 
     async updateBotConfigs() {
