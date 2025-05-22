@@ -216,7 +216,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
         this.gameData.jackpotConfigs = data;
 
-        if (this.gameData.gameConfigs.slotsConfig?.jackpot.enabled) {
+        if (this.gameData.jackpotConfigs.length > 0) {
             await this.jackpotConsumer.initialize();
         }
     }
