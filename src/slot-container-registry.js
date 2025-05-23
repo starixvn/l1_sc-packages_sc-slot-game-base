@@ -6,7 +6,7 @@ import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters } from "./models";
-import { HallOfFameQuery, SlotHistoryQuery, RunningJackpotQuery } from "./query-apis";
+import { HallOfFameQuery, SlotHistoryQuery, JackpotQuery } from "./query-apis";
 import { SlotHttpRouter, SlotSocketRouter } from "./routers";
 import SlotGameData from "./slot-game-data";
 import SlotGameDefinition from "./slot-game-definition";
@@ -59,7 +59,7 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             hitJackpot: asValue(hitJackpot),
             historyQuery: asClass(SlotHistoryQuery).singleton(),
             hallOfFameQuery: asClass(HallOfFameQuery).singleton(),
-            runningJackpotQuery: asClass(RunningJackpotQuery).singleton(),
+            JackpotQuery: asClass(JackpotQuery).singleton(),
         });
     }
 

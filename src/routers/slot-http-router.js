@@ -11,11 +11,11 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
      * @param {PaylineCalculator} paylineCalculator
      * @param {logger} logService
      */
-    constructor(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator, runningJackpotQuery) {
+    constructor(appConfigs, gameData, historyQuery, metricQuery, logService, paylineCalculator, jackpotQuery) {
         super(appConfigs, gameData, historyQuery, metricQuery, logService);
 
         this.paylineCalculator = paylineCalculator;
-        this.runningJackpotQuery = runningJackpotQuery;
+        this.jackpotQuery = jackpotQuery;
     }
     init(app) {
         super.init(app);
@@ -39,12 +39,24 @@ export default class SlotHttpRouter extends Core.Routers.HttpRouter {
         );
 
         app.get("/api/get-running-jackpot", (_req, res) => this.handleGetRunningJackpot(_req.params, res));
+
+        app.get("/api/get-jackpot-winner", (_req, res) => this.handleGetJackpotWinner(_req.params, res));
     }
 
     async handleGetRunningJackpot(params, res) {
         try {
-            const runningJackpot = await this.runningJackpotQuery.queryRunningJackpot(params.operatorId, params.siteName);
+            const runningJackpot = await this.jackpotQuery.queryRunningJackpot(params.operatorId, params.siteName);
             res.send(runningJackpot);
+        } catch (error) {
+            this.logService.logError(error);
+            res.send({ error: true });
+        }
+    }
+
+    async handleGetJackpotWinner(params, res) {
+        try {
+            const jackpotWinner = await this.jackpotQuery.queryJackpotWinner(params.operatorId, params.siteName);
+            res.send(jackpotWinner);
         } catch (error) {
             this.logService.logError(error);
             res.send({ error: true });
