@@ -24,7 +24,7 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
     }
 
     publishLatestPool({ jackpotPool, poolInfo }) {
-        this.publishToEligibleUsers({ jackpotPool, poolInfo });
+        this.publishToEligibleUsers(jackpotPool, poolInfo);
     }
 
     async publishWinner(playerId, winner, poolInfo) {
