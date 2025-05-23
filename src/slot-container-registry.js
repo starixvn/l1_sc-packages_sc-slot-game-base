@@ -59,7 +59,7 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             hitJackpot: asValue(hitJackpot),
             historyQuery: asClass(SlotHistoryQuery).singleton(),
             hallOfFameQuery: asClass(HallOfFameQuery).singleton(),
-            JackpotQuery: asClass(JackpotQuery).singleton(),
+            jackpotQuery: asClass(JackpotQuery).singleton(),
         });
     }
 
