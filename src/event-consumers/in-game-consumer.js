@@ -110,7 +110,6 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
         );
 
         const runningPoolsFilter = {
-            gameId: this.definition.id,
             winnerName: { $exists: false },
             jackpotConfigId: jackpotConfig._id,
         };
