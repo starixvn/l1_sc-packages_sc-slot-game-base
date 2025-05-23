@@ -84,7 +84,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
             return {
                 session: {
                     operatorId: jackpotConfig.operatorId,
-                    siteName: this.chance.pickone(jackpotConfig.siteNames),
+                    siteName: jackpotConfig.siteNames.length > 0 ? this.chance.pickone(jackpotConfig.siteNames) : "",
                 },
                 weight: helpers.configHelper.getMaxBotForCurrentHour(config),
             };
