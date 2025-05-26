@@ -69,7 +69,6 @@ export default class HallOfFameQuery {
         )?._id;
 
         const filter = {
-            gameId: this.gameId,
             winnerName: { $exists: true },
             jackpotConfigId: jpConfigId,
         };
