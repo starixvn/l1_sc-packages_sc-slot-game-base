@@ -28,8 +28,12 @@ export default class HallOfFameQuery {
         );
 
         const filter = {
-            siteName: { $in: jackpotConfig.siteNames },
+            operatorId: operatorId,
         };
+
+        if (jackpotConfig) {
+            filter.siteName = { $in: jackpotConfig.siteNames };
+        }
 
         const numberOfSkippedWinners = (page - 1) * pageSize;
         const total = await this.famesRepository.countDocuments(filter).exec();
