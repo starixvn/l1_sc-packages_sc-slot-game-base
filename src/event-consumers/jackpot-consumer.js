@@ -225,4 +225,21 @@ export default class JackpotConsumer {
 
         return pool ? pool.createdAt : 0;
     }
+
+    async getRunningPools() {
+        const runningPoolFilter = {
+            winnerId: { $exists: false },
+        };
+
+        return await this.jackpotsRepository
+            .find(runningPoolFilter, {
+                _id: false,
+                prize: true,
+                gameId: true,
+                jackpotConfigId: true,
+                amount: true,
+            })
+            .lean()
+            .exec();
+    }
 }

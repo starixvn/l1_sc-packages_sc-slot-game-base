@@ -41,6 +41,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         jackpotGameConsumer,
         roundIdConsumer,
         gameManagementApiClientFactory,
+        jackpotPublisher,
     }) {
         super({
             definition,
@@ -60,6 +61,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         this.jackpotConsumer = jackpotConsumer;
         this.jackpotGameConsumer = jackpotGameConsumer;
         this.roundsRepository = roundsRepository;
+        this.jackpotPublisher = jackpotPublisher;
     }
 
     async start() {
@@ -133,6 +135,15 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
         await this.jackpotGameConsumer.processExpired();
         await this.bonusConsumer.processExpiredBonus();
+
+        if (this.gameData.remainingTime % 5 === 0) {
+            await this.publishRunningPools();
+        }
+    }
+
+    async publishRunningPools() {
+        const runningPools = await this.jackpotConsumer.getRunningPools();
+        await this.jackpotPublisher.publishRunningPools(runningPools);
     }
 
     async loadUnsettledBetsToIngame() {

@@ -6,7 +6,8 @@ import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters } from "./models";
-import { HallOfFameQuery, SlotHistoryQuery, JackpotQuery } from "./query-apis";
+import NatsClient from "./nats-client";
+import { HallOfFameQuery, JackpotQuery, SlotHistoryQuery } from "./query-apis";
 import { SlotHttpRouter, SlotSocketRouter } from "./routers";
 import SlotGameData from "./slot-game-data";
 import SlotGameDefinition from "./slot-game-definition";
@@ -20,10 +21,16 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
      */
     register(appConfigs, definition, gameData) {
         this.registerBoardUtilities();
-
+        this.registerNatsClient();
         super.register(appConfigs, definition, gameData);
 
         return this.container;
+    }
+
+    registerNatsClient() {
+        this.container.register({
+            natsClient: asClass(NatsClient).singleton(),
+        });
     }
 
     registerBoardUtilities() {

@@ -1,8 +1,8 @@
 import { Core } from "sc-game-base";
 import authenticationHelpers from "sc-game-base/src/core/helpers/authentication-helpers";
 
-import SlotGameData from "./../slot-game-data";
 import JackpotValidator from "../validators/jackpot-validator";
+import SlotGameData from "./../slot-game-data";
 
 export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEventPublisher {
     /**
@@ -14,13 +14,14 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
      * @param {JackpotValidator} jackpotValidator
      */
 
-    constructor(gameId, gameName, gameData, appConfigs, logService, jackpotValidator) {
+    constructor(gameId, gameName, gameData, appConfigs, logService, jackpotValidator, natsClient) {
         super(gameName, gameData);
 
         this.gameId = gameId;
         this.appConfigs = appConfigs;
         this.logService = logService;
         this.jackpotValidator = jackpotValidator;
+        this.natsClient = natsClient;
     }
 
     publishLatestPool(pool, poolSettings) {
@@ -56,7 +57,7 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
                 gameId: this.gameId,
                 ...winner,
                 operatorId: poolSettings.operatorId,
-                siteNames: poolSettings.siteNames,
+                jackpotConfigId: poolSettings.jackpotConfigId,
             };
 
             await authenticationHelpers.post(`${notificationServiceUrl}${"/jackpotWinner"}`, params);
@@ -67,5 +68,9 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
 
     publishFailedJackpot(playerId, error) {
         this.publishToUser(playerId, { jackpotError: error });
+    }
+
+    async publishRunningPools(runningPools) {
+        await this.natsClient.publishJackpotRunningPools(runningPools);
     }
 }

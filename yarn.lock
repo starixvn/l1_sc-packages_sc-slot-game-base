@@ -1631,6 +1631,42 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@nats-io/jetstream@^3.0.2":
+  version "3.0.2"
+  resolved "https://npm.lumigame.com/@nats-io/jetstream/-/jetstream-3.0.2.tgz#f6baa09b46e27e8e779d5391d54cd7d76be8db23"
+  integrity sha512-dR789x1xhMyEukXILPWDo6ODW53nHpBD9LnsnnywA+pTkwYFydEkYdyhv9HzFc6s6Nfrb2TpibrT4znijlg2dg==
+  dependencies:
+    "@nats-io/nats-core" "3.0.2"
+
+"@nats-io/nats-core@3.0.2", "@nats-io/nats-core@^3.0.2":
+  version "3.0.2"
+  resolved "https://npm.lumigame.com/@nats-io/nats-core/-/nats-core-3.0.2.tgz#e4dcfa440583e9077673d00f33995f57f040d7dc"
+  integrity sha512-gACbRIhY3yQTO+5C4E1LY/qO2e5EhGUBeDsnPDT8Hd3qY9mfhNtluY6R7d7WX7/JMGsXRPbYdSLSADr/ECSy3w==
+  dependencies:
+    "@nats-io/nkeys" "2.0.3"
+    "@nats-io/nuid" "2.0.3"
+
+"@nats-io/nkeys@2.0.3":
+  version "2.0.3"
+  resolved "https://npm.lumigame.com/@nats-io/nkeys/-/nkeys-2.0.3.tgz#37ce8725e075033202c9ca6093bb22c4a1989430"
+  integrity sha512-JVt56GuE6Z89KUkI4TXUbSI9fmIfAmk6PMPknijmuL72GcD+UgIomTcRWiNvvJKxA01sBbmIPStqJs5cMRBC3A==
+  dependencies:
+    tweetnacl "^1.0.3"
+
+"@nats-io/nuid@2.0.3":
+  version "2.0.3"
+  resolved "https://npm.lumigame.com/@nats-io/nuid/-/nuid-2.0.3.tgz#3afe66825dcb2921386d9a43ba1175a2e36d528c"
+  integrity sha512-TpA3HEBna/qMVudy+3HZr5M3mo/L1JPofpVT4t0HkFGkz2Cn9wrlrQC8tvR8Md5Oa9//GtGG26eN0qEWF5Vqew==
+
+"@nats-io/transport-node@^3.0.2":
+  version "3.0.2"
+  resolved "https://npm.lumigame.com/@nats-io/transport-node/-/transport-node-3.0.2.tgz#58125d6e4ce0eba8b5f9ef64c43cf45ff491ad54"
+  integrity sha512-hPuep/ObVepjAM1dFy+XhqMlIzga3bQpbgQiOWM5AxwNZ9CF7GHAtfaxG7WY6+t057tBW8axC0nBL71Q8chQBQ==
+  dependencies:
+    "@nats-io/nats-core" "3.0.2"
+    "@nats-io/nkeys" "2.0.3"
+    "@nats-io/nuid" "2.0.3"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "http://npm.lumigame.com/@nodelib%2ffs.scandir/-/fs.scandir-2.1.5.tgz"
@@ -7549,6 +7585,13 @@ nanomatch@^1.2.9:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
+nats@^2.29.3:
+  version "2.29.3"
+  resolved "https://npm.lumigame.com/nats/-/nats-2.29.3.tgz#86099c9bc193464d4f8cbb1d3504335bd2719ec6"
+  integrity sha512-tOQCRCwC74DgBTk4pWZ9V45sk4d7peoE2njVprMRCBXrhJ5q5cYM7i6W+Uvw2qUrcfOSnuisrX7bEx3b3Wx4QA==
+  dependencies:
+    nkeys.js "1.1.0"
+
 natural-compare@^1.4.0:
   version "1.4.0"
   resolved "http://npm.lumigame.com/natural-compare/-/natural-compare-1.4.0.tgz"
@@ -7578,6 +7621,13 @@ nice-try@^1.0.4:
   version "1.0.5"
   resolved "http://npm.lumigame.com/nice-try/-/nice-try-1.0.5.tgz"
   integrity sha512-1nh45deeb5olNY7eX82BkPO7SSxR5SSYJiPTrTdFUVYwAl8CKMA5N9PjTYkHiRjisVcxcQ1HXdLhx2qxxJzLNQ==
+
+nkeys.js@1.1.0:
+  version "1.1.0"
+  resolved "https://npm.lumigame.com/nkeys.js/-/nkeys.js-1.1.0.tgz#de83a9a13f396c5b6d7c412788f4b9f7f35d4c18"
+  integrity sha512-tB/a0shZL5UZWSwsoeyqfTszONTt4k2YS0tuQioMOD180+MbombYVgzDUYHlx+gejYK6rgf08n/2Df99WY0Sxg==
+  dependencies:
+    tweetnacl "1.0.3"
 
 no-case@^3.0.4:
   version "3.0.4"
@@ -9990,6 +10040,11 @@ tunnel-agent@^0.6.0:
   integrity sha1-J6XeoGs2sEoKmWZ3SykIaPD8QP0=
   dependencies:
     safe-buffer "^5.0.1"
+
+tweetnacl@1.0.3, tweetnacl@^1.0.3:
+  version "1.0.3"
+  resolved "https://npm.lumigame.com/tweetnacl/-/tweetnacl-1.0.3.tgz#ac0af71680458d8a6378d0d0d050ab1407d35596"
+  integrity sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==
 
 tweetnacl@^0.14.3, tweetnacl@~0.14.0:
   version "0.14.5"
