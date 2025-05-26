@@ -24,10 +24,10 @@ export default class NatsClient {
     }
 
     async publishJackpotRunningPools(jackpotRunningPools) {
-        await this.publish("jackpot.runningpools", jackpotRunningPools, this.natsOptions.streams.jackpotRunningPools.name);
+        await this.publish("jackpot-pools.current", jackpotRunningPools, this.natsOptions.streams.jackpotRunningPools.name);
     }
 
     async publishJackpotWinner(jackpotWinner) {
-        await this.publish("jackpot.winner", jackpotWinner, this.natsOptions.streams.jackpotWinners.name);
+        await this.publish("jackpot-winners.new", jackpotWinner, this.natsOptions.streams.jackpotWinners.name);
     }
 }
