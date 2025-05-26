@@ -65,7 +65,7 @@ export default class HallOfFameQuery {
         }
 
         const jpConfigId = this.gameData.jackpotConfigs.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteName.length === 0 || jp.siteNames.includes(siteName))
+            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
         )?._id;
 
         const filter = {
