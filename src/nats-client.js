@@ -1,4 +1,4 @@
-import { DiscardPolicy, jetstreamManager, RetentionPolicy } from "@nats-io/jetstream";
+import { jetstreamManager, RetentionPolicy } from "@nats-io/jetstream";
 import { connect } from "@nats-io/transport-node";
 
 export default class NatsClient {
@@ -16,7 +16,6 @@ export default class NatsClient {
             subjects: ["jackpot-pools.>"],
             max_msgs_per_subject: 1,
             retention: RetentionPolicy.Workqueue,
-            discard: DiscardPolicy.Old,
             ...this.natsOptions.streams.jackpotPools,
         });
 
@@ -37,10 +36,18 @@ export default class NatsClient {
     }
 
     async publishJackpotRunningPools(jackpotRunningPools) {
-        await this.publish(`jackpot-pools.current.${this.definition.name}`, jackpotRunningPools, this.natsOptions.streams.jackpotPools.name);
+        await this.publish(
+            `jackpot-pools.${this.definition.id}-${this.definition.configName}`,
+            jackpotRunningPools,
+            this.natsOptions.streams.jackpotPools.name
+        );
     }
 
     async publishJackpotWinner(jackpotWinner) {
-        await this.publish(`jackpot-winners.new.${this.definition.name}`, jackpotWinner, this.natsOptions.streams.jackpotWinners.name);
+        await this.publish(
+            `jackpot-winners.${this.definition.id}-${this.definition.configName}`,
+            jackpotWinner,
+            this.natsOptions.streams.jackpotWinners.name
+        );
     }
 }
