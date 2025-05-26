@@ -75,16 +75,13 @@ export default class JackpotConsumer {
             }
         );
 
-        this.jackpotPublisher.publishLatestPool({
-            jackpotPool: {
+        this.jackpotPublisher.publishLatestPool(
+            {
                 pool: prize,
                 amount: latestJackpotPool.amount,
             },
-            poolInfo: {
-                operatorId: jackpotConfig.operatorId,
-                siteNames: jackpotConfig.siteNames,
-            },
-        });
+            { operatorId: jackpotConfig.operatorId, siteNames: jackpotConfig.siteNames }
+        );
     }
 
     calculatePoolAdjustment({ contributedByMember, poolConfig, baseTotalAmount }) {

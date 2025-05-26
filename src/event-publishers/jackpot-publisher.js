@@ -23,24 +23,24 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
         this.jackpotValidator = jackpotValidator;
     }
 
-    publishLatestPool({ jackpotPool, poolInfo }) {
-        this.publishToEligibleUsers(jackpotPool, poolInfo);
+    publishLatestPool(pool, poolSettings) {
+        this.publishToEligibleUsers({ jackpotPool: pool }, poolSettings);
     }
 
-    async publishWinner(playerId, winner, poolInfo) {
+    async publishWinner(playerId, winner, poolSettings) {
         this.publishToUser(playerId, { winningJackpot: winner });
-        this.publishToEligibleUsers({ jackpotWinner: winner }, poolInfo);
+        this.publishToEligibleUsers({ jackpotWinner: winner }, poolSettings);
 
-        await this.sendJackpotWinner(winner, poolInfo);
+        await this.sendJackpotWinner(winner, poolSettings);
     }
 
-    publishToEligibleUsers(payload, poolInfo) {
+    publishToEligibleUsers(payload, poolSettings) {
         const socketPlayers = Object.values(this.gameData.realPlayers)
             .filter(
                 (player) =>
                     this.jackpotValidator.canAccessJackpot(player) &&
-                    player.session?.operatorId === poolInfo.operatorId &&
-                    (poolInfo.siteNames.length === 0 || poolInfo.siteNames.includes(player.session?.siteName))
+                    player.session?.operatorId === poolSettings.operatorId &&
+                    (poolSettings.siteNames.length === 0 || poolSettings.siteNames.includes(player.session?.siteName))
             )
             .map((player) => player.socketClient);
 
@@ -49,14 +49,14 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
         });
     }
 
-    async sendJackpotWinner(winner, poolInfo) {
+    async sendJackpotWinner(winner, poolSettings) {
         try {
             const notificationServiceUrl = this.appConfigs.notificationServiceSettings.url;
             const params = {
                 gameId: this.gameId,
                 ...winner,
-                operatorId: poolInfo.operatorId,
-                siteNames: poolInfo.siteNames,
+                operatorId: poolSettings.operatorId,
+                siteNames: poolSettings.siteNames,
             };
 
             await authenticationHelpers.post(`${notificationServiceUrl}${"/jackpotWinner"}`, params);
