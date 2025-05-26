@@ -115,6 +115,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
         };
         const projection = {
             _id: false,
+            jackpotConfigId: false,
             pool: "$prize",
             amount: true,
         };
