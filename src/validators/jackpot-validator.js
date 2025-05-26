@@ -17,7 +17,11 @@ export default class JackpotValidator {
 
     canContributeJackpotPools(player, freeSpin) {
         const jackpotConfigs = this.gameData.jackpotConfigs;
-        const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
+        const operatorJackpotConfig = jackpotConfigs.find(
+            (config) =>
+                config.operatorId === player.session.operatorId &&
+                (config.siteNames.length == 0 || config.siteNames.includes(player.session.siteName))
+        );
 
         if (this.canAccessJackpot(player)) {
             const { session } = player;
@@ -31,7 +35,11 @@ export default class JackpotValidator {
 
     canHitJackpot(player) {
         const jackpotConfigs = this.gameData.jackpotConfigs;
-        const operatorJackpotConfig = jackpotConfigs.find((config) => config.operatorId === player.session.operatorId);
+        const operatorJackpotConfig = jackpotConfigs.find(
+            (config) =>
+                config.operatorId === player.session.operatorId &&
+                (config.siteNames.length == 0 || config.siteNames.includes(player.session.siteName))
+        );
 
         if (this.canAccessJackpot(player)) {
             const { session } = player;
