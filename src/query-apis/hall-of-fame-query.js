@@ -31,7 +31,7 @@ export default class HallOfFameQuery {
             operatorId: operatorId,
         };
 
-        if (jackpotConfig) {
+        if (jackpotConfig?.siteNames?.length > 0) {
             filter.siteName = { $in: jackpotConfig.siteNames };
         }
 
