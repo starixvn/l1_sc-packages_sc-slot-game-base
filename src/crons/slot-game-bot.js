@@ -44,7 +44,6 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.bigWinRatio = 0;
         this.groupTracks = [];
         this.baseBots = [];
-        this.betGroupRatio = [50, 30, 15, 5];
     }
 
     async reset() {
@@ -104,17 +103,26 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     }
 
     resetAllBotData() {
-        const betLevelsConfigs = [...this.gameData.gameConfigs.slotsConfig?.betLevels] ?? [];
+        const jpConfigs = this.gameData.jackpotConfigs;
 
         this.totalNumberOfTickets = 0;
         this.odds = this.gameData.gameConfigs.slotsConfig?.icons ?? {};
         this.bigWinRatio = this.gameData.gameConfigs.slotsConfig?.bigWinRatio ?? 3;
 
+        this.groupTracks = jpConfigs.reduce((acc, jpConfig) => {
+            acc[jpConfig._id] = this.getJpConfigGroupTracks(jpConfig.botBetLevels);
+            return acc;
+        }, {});
+
+        super.resetAllBotData();
+    }
+
+    getJpConfigGroupTracks(betLevelsConfigs = []) {
         const ratios = [50, 30, 15, 5];
 
         const betLevelsPerGroup = Math.floor(betLevelsConfigs.length / ratios.length);
 
-        this.groupTracks = ratios
+        return ratios
             .map((ratio, index) => {
                 const length = index === 0 ? betLevelsPerGroup + (betLevelsConfigs.length % ratios.length) : betLevelsPerGroup;
                 return {
@@ -124,8 +132,6 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
                 };
             })
             .filter((x) => x.betLevels.length > 0);
-
-        super.resetAllBotData();
     }
 
     async placeBet(bot) {
@@ -144,9 +150,9 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         const roundId = this.gameData.roundId;
         const paylines = this.randomizePaylines();
         const numberOfPaylines = paylines.length;
-        const amount = this.getBetAmount();
+        const amount = this.getBetAmount(jackpotConfig._id);
         const totalAmount = amount * numberOfPaylines;
-        const track = this.groupTracks.find((track) => track.betLevels.includes(amount));
+        const track = this.groupTracks[jackpotConfig._id].find((track) => track.betLevels.includes(amount));
         const generatedBoard = this.boardGenerator.generateForBots(jackpotConfig.enabled, track.ratio);
         const board = this.boardCheatingConsumer.consume(name, generatedBoard);
         const betResult = this.paylineCalculator.calculate(board, paylines, this.odds);
@@ -175,7 +181,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
             });
         }
 
-        this.adjustGroupTracks(amount);
+        this.adjustGroupTracks(amount, jackpotConfig._id);
     }
 
     async increaseRoundId() {
@@ -191,8 +197,8 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         return this.chance.pickset(seeds, numberOfPaylines);
     }
 
-    getBetAmount() {
-        const ratiosPerGroup = this.groupTracks.map((track) => {
+    getBetAmount(jackpotConfigId) {
+        const ratiosPerGroup = this.groupTracks[jackpotConfigId].map((track) => {
             return {
                 betLevels: track.betLevels,
                 underRatio: (track.numberOfTickets * 100) / this.totalNumberOfTickets < track.ratio,
@@ -200,19 +206,19 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         });
         const underRatioGroups = this.chance.shuffle(ratiosPerGroup.filter((group) => group.underRatio));
 
-        const selectedGroup = underRatioGroups.length > 0 ? underRatioGroups[0] : this.randomizeGroup();
+        const selectedGroup = underRatioGroups.length > 0 ? underRatioGroups[0] : this.randomizeGroup(jackpotConfigId);
 
         return this.chance.pickone(selectedGroup.betLevels);
     }
 
-    randomizeGroup() {
-        const randomIndex = this.chance.natural({ min: 0, max: this.groupTracks.length - 1 });
+    randomizeGroup(jackpotConfigId) {
+        const randomIndex = this.chance.natural({ min: 0, max: this.groupTracks[jackpotConfigId].length - 1 });
 
-        return this.groupTracks[randomIndex];
+        return this.groupTracks[jackpotConfigId][randomIndex];
     }
 
-    adjustGroupTracks(betAmount) {
-        const group = this.groupTracks.find((track) => track.betLevels.includes(betAmount));
+    adjustGroupTracks(betAmount, jackpotConfigId) {
+        const group = this.groupTracks[jackpotConfigId].find((track) => track.betLevels.includes(betAmount));
 
         if (group) {
             group.numberOfTickets++;
