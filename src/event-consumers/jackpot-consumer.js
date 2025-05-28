@@ -23,9 +23,7 @@ export default class JackpotConsumer {
         this.jackpotValidator = jackpotValidator;
     }
 
-    async contribute(player, { totalAmount, roundId, rate, freeSpin }) {
-        const contributedByMember = !!player.session;
-
+    async contribute(player, { totalAmount, roundId, rate, freeSpin, contributedByMember = true }) {
         if (!contributedByMember || this.jackpotValidator.canContributeJackpotPools(player, freeSpin)) {
             const jackpotConfig = this.getJackpotConfig(player.session.operatorId, player.session.siteName);
             const pools = jackpotConfig?.pools;
