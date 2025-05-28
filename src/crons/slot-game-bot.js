@@ -142,7 +142,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
                 config.operatorId === bot.session.operatorId && (config.siteNames.length === 0 || config.siteNames.includes(bot.session.siteName))
         );
 
-        if (!jackpotConfig?.enabled && jackpotConfig.botBetLevels.length === 0) {
+        if (!jackpotConfig?.enabled || this.groupTracks[jackpotConfig._id].length === 0) {
             return;
         }
 
