@@ -1,5 +1,4 @@
 import { Core } from "sc-game-base";
-import authenticationHelpers from "sc-game-base/src/core/helpers/authentication-helpers";
 
 import JackpotValidator from "../validators/jackpot-validator";
 import SlotGameData from "./../slot-game-data";
@@ -52,7 +51,6 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
 
     async sendJackpotWinner(winner, poolSettings) {
         try {
-            const notificationServiceUrl = this.appConfigs.notificationServiceSettings.url;
             const params = {
                 gameId: this.gameId,
                 ...winner,
@@ -60,7 +58,7 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
                 jackpotConfigId: poolSettings.jackpotConfigId,
             };
 
-            await authenticationHelpers.post(`${notificationServiceUrl}${"/jackpotWinner"}`, params);
+            await this.natsClient.publishJackpotWinner(params);
         } catch (error) {
             this.logService.logError(error);
         }

@@ -1,5 +1,6 @@
+import { stub } from "jest-micro-auto-stub";
 import { Core } from "sc-game-base";
-import authenticationHelpers from "sc-game-base/src/core/helpers/authentication-helpers";
+import NatsClient from "../../nats-client";
 import JackpotPublisher from "../jackpot-publisher";
 
 jest.mock("sc-game-base/src/core/helpers/authentication-helpers");
@@ -47,7 +48,7 @@ describe("jackpot-publisher", () => {
             publisher.publishLatestPool(1);
 
             // assert
-            expect(spy).toBeCalledWith(expect.objectContaining({ jackpotPool: 1 }));
+            expect(spy).toHaveBeenCalledWith(expect.objectContaining({ jackpotPool: 1 }));
         });
     });
 
@@ -63,7 +64,7 @@ describe("jackpot-publisher", () => {
             await publisher.publishWinner(1, { username: "winner" });
 
             // assert
-            expect(spy).toBeCalledWith(expect.objectContaining({ jackpotWinner: { username: "winner" } }));
+            expect(spy).toHaveBeenCalledWith(expect.objectContaining({ jackpotWinner: { username: "winner" } }));
         });
     });
 
@@ -76,16 +77,14 @@ describe("jackpot-publisher", () => {
                     url: notificationServiceUrl,
                 },
             };
-            const publisher = new JackpotPublisher(2, "", {}, appConfigs, {});
+            const natsClient = stub(NatsClient);
+            const publisher = new JackpotPublisher(2, "", {}, appConfigs, {}, null, natsClient);
 
             // act
-            publisher.sendJackpotWinner({ user: "winner" });
+            publisher.sendJackpotWinner({ user: "winner" }, {});
 
             // assert
-            expect(authenticationHelpers.post).toBeCalledWith(
-                `${notificationServiceUrl}/jackpotWinner`,
-                expect.objectContaining({ gameId: 2, user: "winner" })
-            );
+            expect(natsClient.publishJackpotWinner).toHaveBeenCalledWith({ gameId: 2, user: "winner" });
         });
 
         it("when have error should logError", () => {
@@ -98,7 +97,7 @@ describe("jackpot-publisher", () => {
             publisher.sendJackpotWinner({ user: "winner" });
 
             // assert
-            expect(publisher.logService.logError).toBeCalled();
+            expect(publisher.logService.logError).toHaveBeenCalled();
         });
     });
 
@@ -126,7 +125,9 @@ describe("jackpot-publisher", () => {
 
             // assert
             expect(gameData.realPlayers.find((x) => x.session.disableJackpotGames).socketClient.emit).not.toHaveBeenCalled();
-            expect(gameData.realPlayers.find((x) => !x.session.disableJackpotGames).socketClient.emit).toHaveBeenCalledWith("FourGuardians", { jackpotPool: [] });
+            expect(gameData.realPlayers.find((x) => !x.session.disableJackpotGames).socketClient.emit).toHaveBeenCalledWith("FourGuardians", {
+                jackpotPool: [],
+            });
         });
     });
 });

@@ -104,9 +104,11 @@ export default class JackpotConsumer {
         const winnerAdjustment = this.getWinnerAdjustment({ winningRatio, player, roundId, exchangeRateId, rate, currency, operatorId });
         const winnerProjection = {
             _id: false,
-            pool: true,
+            prize: true,
             winnerName: true,
             amount: true,
+            exchangeRateId: true,
+            hitTime: true,
         };
         const winningJackpot = await this.jackpotsRepository.findOneAndUpdate(
             runningPoolFilter,
@@ -233,7 +235,6 @@ export default class JackpotConsumer {
             .find(runningPoolFilter, {
                 _id: false,
                 prize: true,
-                gameId: true,
                 jackpotConfigId: true,
                 amount: true,
             })
