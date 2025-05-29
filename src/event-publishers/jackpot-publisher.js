@@ -55,7 +55,7 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
                 gameId: this.gameId,
                 ...winner,
                 operatorId: poolSettings.operatorId,
-                jackpotConfigId: poolSettings.jackpotConfigId,
+                jackpotConfigId: poolSettings._id.toString(),
             };
 
             await this.natsClient.publishJackpotWinner(params);
