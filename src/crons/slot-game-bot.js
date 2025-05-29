@@ -171,6 +171,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
                 prize,
                 roundId,
                 exchangeRateId: this.gameData.exchangeRates.exId,
+                operatorId: bot.session.operatorId,
                 rate: this.botRate,
             });
 
