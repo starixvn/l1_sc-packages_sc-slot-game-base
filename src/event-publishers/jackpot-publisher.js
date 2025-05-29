@@ -54,7 +54,6 @@ export default class JackpotPublisher extends Core.BaseEventPublishers.BaseEvent
             const params = {
                 gameId: this.gameId,
                 ...winner,
-                operatorId: poolSettings.operatorId,
                 jackpotConfigId: poolSettings._id.toString(),
             };
 
