@@ -1,13 +1,12 @@
 export default class JackpotQuery {
-    constructor(jackpotsRepository, gameData) {
+    constructor(jackpotsRepository, gameData, jackpotConfigsConsumer) {
         this.jackpotsRepository = jackpotsRepository;
         this.gameData = gameData;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
     }
 
     async queryRunningJackpot(operatorId, siteName) {
-        const jackpotConfig = this.gameData.jackpotConfigs?.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteName.length === 0 || jp.siteNames.includes(siteName))
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, siteName);
 
         if (!jackpotConfig) {
             return [];
@@ -35,9 +34,7 @@ export default class JackpotQuery {
     }
 
     async queryJackpotWinner(operatorId, siteName) {
-        const jackpotConfig = this.gameData.jackpotConfigs?.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteName.length === 0 || jp.siteNames.includes(siteName))
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, siteName);
 
         if (!jackpotConfig) {
             return [];

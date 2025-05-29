@@ -17,6 +17,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
      * @param {getBalanceApi} dependencies.getBalance
      * @param {mongoose.Model} dependencies.userInfosRepository
      * @param {mongoose.Model} dependencies.jackpotsRepository
+     * @param {JackpotConfigsConsumer} dependencies.jackpotConfigsConsumer
      */
     constructor({
         definition,
@@ -28,12 +29,14 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
         jackpotsRepository,
         jackpotValidator,
         gameManagementApiClientFactory,
+        jackpotConfigsConsumer,
     }) {
         super(definition, gameData, roundQuery, publisher, getBalance, gameManagementApiClientFactory);
 
         this.freeSpinsConsumer = freeSpinsConsumer;
         this.jackpotsRepository = jackpotsRepository;
         this.jackpotValidator = jackpotValidator;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
     }
 
     async buildPayload(realPlayer) {
@@ -105,9 +108,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
     async getPools(realPlayer) {
         const { operatorId, siteName } = realPlayer.session;
-        const jackpotConfig = this.gameData.jackpotConfigs.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, siteName);
 
         const runningPoolsFilter = {
             winnerName: { $exists: false },

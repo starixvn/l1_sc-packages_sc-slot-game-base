@@ -8,21 +8,18 @@ export default class JackpotPrizeGenerator {
      * @param {SlotGameData} gameData
      * @param {JackpotValidator} jackpotValidator
      */
-    constructor(definition, gameData, jackpotValidator) {
+    constructor(definition, gameData, jackpotValidator, jackpotConfigsConsumer) {
         this.definition = definition;
         this.gameData = gameData;
         this.size = definition.jackpotSize ?? 10;
         this.jackpotValidator = jackpotValidator;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
 
         this.chance = new Chance();
     }
 
     generate(player) {
-        const jackpotConfig = this.gameData.jackpotConfigs.find(
-            (config) =>
-                config.operatorId === player.session.operatorId &&
-                (config.siteNames.includes(player.session.siteName) || config.siteNames.length === 0)
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(player.session.operatorId, player.session.siteName);
 
         if (!this.jackpotValidator.canHitJackpot(player) || !jackpotConfig) {
             return [];

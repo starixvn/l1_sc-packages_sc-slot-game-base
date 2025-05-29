@@ -8,13 +8,15 @@ export default class HallOfFameQuery {
      * @param {mongoose.Model} jackpotsRepository
      * @param {GameManagementApiClientFactory} gameManagementApiClientFactory
      * @param {GameData} gameData
+     * @param {JackpotConfigsConsumer} jackpotConfigsConsumer
      */
-    constructor(gameId, famesRepository, jackpotsRepository, gameManagementApiClientFactory, gameData) {
+    constructor(gameId, famesRepository, jackpotsRepository, gameManagementApiClientFactory, gameData, jackpotConfigsConsumer) {
         this.gameId = gameId;
         this.famesRepository = famesRepository;
         this.jackpotsRepository = jackpotsRepository;
         this.gameManagementApiClient = gameManagementApiClientFactory.instance();
         this.gameData = gameData;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
     }
 
     async queryBigWinningWinners(player, page, pageSize = 10) {
@@ -23,9 +25,7 @@ export default class HallOfFameQuery {
         }
 
         const { operatorId, siteName } = player.session;
-        const jackpotConfig = this.gameData.jackpotConfigs.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, siteName);
 
         const filter = {
             operatorId: operatorId,
@@ -68,9 +68,7 @@ export default class HallOfFameQuery {
             return { jackpotWinners: {} };
         }
 
-        const jpConfigId = this.gameData.jackpotConfigs.find(
-            (jp) => jp.operatorId === operatorId && (jp.siteNames.length === 0 || jp.siteNames.includes(siteName))
-        )?._id;
+        const jpConfigId = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, siteName)?._id;
 
         const filter = {
             winnerName: { $exists: true },

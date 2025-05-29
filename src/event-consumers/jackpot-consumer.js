@@ -13,19 +13,21 @@ export default class JackpotConsumer {
      * @param {logger} logService
      * @param {mongoose.Model} jackpotsRepository
      * @param {JackpotValidator} jackpotValidator
+     * @param {JackpotConfigsConsumer} jackpotConfigsConsumer
      */
-    constructor(definition, gameData, jackpotPublisher, logService, jackpotsRepository, jackpotValidator) {
+    constructor(definition, gameData, jackpotPublisher, logService, jackpotsRepository, jackpotValidator, jackpotConfigsConsumer) {
         this.definition = definition;
         this.gameData = gameData;
         this.jackpotPublisher = jackpotPublisher;
         this.logService = logService;
         this.jackpotsRepository = jackpotsRepository;
         this.jackpotValidator = jackpotValidator;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
     }
 
     async contribute(player, { totalAmount, roundId, rate, freeSpin, contributedByMember = true }) {
         if (!contributedByMember || this.jackpotValidator.canContributeJackpotPools(player, freeSpin)) {
-            const jackpotConfig = this.getJackpotConfig(player.session.operatorId, player.session.siteName);
+            const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(player.session.operatorId, player.session.siteName);
             const pools = jackpotConfig?.pools;
             const baseTotalAmount = totalAmount * rate;
             const jackpotPrizes = Object.keys(pools);
@@ -34,12 +36,6 @@ export default class JackpotConsumer {
                 await this.contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, jackpotConfig });
             }
         }
-    }
-
-    getJackpotConfig(operatorId, siteName) {
-        return this.gameData.jackpotConfigs.find(
-            (config) => config.operatorId === operatorId && (config.siteNames.includes(siteName) || config.siteNames.length == 0)
-        );
     }
 
     async contributeToPool({ baseTotalAmount, contributedByMember, prize, roundId, jackpotConfig }) {
@@ -94,7 +90,7 @@ export default class JackpotConsumer {
     }
 
     async hit(player, { prize, roundId, exchangeRateId, rate, operatorId, currency }) {
-        const jackpotConfig = this.getJackpotConfig(operatorId, player.session.siteName);
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(operatorId, player.session.siteName);
         const winningRatio = jackpotConfig.winningRatio;
 
         const runningPoolFilter = this.getRunningPoolFilter(prize, roundId, jackpotConfig);

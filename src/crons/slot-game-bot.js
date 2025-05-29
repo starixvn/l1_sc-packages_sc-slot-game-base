@@ -18,6 +18,8 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
      * @param {Board.BoardGenerator} dependencies.boardGenerator
      * @param {Board.PaylineCalculator} dependencies.paylineCalculator
      * @param {GameManagementApiClientFactory} dependencies.gameManagementApiClientFactory
+     * @param {RoundsRepository} dependencies.tmpRoundsRepository
+     * @param {EventConsumers.JackpotConfigsConsumer} dependencies.jackpotConfigsConsumer
      */
     constructor({
         definition,
@@ -29,6 +31,8 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         boardGenerator,
         paylineCalculator,
         gameManagementApiClientFactory,
+        tmpRoundsRepository,
+        jackpotConfigsConsumer,
     }) {
         super(definition, gameData, gameManagementApiClientFactory);
 
@@ -38,7 +42,8 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.boardCheatingConsumer = boardCheatingConsumer;
         this.boardGenerator = boardGenerator;
         this.paylineCalculator = paylineCalculator;
-
+        this.tmpRoundsRepository = tmpRoundsRepository;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
         this.totalNumberOfTickets = 0;
         this.odds = {};
         this.bigWinRatio = 0;
@@ -78,7 +83,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     standardizeBots(bots) {
         const botConfigs = this.gameData.botConfigs;
         const botRatios = botConfigs.map((config) => {
-            const jackpotConfig = this.gameData.jackpotConfigs.find((jp) => jp._id === config.jackpotConfigId);
+            const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfigById(config.jackpotConfigId);
 
             return {
                 session: {
@@ -137,15 +142,13 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     async placeBet(bot) {
         await this.increaseRoundId();
 
-        const jackpotConfig = this.gameData.jackpotConfigs.find(
-            (config) =>
-                config.operatorId === bot.session.operatorId && (config.siteNames.length === 0 || config.siteNames.includes(bot.session.siteName))
-        );
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(bot.session.operatorId, bot.session.siteName);
 
         if (!jackpotConfig?.enabled || this.groupTracks[jackpotConfig._id].length === 0) {
             return;
         }
 
+        const contributionRate = this.getContributionRate(jackpotConfig);
         const name = bot.profile.name;
         const roundId = this.gameData.roundId;
         const paylines = this.randomizePaylines();
@@ -157,13 +160,26 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         const board = this.boardCheatingConsumer.consume(name, generatedBoard);
         const betResult = this.paylineCalculator.calculate(board, paylines, this.odds);
         const winningAmount = betResult.paylines.reduce((currentWinningAmount, payline) => currentWinningAmount + payline.odds * amount, 0);
+        const betTicket = this.getBet(bot, { betResult, amount, totalAmount, paylines, board, contributionRate, winningAmount });
 
         if (betResult.jackpotPayline >= 0) {
             const prize = this.chance.weighted(
                 Object.keys(jackpotConfig.pools),
                 Object.values(jackpotConfig.pools).map((pool) => pool.botSettings.alloc)
             );
-            await this.jackpotConsumer.hit(bot, { prize, roundId, exchangeRateId: this.gameData.exchangeRates.exId, rate: this.botRate });
+            const hitResult = await this.jackpotConsumer.hit(bot, {
+                prize,
+                roundId,
+                exchangeRateId: this.gameData.exchangeRates.exId,
+                rate: this.botRate,
+            });
+
+            betTicket.settlementResult.jackpot = {
+                winningLine: betResult.jackpotPayline,
+                winningAmount: hitResult.amount,
+                winningPrize: prize,
+                picked: true,
+            };
         }
 
         await this.jackpotConsumer.contribute(bot, { totalAmount, roundId, rate: this.botRate, contributedByMember: false });
@@ -182,6 +198,56 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         }
 
         this.adjustGroupTracks(amount, jackpotConfig._id);
+
+        await this.tmpRoundsRepository.create(betTicket);
+    }
+
+    getBet(bot, { betResult, amount, totalAmount, paylines, board, contributionRate, winningAmount }) {
+        const roundId = this.gameData.roundId;
+        return {
+            id: roundId,
+            uid: bot.UID,
+            name: bot.profile.name,
+            siteId: bot.session.siteId,
+            siteName: bot.session.siteName,
+            bet: amount,
+            totalAmount,
+            baseTotalAmount: totalAmount * this.botRate,
+            paylines,
+            freeSpin: false,
+            result: board,
+            settlementResult: {
+                winningPaylines:
+                    betResult.jackpotPayline > 0
+                        ? betResult.paylines.filter((payline) => payline.odds > 0 && payline.payline !== betResult.jackpotPayline)
+                        : betResult.paylines.filter((payline) => payline.odds > 0),
+            },
+            jackpotContribution: {
+                contributionRate,
+                baseContributionAmount: totalAmount * contributionRate,
+            },
+            odds: this.odds,
+            betWin: winningAmount,
+            baseBetWin: winningAmount * this.botRate,
+            paid: true,
+            time: new Date(),
+            endTime: new Date(),
+            currency: bot.session.currency,
+            rate: this.botRate,
+            exchangeRateId: this.gameData.exchangeRates.exId,
+            operatorId: bot.session.operatorId,
+            playerId: bot.UID,
+        };
+    }
+
+    getContributionRate(jackpotConfig) {
+        const { pools } = jackpotConfig;
+        let totalContributionRate = 0;
+
+        Object.values(pools).forEach((pool) => {
+            totalContributionRate += pool.botSettings.contrib;
+        });
+        return totalContributionRate;
     }
 
     async increaseRoundId() {
