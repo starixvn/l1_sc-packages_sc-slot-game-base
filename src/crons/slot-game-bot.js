@@ -50,6 +50,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.groupTracks = [];
         this.baseBots = [];
         this.botCurrency = "BOT";
+        this.paylines = [...Array(this.boardGenerator.numberOfPaylines).keys()];
     }
 
     async reset() {
@@ -152,7 +153,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         const contributionRate = this.getContributionRate(jackpotConfig);
         const name = bot.profile.name;
         const roundId = this.gameData.roundId;
-        const paylines = this.randomizePaylines();
+        const paylines = this.paylines;
         const numberOfPaylines = paylines.length;
         const amount = this.getBetAmount(jackpotConfig._id);
         const totalAmount = amount * numberOfPaylines;
@@ -255,14 +256,6 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     async increaseRoundId() {
         await this.idCountersConsumer.consume("round");
         this.gameData.roundId++;
-    }
-
-    randomizePaylines() {
-        const numberOfAvailablePaylines = this.boardGenerator.numberOfPaylines;
-        const seeds = [...Array(numberOfAvailablePaylines).keys()];
-        const numberOfPaylines = this.chance.natural({ min: 1, max: numberOfAvailablePaylines - 1 });
-
-        return this.chance.pickset(seeds, numberOfPaylines);
     }
 
     getBetAmount(jackpotConfigId) {
