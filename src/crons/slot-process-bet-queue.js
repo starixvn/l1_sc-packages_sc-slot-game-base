@@ -19,6 +19,8 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @param {mongoose.Model} dependencies.betsRepository
      * @param {mongoose.Model} dependencies.betLogsRepository
      * @param {EventConsumers.IdCountersConsumer} dependencies.idCountersConsumer
+     * @param {EventConsumers.JackpotValidator} dependencies.jackpotValidator
+     * @param {EventConsumers.JackpotConfigsConsumer} dependencies.jackpotConfigsConsumer
      */
     constructor({
         definition,
@@ -35,6 +37,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         baseMetrics,
         jackpotValidator,
         gameManagementApiClientFactory,
+        jackpotConfigsConsumer,
     }) {
         super({
             definition,
@@ -53,6 +56,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         this.roundsRepository = roundsRepository;
         this.idCountersConsumer = idCountersConsumer;
         this.jackpotValidator = jackpotValidator;
+        this.jackpotConfigsConsumer = jackpotConfigsConsumer;
     }
 
     async proceedBet(player, payload) {
@@ -82,7 +86,6 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
     async generateBetInfo(payload, freeSpinInfo, player) {
         const betInfo = { ...payload };
-        const { slotsConfig } = this.gameData.gameConfigs;
 
         if (freeSpinInfo) {
             const { bet, paylines } = freeSpinInfo;
@@ -93,17 +96,18 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         betInfo.totalAmount = math.round(betInfo.amount * betInfo.betChoice.length, 2);
 
-        betInfo.contributionRate = this.getContributionRate(slotsConfig, player, payload);
+        betInfo.contributionRate = this.getContributionRate(player, payload);
         betInfo.contributionAmount = math.round(betInfo.contributionRate * betInfo.totalAmount, 4);
 
         return betInfo;
     }
 
-    getContributionRate(slotsConfig, player, payload) {
-        const { pools } = slotsConfig.jackpot;
+    getContributionRate(player, payload) {
         let totalContributionRate = 0;
 
         if (this.jackpotValidator.canContributeJackpotPools(player, payload.freeSpin)) {
+            const { pools } = this.jackpotConfigsConsumer.getJackpotConfig(player.session.operatorId, player.session.siteName);
+
             Object.values(pools).forEach((pool) => {
                 totalContributionRate += pool.playerSettings.contrib;
             });
