@@ -49,6 +49,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         this.bigWinRatio = 0;
         this.groupTracks = [];
         this.baseBots = [];
+        this.botCurrency = "BOT";
     }
 
     async reset() {
@@ -233,7 +234,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
             paid: true,
             time: new Date(),
             endTime: new Date(),
-            currency: bot.session.currency,
+            currency: this.botCurrency,
             rate: this.botRate,
             exchangeRateId: this.gameData.exchangeRates.exId,
             operatorId: bot.session.operatorId,
