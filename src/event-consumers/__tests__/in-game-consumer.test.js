@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { BaseEventPublishers, RoundQuery } from "sc-game-base/src/core";
 
 import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
-import { FreeSpinsConsumer, InGameConsumer } from "../";
+import { FreeSpinsConsumer, InGameConsumer, JackpotConfigsConsumer } from "../";
 import SlotGameData from "../../slot-game-data";
 import SlotGameDefinition from "../../slot-game-definition";
 import JackpotValidator from "../../validators/jackpot-validator";
@@ -17,7 +17,7 @@ const getBalance = jest.fn(() => ({ isOk: true, response: { red: 1000 } }));
 const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
 gameManagementApiClientFactory.instance.mockReturnValue({
     users: {
-        setBalance: jest.fn(() => ({ isSuccessful: true, data: {  } })),
+        setBalance: jest.fn(() => ({ isSuccessful: true, data: {} })),
     },
 });
 
@@ -28,6 +28,7 @@ describe("IngameConsumer", () => {
     const roundQuery = stub(RoundQuery);
     const jackpotValidator = stub(JackpotValidator);
     const freeSpinsConsumer = stub(FreeSpinsConsumer);
+    const jackpotConfigsConsumer = stub(JackpotConfigsConsumer);
 
     let consumer;
 
@@ -44,6 +45,7 @@ describe("IngameConsumer", () => {
             currencyGroupGamesRepository,
             jackpotValidator,
             gameManagementApiClientFactory,
+            jackpotConfigsConsumer,
         });
     });
 
@@ -219,6 +221,23 @@ describe("IngameConsumer", () => {
                 },
             };
 
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValueOnce({
+                winningRatio: 0.98,
+                pools: {
+                    minor: {
+                        init: 5000,
+                        playerSettings: { contrib: 0.1, alloc: 90 },
+                    },
+                    major: {
+                        init: 25000,
+                        playerSettings: { contrib: 0.15, alloc: 9 },
+                    },
+                    grand: {
+                        init: 50000,
+                        playerSettings: { contrib: 0.25, alloc: 1 },
+                    },
+                },
+            });
             // act
             const slotConfig = consumer.getSlotGameConfig(player, true);
 
