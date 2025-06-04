@@ -54,6 +54,14 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     }
 
     async reset() {
+        if (this.gameData.gameConfigs.slotsConfig?.jackpot?.enabled) {
+            await this.resetBotJackpotGame();
+        } else {
+            await super.reset();
+        }
+    }
+
+    async resetBotJackpotGame() {
         const configs = this.gameData.gameConfigs;
 
         if (configs.botenabled) {
@@ -156,7 +164,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     async placeBet(bot) {
         await this.increaseRoundId();
 
-        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(bot.session.operatorId, bot.session.siteName);
+        const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfig(bot.session?.operatorId, bot.session?.siteName);
 
         if (!jackpotConfig?.enabled || this.groupTracks[jackpotConfig._id].length === 0) {
             return;
