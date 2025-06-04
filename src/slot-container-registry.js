@@ -1,7 +1,6 @@
 import { asClass, asValue, asFunction } from "awilix";
 import { hitJackpot } from "sc-base-apis";
 import { Core, Table } from "sc-game-base";
-import { PromotionClient } from "sc-game-base/core/game-promotion-api-client-factory";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
@@ -124,15 +123,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         this.container.register({
             jackpotValidator: asClass(JackpotValidator).singleton(),
         });
-    }
-
-    registerPromotionServices(appConfigs) {
-        // Register promotion client if promotion API settings are configured
-        if (appConfigs.promotionApiSettings) {
-            this.container.register({
-                promotionClient: asClass(PromotionClient).singleton(),
-            });
-        }
     }
 
     registerInterceptors() {
