@@ -1,9 +1,11 @@
-import { asClass, asValue } from "awilix";
+import { asClass, asValue, asFunction } from "awilix";
 import { hitJackpot } from "sc-base-apis";
 import { Core, Table } from "sc-game-base";
+import { PromotionClient } from "sc-game-base/core/game-promotion-api-client-factory";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
+import SlotPromotionInterceptor from "./event-interceptors/slot-promotion-interceptor";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters, Jackpots } from "./models";
 import { HallOfFameQuery, SlotHistoryQuery } from "./query-apis";
@@ -22,6 +24,11 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         this.registerBoardUtilities();
 
         super.register(appConfigs, definition, gameData);
+
+        // Register promotion client and interceptors for promotion features
+        this.registerPromotionServices(appConfigs);
+        this.registerInterceptors();
+        this.registerInterceptorArrays();
 
         return this.container;
     }
@@ -116,6 +123,43 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
 
         this.container.register({
             jackpotValidator: asClass(JackpotValidator).singleton(),
+        });
+    }
+
+    registerPromotionServices(appConfigs) {
+        // Register promotion client if promotion API settings are configured
+        if (appConfigs.promotionApiSettings) {
+            this.container.register({
+                promotionClient: asClass(PromotionClient).singleton(),
+            });
+        }
+    }
+
+    registerInterceptors() {
+        // Register slot-specific promotion interceptor
+        this.container.register({
+            slotPromotionInterceptor: asClass(SlotPromotionInterceptor).singleton(),
+        });
+    }
+
+    registerInterceptorArrays() {
+        // Register interceptor arrays with both base and slot-specific interceptors
+        this.container.register({
+            betEventInterceptors: asFunction((container) => {
+                const interceptors = [];
+
+                // Add base promotion interceptor if available
+                if (container.hasRegistration("promotionBetInterceptor")) {
+                    interceptors.push(container.resolve("promotionBetInterceptor"));
+                }
+
+                // Add slot-specific promotion interceptor
+                if (container.hasRegistration("slotPromotionInterceptor")) {
+                    interceptors.push(container.resolve("slotPromotionInterceptor"));
+                }
+
+                return interceptors;
+            }).singleton(),
         });
     }
 }

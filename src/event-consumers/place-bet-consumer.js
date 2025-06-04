@@ -36,6 +36,36 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
         return [];
     }
 
+    getPromotionBetAmount(player, payload) {
+        if (payload.amount) {
+            const maxPaylines = Object.keys(defaultDefinition.paylines).length;
+            return payload.amount * maxPaylines;
+        }
+
+        return super.getPromotionBetAmount?.(player, payload) || 0;
+    }
+
+    composePromotionValidationCriteria(player) {
+        const baseCriteria = super.composePromotionValidationCriteria?.(player) || [];
+
+        if (player.promotion) {
+            const slotSpecificCriteria = [
+                {
+                    failure: !player.promotion.BonusItemCount || player.promotion.BonusItemCount <= 0,
+                    notice: this.getNoticeObj(SlotNoticeHelper.noBonusItemsForPromotion),
+                },
+                {
+                    failure: player.freeSpin,
+                    notice: this.getNoticeObj(SlotNoticeHelper.promotionNotAvailableDuringFreeSpin),
+                },
+            ];
+
+            return baseCriteria.concat(slotSpecificCriteria);
+        }
+
+        return baseCriteria;
+    }
+
     consume(player, payload) {
         Object.assign(payload, {
             amount: payload.amount,

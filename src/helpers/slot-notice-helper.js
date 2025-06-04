@@ -6,4 +6,7 @@ export default {
     openedBonus: "SB1932",
     invalidJackpot: "SB1940",
     openedJackpot: "SB1941",
+    invalidPromotionBetAmount: "SB1960",
+    noBonusItemsForPromotion: "SB1961",
+    promotionNotAvailableDuringFreeSpin: "SB1962",
 };
