@@ -143,12 +143,14 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     async publishRunningPools() {
         const runningPools = await this.jackpotConsumer.getRunningPools();
-        await this.jackpotPublisher.publishRunningPools(
-            runningPools.map((pool) => ({
-                gameId: this.definition.id,
-                ...pool,
-            }))
-        );
+        if (runningPools.length > 0) {
+            await this.jackpotPublisher.publishRunningPools(
+                runningPools.map((pool) => ({
+                    gameId: this.definition.id,
+                    ...pool,
+                }))
+            );
+        }
     }
 
     async loadUnsettledBetsToIngame() {
