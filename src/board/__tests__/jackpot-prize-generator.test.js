@@ -6,6 +6,7 @@ describe("JackpotGenerator", () => {
     let jackpotSize;
     let generator;
     let player;
+    let jackpotConfigsConsumer;
 
     beforeEach(() => {
         player = {
@@ -16,7 +17,19 @@ describe("JackpotGenerator", () => {
         };
         gameData = createStubGameData();
         jackpotSize = 6;
-        generator = new JackpotPrizeGenerator({ jackpotSize }, gameData, jackpotValidator);
+
+        // Create mock jackpotConfigsConsumer
+        jackpotConfigsConsumer = {
+            getJackpotConfig: jest.fn().mockReturnValue({
+                pools: {
+                    minor: { playerSettings: { alloc: 90 } },
+                    major: { playerSettings: { alloc: 9 } },
+                    grand: { playerSettings: { alloc: 1 } },
+                },
+            }),
+        };
+
+        generator = new JackpotPrizeGenerator({ jackpotSize }, gameData, jackpotValidator, jackpotConfigsConsumer);
 
         jest.spyOn(generator.chance, "weighted");
         jest.spyOn(generator.chance, "shuffle");
@@ -26,10 +39,7 @@ describe("JackpotGenerator", () => {
         jest.restoreAllMocks();
     });
 
-    it("always validate player can hit jackpot", () => {
-        // Arrange
-        jest.spyOn(generator.jackpotValidator, "canHitJackpot");
-
+    it("should validate if player can hit jackpot", () => {
         // Act
         generator.generate(player);
 
@@ -40,7 +50,7 @@ describe("JackpotGenerator", () => {
     describe("when player can NOT hit jackpot", () => {
         it("should return empty board", () => {
             // Arrange
-            jackpotValidator.canHitJackpot.mockReturnValueOnce(false);
+            jackpotValidator.canHitJackpot.mockReturnValue(false);
 
             // Act
             const result = generator.generate(player);
@@ -71,8 +81,20 @@ describe("JackpotGenerator", () => {
             expect(generator.chance.weighted).toHaveBeenCalledWith(["minor", "major", "grand"], [90, 9, 1]);
         });
 
-        it("should return empty board when no matching jackpot configuration exists", () => {
+        it("should return empty board when no jackpot configs exist", () => {
             // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(null);
+
+            // Act
+            const result = generator.generate(player);
+
+            // Assert
+            expect(result).toBeArrayOfSize(0);
+        });
+
+        it("should return empty board when no matching operator config exists", () => {
+            // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(null);
             player.session.operatorId = "nonexistent";
 
             // Act
@@ -84,6 +106,7 @@ describe("JackpotGenerator", () => {
 
         it("should return empty board when site name doesn't match", () => {
             // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(null);
             player.session.siteName = "nonexistent-site";
 
             // Act
@@ -95,7 +118,13 @@ describe("JackpotGenerator", () => {
 
         it("should work with site-agnostic configurations", () => {
             // Arrange
-            gameData.jackpotConfigs[0].siteNames = [];
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue({
+                pools: {
+                    minor: { playerSettings: { alloc: 90 } },
+                    major: { playerSettings: { alloc: 9 } },
+                    grand: { playerSettings: { alloc: 1 } },
+                },
+            });
 
             // Act
             const result = generator.generate(player);
@@ -104,27 +133,41 @@ describe("JackpotGenerator", () => {
             expect(result).toHaveLength(jackpotSize);
         });
 
-        it("should maintain correct board size after shuffling", () => {
-            // Arrange
-            generator.chance.weighted.mockReturnValue("minor");
-
+        it("should shuffle board multiple times", () => {
             // Act
-            const result = generator.generate(player);
+            generator.generate(player);
 
             // Assert
-            expect(result).toHaveLength(jackpotSize);
+            expect(generator.chance.shuffle).toHaveBeenCalledTimes(3);
         });
 
         it("should maintain prize distribution after shuffling", () => {
             // Arrange
-            const mockPrizes = Array(jackpotSize).fill("minor");
             generator.chance.weighted.mockReturnValue("minor");
+            const expectedPrizes = Array(jackpotSize).fill("minor");
 
             // Act
             const result = generator.generate(player);
 
             // Assert
-            expect(result).toEqual(expect.arrayContaining(mockPrizes));
+            expect(result).toEqual(expect.arrayContaining(expectedPrizes));
+        });
+
+        it("should handle zero allocation values", () => {
+            // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue({
+                pools: {
+                    minor: { playerSettings: { alloc: 0 } },
+                    major: { playerSettings: { alloc: 9 } },
+                    grand: { playerSettings: { alloc: 1 } },
+                },
+            });
+
+            // Act
+            const result = generator.generate(player);
+
+            // Assert
+            expect(result).toHaveLength(jackpotSize);
         });
     });
 });

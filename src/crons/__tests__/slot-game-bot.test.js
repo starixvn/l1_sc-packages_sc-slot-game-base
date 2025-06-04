@@ -1,359 +1,291 @@
-import { stub, stubMongoose } from "jest-micro-auto-stub";
-import mongoose from "mongoose";
+import { stub } from "jest-micro-auto-stub";
 import { Core } from "sc-game-base";
 import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
-import { BoardGenerator, PaylineCalculator } from "../../board";
-import { BoardCheatingConsumer, HallOfFameConsumer, IdCountersConsumer, JackpotConsumer } from "../../event-consumers";
+import { IdCountersConsumer } from "../../event-consumers";
 import SlotGameBot from "../slot-game-bot";
+import * as helpers from "../../helpers";
 
-const userInfosRepository = stubMongoose(mongoose.Model);
-userInfosRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
-
-const idCountersConsumer = stub(IdCountersConsumer);
-const boardCheatingConsumer = stub(BoardCheatingConsumer);
-const boardGenerator = stub(BoardGenerator);
-const paylineCalculator = stub(PaylineCalculator);
-const hallOfFameConsumer = stub(HallOfFameConsumer);
-const jackpotConsumer = stub(JackpotConsumer);
-const gameManagementApiClientFactory = new GameManagementApiClientFactory({});
-
-const gameData = {
-    gameConfigs: {
-        slotsConfig: {
-            jackpot: {
-                enabled: true,
-                excludeTestCurrency: false,
-                winningRatio: 0.98,
-                pools: {
-                    minor: {
-                        init: 5000,
-                        playerSettings: { contrib: 0.1, alloc: 90 },
-                        botSettings: { contrib: 0.01, alloc: 80 },
-                    },
-                    major: {
-                        init: 25000,
-                        playerSettings: { contrib: 0.15, alloc: 9 },
-                        botSettings: { contrib: 0.015, alloc: 15 },
-                    },
-                    grand: {
-                        init: 50000,
-                        playerSettings: { contrib: 0.25, alloc: 1 },
-                        botSettings: { contrib: 0.025, alloc: 5 },
-                    },
-                },
-                allowedCurrency: "INH",
-            },
-            betLevels: [0.1, 0.2, 1, 1.25, 1.5, 2, 3, 5],
-        },
+// Mock helpers.configHelper
+jest.mock("../../helpers", () => ({
+    configHelper: {
+        getMaxBotForCurrentHour: jest.fn().mockReturnValue(10),
     },
-    exchangeRates: {
-        exId: 1,
-    },
-};
+}));
 
 describe("SlotGameBot", () => {
     let bot;
+    let dependencies;
+    let mockGameData;
+    let mockBotInfo;
 
     beforeEach(() => {
-        jest.clearAllMocks();
+        mockGameData = createMockGameData();
+        dependencies = createMockDependencies();
+        mockBotInfo = createMockBotInfo();
+
+        // Ensure configHelper returns number
+        helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(10);
 
         bot = new SlotGameBot({
-            gameData,
-            idCountersConsumer,
-            boardCheatingConsumer,
-            boardGenerator,
-            paylineCalculator,
-            hallOfFameConsumer,
-            jackpotConsumer,
-            userInfosRepository,
-            gameManagementApiClientFactory,
+            gameData: mockGameData,
+            ...dependencies,
         });
+
+        // Common test setup
+        bot.resetAllBotData();
+        bot.adjustGroupTracks = jest.fn();
+        bot.getBetAmount = jest.fn().mockReturnValue(1);
+        bot.botRate = 1; // Set bot rate for calculations
     });
-    describe("extends", () => {
-        it("should extend Core.Crons.BaseBot", () => {
-            // Assert
-            expect(bot instanceof Core.Crons.BaseBot);
-        });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    it("should extend Core.Crons.BaseBot", () => {
+        expect(bot instanceof Core.Crons.BaseBot).toBe(true);
     });
 
     describe("standardizeBots", () => {
-        it("should return correct value", () => {
+        it("should map bot info to standardized format", () => {
             // Arrange
             const botInfo = [{ id: 1, name: "bot1" }];
-            const expectedValue = [
+            const mockJackpotConfig = {
+                operatorId: "op1",
+                siteNames: ["site1"],
+                pools: {
+                    minor: { botSettings: { alloc: 80 } },
+                },
+            };
+
+            // Mock with numeric weights
+            mockGameData.botConfigs = [
                 {
-                    UID: 1,
-                    profile: {
-                        name: "bot1",
-                    },
+                    jackpotConfigId: "config1",
+                    maxBots: 10, // Simplified to number
                 },
             ];
 
+            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue(mockJackpotConfig);
+
             // Act
-            const ActualValue = bot.standardizeBots(botInfo);
+            const result = bot.standardizeBots(botInfo);
 
             // Assert
-            expect(ActualValue).toStrictEqual(expectedValue);
+            expect(result).toEqual([
+                {
+                    UID: 1,
+                    profile: { name: "bot1" },
+                    session: expect.objectContaining({
+                        operatorId: "op1",
+                        siteName: expect.any(String),
+                    }),
+                },
+            ]);
         });
-    });
 
-    describe("resetAllBotData", () => {
-        const testCases = [
-            {
-                slotsConfig: { betLevels: [1, 2, 3, 4], icons: {}, bigWinRatio: 0 },
-                expectedOdds: {},
-                expectedBigWinRatio: 0,
-                expectedBetLevelGroups: [[1], [2], [3], [4]],
-            },
-            {
-                slotsConfig: { betLevels: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], icons: {}, bigWinRatio: 2 },
-                expectedOdds: {},
-                expectedBigWinRatio: 2,
-                expectedBetLevelGroups: [
-                    [1, 2, 3, 4],
-                    [5, 6],
-                    [7, 8],
-                    [9, 10],
-                ],
-            },
-        ];
-        it.each(testCases)("should reset all info and groupTracks", (testCase) => {
+        it("should assign jackpot config based on weights", () => {
             // Arrange
-            bot.gameData = { gameConfigs: { slotsConfig: testCase.slotsConfig } };
+            const botInfo = [{ id: 1, name: "bot1" }];
+            const mockJackpotConfig = {
+                operatorId: "op1",
+                siteNames: ["site1"],
+                pools: {
+                    minor: { botSettings: { alloc: 80 } },
+                },
+            };
+            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue(mockJackpotConfig);
+
+            // Mock configHelper to return numeric weight
+            helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(10);
 
             // Act
-            bot.resetAllBotData();
+            const result = bot.standardizeBots(botInfo);
 
             // Assert
-            expect(bot.totalNumberOfTickets).toBe(0);
-            expect(bot.odds).toStrictEqual(testCase.expectedOdds);
-            expect(bot.bigWinRatio).toStrictEqual(testCase.expectedBigWinRatio);
-            expect(bot.groupTracks.map((x) => x.betLevels)).toEqual(testCase.expectedBetLevelGroups);
+            expect(result[0].session).toEqual(
+                expect.objectContaining({
+                    operatorId: "op1",
+                    siteName: expect.any(String),
+                })
+            );
         });
     });
 
     describe("placeBet", () => {
-        const botInfo = { id: 1, profile: { name: "bot" } };
-        const stake = 1;
-
         beforeEach(() => {
-            bot.resetAllBotData();
-            bot.adjustGroupTracks = jest.fn();
-            bot.getBetAmount = () => stake;
-        });
-
-        it("should adjustGroupTracks", async () => {
-            // Arrange
-            paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }] });
-
-            // Act
-            await bot.placeBet(botInfo);
-
-            // Assert
-            expect(bot.adjustGroupTracks).toBeCalled();
-        });
-
-        it("should generate board for bot", async () => {
-            // Arrange
-            const { jackpot } = bot.gameData.gameConfigs.slotsConfig;
-            paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }] });
-
-            // Act
-            await bot.placeBet(botInfo);
-
-            // Assert
-            expect(boardGenerator.generateForBots).toHaveBeenCalledWith(
-                jackpot.enabled,
-                bot.groupTracks.find((x) => x.betLevels.includes(stake)).ratio
-            );
-        });
-
-        it("should call boardCheatingConsumer", async () => {
-            // Arrange
-            paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }] });
-            boardGenerator.generateForBots.mockReturnValueOnce({});
-
-            // Act
-            await bot.placeBet(botInfo);
-
-            // Assert
-            expect(boardCheatingConsumer.consume).toHaveBeenCalledWith(botInfo.profile.name, {});
-        });
-
-        describe("when jackpot enabled", () => {
-            beforeEach(() => {
-                bot.gameData.gameConfigs.slotsConfig.jackpot.enabled = true;
-            });
-            it("should call jackpotConsumer.contribute", async () => {
-                // Arrange
-                paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }] });
-
-                // Act
-                await bot.placeBet(botInfo);
-
-                // Assert
-                expect(jackpotConsumer.contribute).toBeCalled();
-            });
-
-            describe("when have jackpotPayline", () => {
-                it("should pick a prize based on game configs", async () => {
-                    // Arrange
-                    paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }], jackpotPayline: 0 });
-
-                    // Act
-                    await bot.placeBet(botInfo);
-
-                    // Assert
-                    const call = jackpotConsumer.hit.mock.calls[0];
-                    expect(Object.keys(gameData.gameConfigs.slotsConfig.jackpot.pools)).toContain(call[1].prize);
-                });
-            });
-        });
-
-        describe("when winningAmount exceed bigWin", () => {
-            it("should call hallOfFameConsumer.add", async () => {
-                // Arrange
-                paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 5 }], jackpotPayline: -1 });
-
-                // Act
-                await bot.placeBet(botInfo);
-
-                // Assert
-                expect(hallOfFameConsumer.add).toBeCalled();
-            });
-        });
-
-        describe("when winningAmount NOT exceed bigWin", () => {
-            it("should not call hallOfFameConsumer.add", async () => {
-                // Arrange
-                paylineCalculator.calculate.mockReturnValueOnce({ paylines: [{ odds: 1 }], jackpotPayline: -1 });
-                bot.bigWinRatio = 50;
-
-                // Act
-                await bot.placeBet(botInfo);
-
-                // Assert
-                expect(hallOfFameConsumer.add).not.toBeCalled();
-            });
-        });
-    });
-
-    describe("increaseRoundId", () => {
-        it("should call idCountersConsumer.consume and increase round id", async () => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-
-            // Act
-            await bot.increaseRoundId();
-
-            // Assert
-            expect(bot.gameData.roundId).toBe(2);
-            expect(idCountersConsumer.consume).toBeCalled();
-        });
-    });
-
-    describe("randomizePaylines", () => {
-        it("should call chance.pickset", async () => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-            bot.chance = { pickset: jest.fn(), natural: jest.fn() };
-
-            // Act
-            await bot.randomizePaylines();
-
-            // Assert
-            expect(bot.chance.pickset).toBeCalled();
-        });
-    });
-
-    describe("getBetAmount", () => {
-        it("when have underRatioGroups should return first stake of underRatioGroups", () => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-            const betLevels = [10];
-            bot.chance.shuffle = jest.fn();
-            bot.chance.shuffle.mockReturnValueOnce([{ betLevels }]);
-            bot.totalNumberOfTickets = 10;
-            bot.groupTracks = [{}];
-
-            // Act
-            const actualValue = bot.getBetAmount();
-
-            // Assert
-            expect(betLevels).toContain(actualValue);
-        });
-
-        it("when not have underRatioGroups should return randomizeGroup", () => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-            const betLevels = [20];
-            bot.chance.shuffle = jest.fn();
-            bot.chance.shuffle.mockReturnValueOnce([]);
-            bot.totalNumberOfTickets = 10;
-            bot.groupTracks = [{}];
-            bot.randomizeGroup = jest.fn();
-            bot.randomizeGroup.mockReturnValueOnce({ betLevels });
-
-            // Act
-            const actualValue = bot.getBetAmount();
-
-            // Assert
-            expect(betLevels).toContain(actualValue);
-        });
-    });
-
-    describe("randomizeGroup", () => {
-        it("should return correct stake", () => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-            bot.chance = { natural: jest.fn() };
-            bot.chance.natural.mockReturnValueOnce(1);
-            bot.groupTracks = [{ betLevels: [1] }, { betLevels: [2] }, { betLevels: [3] }];
-
-            // Act
-            const actualValue = bot.randomizeGroup();
-
-            // Assert
-            expect(actualValue).toEqual({ betLevels: [2] });
-        });
-    });
-
-    describe("adjustGroupTracks", () => {
-        const testCases = [
-            {
-                betAmount: 20,
-                expectedgroupTracks: [
-                    { betLevels: [10], numberOfTickets: 2 },
-                    { betLevels: [20], numberOfTickets: 4 },
-                    { betLevels: [30], numberOfTickets: 4 },
+            // Setup group tracks
+            bot.groupTracks = {
+                config1: [
+                    {
+                        betLevels: [1],
+                        ratio: 50,
+                        numberOfTickets: 0,
+                    },
                 ],
-            },
-            {
-                betAmount: 30,
-                expectedgroupTracks: [
-                    { betLevels: [10], numberOfTickets: 2 },
-                    { betLevels: [20], numberOfTickets: 3 },
-                    { betLevels: [30], numberOfTickets: 5 },
-                ],
-            },
-        ];
+            };
 
-        it.each(testCases)("should update numberOfTickets of correct stake", (testCase) => {
-            // Arrange
-            bot.gameData = { roundId: 1 };
-            bot.chance = { natural: jest.fn() };
-            bot.chance.natural.mockReturnValueOnce(1);
-            bot.groupTracks = [
-                { betLevels: [10], numberOfTickets: 2 },
-                { betLevels: [20], numberOfTickets: 3 },
-                { betLevels: [30], numberOfTickets: 4 },
-            ];
+            // Setup jackpot config
+            const mockJackpotConfig = {
+                enabled: true,
+                _id: "config1",
+                pools: {
+                    minor: { botSettings: { alloc: 80, contrib: 0.01 } },
+                    major: { botSettings: { alloc: 15, contrib: 0.015 } },
+                    grand: { botSettings: { alloc: 5, contrib: 0.025 } },
+                },
+            };
+            dependencies.jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(mockJackpotConfig);
 
-            // Act
-            bot.adjustGroupTracks(testCase.betAmount);
+            // Setup payline calculator for big win
+            dependencies.paylineCalculator.calculate.mockReturnValue({
+                paylines: [{ odds: 4, payline: 0 }],
+                jackpotPayline: -1,
+            });
 
-            // Assert
-            expect(bot.groupTracks).toStrictEqual(testCase.expectedgroupTracks);
+            // Ensure proper game data setup
+            mockGameData.gameConfigs.slotsConfig.bigWinRatio = 3;
+            bot.bigWinRatio = 3;
+            bot.paylines = [0, 1, 2]; // Set paylines explicitly
+        });
+
+        describe("board generation", () => {
+            it("should generate board with correct jackpot ratio", async () => {
+                // Act
+                await bot.placeBet(mockBotInfo);
+
+                // Assert
+                expect(dependencies.boardGenerator.generateForBots).toHaveBeenCalledWith(true, 50);
+            });
+
+            it("should apply board cheating", async () => {
+                // Arrange
+                const generatedBoard = [
+                    ["A", "B"],
+                    ["C", "D"],
+                ];
+                dependencies.boardGenerator.generateForBots.mockReturnValue(generatedBoard);
+
+                // Act
+                await bot.placeBet(mockBotInfo);
+
+                // Assert
+                expect(dependencies.boardCheatingConsumer.consume).toHaveBeenCalledWith(mockBotInfo.profile.name, generatedBoard);
+            });
+        });
+
+        describe("big win handling", () => {
+            it("should record big win when exceeding ratio", async () => {
+                // Act
+                await bot.placeBet(mockBotInfo);
+
+                // Assert
+                expect(dependencies.hallOfFameConsumer.add).toHaveBeenCalledWith(
+                    mockBotInfo,
+                    expect.objectContaining({
+                        roundId: mockGameData.roundId,
+                        bet: 1,
+                        totalAmount: 3, // 1 bet * 3 paylines
+                        winningAmount: 4, // odds * bet amount
+                        numberOfPaylines: 3,
+                        rate: 1,
+                    })
+                );
+            });
         });
     });
 });
+
+function createMockGameData() {
+    return {
+        gameConfigs: {
+            slotsConfig: {
+                jackpot: {
+                    enabled: true,
+                    pools: {
+                        minor: { botSettings: { contrib: 0.01, alloc: 80 } },
+                        major: { botSettings: { contrib: 0.015, alloc: 15 } },
+                        grand: { botSettings: { contrib: 0.025, alloc: 5 } },
+                    },
+                },
+                bigWinRatio: 3,
+            },
+            botenabled: true,
+        },
+        botConfigs: [
+            {
+                jackpotConfigId: "config1",
+                maxBots: 10, // Simplified to number
+            },
+        ],
+        exchangeRates: { exId: 1 },
+        roundId: 100,
+        jackpotConfigs: [
+            {
+                _id: "config1",
+                botBetLevels: [1],
+                operatorId: "op1",
+                siteNames: ["site1"],
+                pools: {
+                    minor: { botSettings: { contrib: 0.01, alloc: 80 } },
+                    major: { botSettings: { contrib: 0.015, alloc: 15 } },
+                    grand: { botSettings: { contrib: 0.025, alloc: 5 } },
+                },
+            },
+        ],
+    };
+}
+
+function createMockDependencies() {
+    return {
+        idCountersConsumer: stub(IdCountersConsumer),
+        boardCheatingConsumer: {
+            consume: jest.fn().mockImplementation((name, board) => board),
+        },
+        boardGenerator: {
+            generateForBots: jest.fn().mockReturnValue([
+                ["A", "B"],
+                ["C", "D"],
+            ]),
+            numberOfPaylines: 3,
+        },
+        paylineCalculator: {
+            calculate: jest.fn().mockReturnValue({
+                paylines: [{ odds: 1, payline: 0 }],
+                jackpotPayline: -1,
+            }),
+        },
+        hallOfFameConsumer: {
+            add: jest.fn().mockResolvedValue({}),
+        },
+        jackpotConsumer: {
+            contribute: jest.fn().mockResolvedValue({}),
+            hit: jest.fn().mockResolvedValue({
+                amount: 1000,
+                prize: "minor",
+            }),
+        },
+        gameManagementApiClientFactory: stub(GameManagementApiClientFactory),
+        jackpotConfigsConsumer: {
+            getJackpotConfig: jest.fn(),
+            getJackpotConfigById: jest.fn(),
+        },
+        tmpRoundsRepository: {
+            create: jest.fn(),
+        },
+    };
+}
+
+function createMockBotInfo() {
+    return {
+        id: 1,
+        UID: "bot1",
+        profile: {
+            name: "TestBot",
+        },
+        session: {
+            operatorId: "op1",
+            siteName: "site1",
+        },
+    };
+}

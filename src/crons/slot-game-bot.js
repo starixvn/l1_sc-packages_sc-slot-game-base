@@ -57,7 +57,15 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
         const configs = this.gameData.gameConfigs;
 
         if (configs.botenabled) {
-            const botRatio = this.gameData.botConfigs.reduce((acc, config) => acc + helpers.configHelper.getMaxBotForCurrentHour(config), 0);
+            const botRatio = this.gameData.botConfigs.reduce((acc, config) => {
+                const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfigById(config.jackpotConfigId);
+
+                if (jackpotConfig) {
+                    return acc + helpers.configHelper.getMaxBotForCurrentHour(config);
+                }
+
+                return acc;
+            }, 0);
 
             if (this.currentBotRatio !== botRatio) {
                 this.currentBotRatio = botRatio;
@@ -84,17 +92,21 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
 
     standardizeBots(bots) {
         const botConfigs = this.gameData.botConfigs;
-        const botRatios = botConfigs.map((config) => {
+        const botRatios = botConfigs.reduce((acc, config) => {
             const jackpotConfig = this.jackpotConfigsConsumer.getJackpotConfigById(config.jackpotConfigId);
 
-            return {
-                session: {
-                    operatorId: jackpotConfig.operatorId,
-                    siteName: jackpotConfig.siteNames.length > 0 ? this.chance.pickone(jackpotConfig.siteNames) : "",
-                },
-                weight: helpers.configHelper.getMaxBotForCurrentHour(config),
-            };
-        });
+            if (jackpotConfig) {
+                acc.push({
+                    session: {
+                        operatorId: jackpotConfig.operatorId,
+                        siteName: jackpotConfig.siteNames.length > 0 ? this.chance.pickone(jackpotConfig.siteNames) : "",
+                    },
+                    weight: helpers.configHelper.getMaxBotForCurrentHour(config),
+                });
+            }
+
+            return acc;
+        }, []);
         const sessions = botRatios.map((ratio) => ratio.session);
         const weights = botRatios.map((ratio) => ratio.weight);
 

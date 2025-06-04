@@ -97,7 +97,15 @@ export default class JackpotConsumer {
         const nearestRunningPoolOrder = {
             createdAt: -1,
         };
-        const winnerAdjustment = this.getWinnerAdjustment({ winningRatio, player, roundId, exchangeRateId, rate, currency, operatorId });
+        const winnerAdjustment = this.getWinnerAdjustment({
+            winningRatio,
+            player,
+            roundId,
+            exchangeRateId,
+            rate,
+            currency,
+            operatorId,
+        });
         const winnerProjection = {
             _id: false,
             prize: true,
@@ -145,6 +153,7 @@ export default class JackpotConsumer {
             rate,
             currency,
             operatorId,
+            siteName: player.session?.siteName,
         };
     }
 

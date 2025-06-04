@@ -1,0 +1,104 @@
+---
+description: 
+globs: 
+---
+---
+description: 
+globs: 
+---
+-   Use **class-based architecture** for main components
+-   Prefer **async/await** over promises
+-   Use **destructuring** for cleaner code
+-   Use **template literals** for string interpolation
+
+### File Organization
+
+```
+src/
+├── crons/      # Game round management
+├── event-consumers/  # Database update handlers
+├── event-publishers/ # Client communication
+├── helpers/    # Utility functions
+├── models/     # Data models
+├── query-apis/ # Read operations
+├── routers/    # HTTP/Socket routing
+└── validators/ # Input validation
+```
+
+### Naming Conventions
+
+-   **Classes**: PascalCase (e.g., `BaseGameCron`, `PlaceBetConsumer`)
+-   **Files**: kebab-case (e.g., `place-bet-consumer.js`, `base-game-cron.js`)
+-   **Variables/Functions**: camelCase (e.g., `gameData`, `settleRound`)
+-   **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_BET_AMOUNT`)
+
+## Dependencies & Libraries
+
+### Core Dependencies
+
+-   **Express**: HTTP server framework
+-   **Socket.io**: Real-time communication
+-   **Mongoose**: MongoDB ODM
+-   **Awilix**: Dependency injection
+-   **Cron**: Job scheduling
+-   **Lodash**: Utility functions
+-   **sc-game-base**: Game base
+
+### Gaming-Specific Libraries
+
+-   **sc-common**: Shared utilities and logging
+-   **sc-base-apis**: API client functions
+-   **sc-game-management-client**: Game management API
+-   **sc-instrument**: Monitoring and metrics
+
+### Testing
+
+-   **Jest**: Testing framework with custom configuration
+-   **jest-extended**: Additional matchers
+-   **jest-when**: Conditional mocking
+
+## Best Practices
+
+### Error Handling
+
+-   Always use try-catch blocks for async operations
+-   Log errors using `sc-common` logger
+-   Return meaningful error responses to clients
+-   Handle database connection failures gracefully
+
+### Performance
+
+-   Use MongoDB aggregation pipelines for complex queries
+-   Implement proper indexing strategies
+-   Cache frequently accessed data in GameData
+-   Use connection pooling for database operations
+
+### Security
+
+-   Validate all user inputs using validators
+-   Implement proper authentication checks
+-   Use CORS helper for domain validation
+-   Sanitize data before database operations
+
+### Testing
+
+-   Write unit tests for all business logic
+-   Mock external dependencies using Jest
+-   Test error scenarios and edge cases
+-   Maintain high test coverage (80%+)
+-   Validate different states of the function
+-   Test both happy paths and edge cases
+
+### Testing Best Practices
+
+-   **Follow AAA Pattern**: Arrange, Act, Assert for clear test structure
+-   **One assertion per test**: Each test should verify a single behavior
+-   **Use descriptive test names**: Test names should explain what is being tested
+-   **Mock external dependencies**: Use Jest mocks for APIs, databases, and third-party services
+-   **Test edge cases**: Include boundary conditions and error scenarios
+-   **Maintain high test coverage**: Aim for >80% coverage on business logic
+-   **Use proper test setup**: Leverage Jest's setup and teardown hooks
+-   **Test async operations**: Properly handle promises and async/await in tests
+-   **Group tests by functionality**: Group unit tests by function name first, and group child tests by input condition or logical context.
+
+## Code Examples
