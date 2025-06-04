@@ -1,8 +1,15 @@
 import { EventInterceptors } from "sc-game-base/src/core";
 
 export default class SlotPromotionInterceptor extends EventInterceptors.PromotionBetInterceptor {
-    constructor({ promotionClient, logService }) {
-        super({ promotionClient, logService });
+    /**
+     * @param {Object} dependencies
+     * @param {Object} dependencies.logService - Logging service
+     * @param {Object} dependencies.definition - Game definition
+     * @param {Object} dependencies.placeBetPublisher - Publisher for bet events
+     * @param {Object} dependencies.gamePromotionApiClient - Promotion API client
+     */
+    constructor({ logService, definition, placeBetPublisher, gamePromotionApiClient }) {
+        super({ logService, definition, placeBetPublisher, gamePromotionApiClient });
     }
 
     transformEventData(transformName, context) {

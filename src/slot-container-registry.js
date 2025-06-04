@@ -126,28 +126,23 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
     registerInterceptors() {
         // Register slot-specific promotion interceptor
         this.container.register({
-            slotPromotionInterceptor: asClass(SlotPromotionInterceptor).singleton(),
+            slotPromotionInterceptor: asClass(SlotPromotionInterceptor).singleton().proxy(),
         });
     }
 
     registerInterceptorArrays() {
         // Register interceptor arrays with both base and slot-specific interceptors
         this.container.register({
-            registerInterceptorArrays() {
-                // Register interceptor arrays with both base and slot-specific interceptors
-                this.container.register({
-                    betEventInterceptors: asFunction(({ slotPromotionInterceptor }) => {
-                        const interceptors = [];
+            betEventInterceptors: asFunction(({ slotPromotionInterceptor }) => {
+                const interceptors = [];
 
-                        // Add bet-specific interceptors if they exist
-                        if (slotPromotionInterceptor) {
-                            interceptors.push(slotPromotionInterceptor);
-                        }
+                // Add bet-specific interceptors if they exist
+                if (slotPromotionInterceptor) {
+                    interceptors.push(slotPromotionInterceptor);
+                }
 
-                        return interceptors;
-                    }).singleton(),
-                });
-            },
+                return interceptors;
+            }).singleton(),
         });
     }
 }
