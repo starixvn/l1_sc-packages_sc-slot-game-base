@@ -24,8 +24,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
 
         super.register(appConfigs, definition, gameData);
 
-        // Register promotion client and interceptors for promotion features
-        this.registerPromotionServices(appConfigs);
         this.registerInterceptors();
         this.registerInterceptorArrays();
 
@@ -135,21 +133,21 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
     registerInterceptorArrays() {
         // Register interceptor arrays with both base and slot-specific interceptors
         this.container.register({
-            betEventInterceptors: asFunction((container) => {
-                const interceptors = [];
+            registerInterceptorArrays() {
+                // Register interceptor arrays with both base and slot-specific interceptors
+                this.container.register({
+                    betEventInterceptors: asFunction(({ slotPromotionInterceptor }) => {
+                        const interceptors = [];
 
-                // Add base promotion interceptor if available
-                if (container.hasRegistration("promotionBetInterceptor")) {
-                    interceptors.push(container.resolve("promotionBetInterceptor"));
-                }
+                        // Add bet-specific interceptors if they exist
+                        if (slotPromotionInterceptor) {
+                            interceptors.push(slotPromotionInterceptor);
+                        }
 
-                // Add slot-specific promotion interceptor
-                if (container.hasRegistration("slotPromotionInterceptor")) {
-                    interceptors.push(container.resolve("slotPromotionInterceptor"));
-                }
-
-                return interceptors;
-            }).singleton(),
+                        return interceptors;
+                    }).singleton(),
+                });
+            },
         });
     }
 }

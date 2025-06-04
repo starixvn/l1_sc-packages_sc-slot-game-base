@@ -1,6 +1,6 @@
-import { PromotionBetInterceptor } from "sc-game-base/core/event-interceptors";
+import { EventInterceptors } from "sc-game-base/src/core";
 
-export default class SlotPromotionInterceptor extends PromotionBetInterceptor {
+export default class SlotPromotionInterceptor extends EventInterceptors.PromotionBetInterceptor {
     constructor({ promotionClient, logService }) {
         super({ promotionClient, logService });
     }
