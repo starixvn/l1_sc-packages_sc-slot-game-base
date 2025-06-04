@@ -58,6 +58,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
             await this.resetBotJackpotGame();
         } else {
             await super.reset();
+            this.bots = this.baseBots;
         }
     }
 
@@ -130,16 +131,18 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
     }
 
     resetAllBotData() {
-        const jpConfigs = this.gameData.jackpotConfigs;
+        if (this.gameData.gameConfigs.slotsConfig?.jackpot?.enabled) {
+            const jpConfigs = this.gameData.jackpotConfigs;
 
-        this.totalNumberOfTickets = 0;
-        this.odds = this.gameData.gameConfigs.slotsConfig?.icons ?? {};
-        this.bigWinRatio = this.gameData.gameConfigs.slotsConfig?.bigWinRatio ?? 3;
+            this.totalNumberOfTickets = 0;
+            this.odds = this.gameData.gameConfigs.slotsConfig?.icons ?? {};
+            this.bigWinRatio = this.gameData.gameConfigs.slotsConfig?.bigWinRatio ?? 3;
 
-        this.groupTracks = jpConfigs.reduce((acc, jpConfig) => {
-            acc[jpConfig._id] = this.getJpConfigGroupTracks(jpConfig.botBetLevels);
-            return acc;
-        }, {});
+            this.groupTracks = jpConfigs.reduce((acc, jpConfig) => {
+                acc[jpConfig._id] = this.getJpConfigGroupTracks(jpConfig.botBetLevels);
+                return acc;
+            }, {});
+        }
 
         super.resetAllBotData();
     }
