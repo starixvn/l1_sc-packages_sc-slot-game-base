@@ -12,18 +12,20 @@ export default class NatsClient {
         this.nats = await connect(this.natsOptions.connectionOptions);
         this.jetstreamManager = await jetstreamManager(this.nats);
 
+        const { jackpotPools, jackpotWinners, subjectPrefix } = this.natsOptions.streams;
+
         await this.jetstreamManager.streams.add({
-            subjects: ["jackpot-pools.>"],
+            subjects: [`${subjectPrefix}-jackpot-pools.>`],
             max_msgs_per_subject: 1,
             retention: RetentionPolicy.Workqueue,
-            ...this.natsOptions.streams.jackpotPools,
+            ...jackpotPools,
         });
 
         await this.jetstreamManager.streams.add({
-            subjects: ["jackpot-winners.>"],
+            subjects: [`${subjectPrefix}-jackpot-winners.>`],
             max_age: 0,
             retention: RetentionPolicy.Workqueue,
-            ...this.natsOptions.streams.jackpotWinners,
+            ...jackpotWinners,
         });
     }
 
