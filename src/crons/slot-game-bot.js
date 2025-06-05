@@ -58,7 +58,7 @@ export default class SlotGameBot extends Core.Crons.BaseBot {
             await this.resetBotJackpotGame();
         } else {
             await super.reset();
-            this.bots = this.baseBots;
+            this.bots = this.chance.shuffle(this.baseBots);
         }
     }
 
