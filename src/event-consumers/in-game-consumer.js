@@ -50,7 +50,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
         const { rate, multiplier } = this.getExchangeRate(session);
 
-        return {
+        const payload = {
             gameConfigs,
             jackpotPools,
             freeSpins,
@@ -61,6 +61,12 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
                 disableJackpotGames: session.disableJackpotGames,
             },
         };
+
+        if (realPlayer.promotion) {
+            payload.promotion = realPlayer.promotion;
+        }
+
+        return payload;
     }
 
     getSlotGameConfig(realPlayer, canAccessJackpot) {

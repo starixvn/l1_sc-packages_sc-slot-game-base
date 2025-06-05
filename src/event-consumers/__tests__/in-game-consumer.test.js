@@ -17,7 +17,7 @@ const getBalance = jest.fn(() => ({ isOk: true, response: { red: 1000 } }));
 const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
 gameManagementApiClientFactory.instance.mockReturnValue({
     users: {
-        setBalance: jest.fn(() => ({ isSuccessful: true, data: {  } })),
+        setBalance: jest.fn(() => ({ isSuccessful: true, data: {} })),
     },
 });
 
@@ -147,6 +147,95 @@ describe("IngameConsumer", () => {
             // assert
             expect(payload.freeSpins).not.toBeNull();
             expect(payload.freeSpins).toStrictEqual(expectedFreeSpins);
+        });
+
+        describe("promotion data", () => {
+            it("should include promotion when player has promotion", async () => {
+                const promotionData = {
+                    promotionId: "winter2024",
+                    code: "WIN24",
+                    bonusItemCount: 5,
+                    isActive: true,
+                };
+
+                const mockPlayer = {
+                    profile: { name: "testPlayer" },
+                    session: { currencyGroupId: "617a650628b7a500016388f5", currencyCode: "USD", multiplier: 1000 },
+                    promotion: promotionData,
+                };
+
+                consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+                const payload = await consumer.buildPayload(mockPlayer);
+
+                expect(payload.promotion).toBe(promotionData);
+            });
+
+            it("should not include promotion when player has no promotion", async () => {
+                const mockPlayer = {
+                    profile: { name: "testPlayer" },
+                    session: { currencyGroupId: "617a650628b7a500016388f5", currencyCode: "USD", multiplier: 1000 },
+                };
+
+                consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+                const payload = await consumer.buildPayload(mockPlayer);
+
+                expect(payload.promotion).toBeUndefined();
+            });
+
+            it("should include promotion as-is with any data structure", async () => {
+                const customPromotionData = {
+                    id: "custom-promo",
+                    customField: "customValue",
+                    nested: {
+                        data: true,
+                        array: [1, 2, 3],
+                    },
+                };
+
+                const mockPlayer = {
+                    profile: { name: "testPlayer" },
+                    session: { currencyGroupId: "617a650628b7a500016388f5", currencyCode: "USD", multiplier: 1000 },
+                    promotion: customPromotionData,
+                };
+
+                consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+                const payload = await consumer.buildPayload(mockPlayer);
+
+                expect(payload.promotion).toBe(customPromotionData);
+                expect(payload.promotion.customField).toBe("customValue");
+                expect(payload.promotion.nested).toEqual({ data: true, array: [1, 2, 3] });
+            });
+
+            it("should preserve all other payload properties when promotion exists", async () => {
+                const promotionData = { promotionId: "test" };
+                const mockPlayer = {
+                    profile: { name: "testPlayer" },
+                    session: {
+                        currencyGroupId: "617a650628b7a500016388f5",
+                        currencyCode: "USD",
+                        multiplier: 1000,
+                        disableJackpotGames: false,
+                    },
+                    promotion: promotionData,
+                };
+
+                jackpotValidator.canAccessJackpot.mockReturnValueOnce(true);
+                jackpotsRepository.find().lean().exec.mockReturnValueOnce([]);
+                freeSpinsConsumer.getTotalAvaiableFreeSpins.mockReturnValueOnce(0);
+                freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValueOnce(null);
+                consumer.getUserInfo = jest.fn().mockReturnValue({ UID: 1, name: "user", red: 2000 });
+
+                const payload = await consumer.buildPayload(mockPlayer);
+
+                expect(payload.promotion).toBe(promotionData);
+                expect(payload.gameConfigs).toBeDefined();
+                expect(payload.jackpotPools).toBeDefined();
+                expect(payload.freeSpins).toBeDefined();
+                expect(payload.user).toBeDefined();
+            });
         });
     });
 
