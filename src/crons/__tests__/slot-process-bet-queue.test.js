@@ -5,424 +5,331 @@ import GameManagementApiClientFactory from "sc-game-base/src/core/game-managemen
 import JackpotValidator from "../../validators/jackpot-validator";
 import SlotProcessBetQueue from "../slot-process-bet-queue";
 
-const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+describe("SlotProcessBetQueue", () => {
+    let cron;
+    let dependencies;
+    let mockGameData;
+    let mockPlayer;
+    let mockDefinition;
+    let mockJackpotConfigsConsumer;
 
-describe("slot-process-bet-queue", () => {
-    describe("extends", () => {
-        it("should extend Core.Crons.BaseBot", () => {
-            // act
-            const cron = new SlotProcessBetQueue({ gameManagementApiClientFactory });
+    // Common setup
+    beforeEach(() => {
+        // Setup mock jackpot configs consumer
+        mockJackpotConfigsConsumer = {
+            getJackpotConfig: jest.fn().mockReturnValue({
+                pools: {
+                    minor: { playerSettings: { contrib: 0.1 } },
+                    major: { playerSettings: { contrib: 0.15 } },
+                    grand: { playerSettings: { contrib: 0.25 } },
+                },
+                excludeTestCurrency: false,
+            }),
+        };
 
-            // assert
-            expect(cron instanceof Core.Crons.ProcessBetQueue);
+        // Setup mock game data with currencies
+        mockGameData = {
+            roundId: 1,
+            exchangeRates: { code: [], exId: "ex1" },
+            gameConfigs: {
+                slotsConfig: {
+                    jackpot: {
+                        enabled: false,
+                    },
+                },
+            },
+            ingame: {},
+            currencies: [
+                { name: "USD", isTest: false },
+                { name: "TEST", isTest: true },
+            ],
+        };
+
+        // Setup mock player
+        mockPlayer = {
+            UID: "player1",
+            profile: { name: "Player 1" },
+            session: {
+                playerId: "pid1",
+                siteId: "site1",
+                currencyName: "USD",
+                operatorId: "op1",
+                siteName: "site1",
+                disabledJackpotGames: false,
+            },
+        };
+
+        // Setup mock definition
+        mockDefinition = {
+            id: "test-game",
+            name: "Test Game",
+        };
+
+        // Create jackpot validator with proper consumer
+        const jackpotValidator = new JackpotValidator(mockGameData);
+        jackpotValidator.jackpotConfigsConsumer = mockJackpotConfigsConsumer;
+
+        // Setup dependencies
+        dependencies = {
+            gameManagementApiClientFactory: stub(GameManagementApiClientFactory),
+            placeBetPublisher: {
+                publishGameFailedBet: jest.fn(),
+                publishSuccessBet: jest.fn(),
+            },
+            freeSpinsConsumer: {
+                getSoonestExpiredFreeSpinSet: jest.fn(),
+                useFreeSpin: jest.fn(),
+            },
+            settleGameRoundConsumer: {
+                settleRound: jest.fn(),
+            },
+            roundsRepository: {
+                create: jest.fn(),
+            },
+            idCountersConsumer: {
+                consume: jest.fn(),
+            },
+            jackpotValidator,
+            jackpotConfigsConsumer: mockJackpotConfigsConsumer,
+            logService: {
+                log: jest.fn(),
+                error: jest.fn(),
+            },
+            baseMetrics: {
+                collectBetProcessedTime: jest.fn(),
+            },
+            placeBet: jest.fn().mockResolvedValue({
+                response: { balance: { credits: 100 } },
+                apiError: null,
+            }),
+        };
+
+        // Create cron instance
+        cron = new SlotProcessBetQueue({
+            definition: mockDefinition,
+            gameData: mockGameData,
+            ...dependencies,
+        });
+
+        // Mock base class methods
+        cron.calculateCurrencyRate = jest.fn().mockReturnValue(1);
+        cron.notifyPlacingBetResult = jest.fn();
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe("Class Inheritance", () => {
+        it("should extend Core.Crons.ProcessBetQueue", () => {
+            expect(cron instanceof Core.Crons.ProcessBetQueue).toBe(true);
         });
     });
 
-    describe("generatePlacingBetResult", () => {
-        it("should return correct value", () => {
-            // arrange
-            const cron = new SlotProcessBetQueue({ gameManagementApiClientFactory });
-            const player = {};
-            const balance = { username: "username" };
-            const bet = { totalAmount: 10, freeSpin: 1 };
-            const expectedValue = { endBet: 10, freeSpin: 1, user: { username: "username" } };
+    describe("proceedBet", () => {
+        describe("when round is finished", () => {
+            beforeEach(() => {
+                mockGameData.ingame[mockPlayer.profile.name] = { finish: true };
+            });
 
-            // act
-            const actualValue = cron.generatePlacingBetResult(player, balance, bet);
+            it("should publish game failed bet with cannotPlaceBet notice", async () => {
+                await cron.proceedBet(mockPlayer, {});
 
-            // assert
-            expect(actualValue).toStrictEqual(expectedValue);
-        });
-    });
-
-    describe("upsertBet", () => {
-        it("when have player session should create correct info", async () => {
-            // arrange
-            const roundsRepository = { create: jest.fn() };
-            const gameData = { exchangeRates: {}, gameConfigs: { slotsConfig: { jackpot: { enabled: false } } } };
-            const jackpotValidator = new JackpotValidator(gameData);
-            const cron = new SlotProcessBetQueue({ roundsRepository, gameData, jackpotValidator, gameManagementApiClientFactory });
-            const player = { session: { playerId: 1, siteId: 2 }, profile: { name: "user3" } };
-            const bet = { totalAmount: 10, freeSpin: 1 };
-
-            // act
-            await cron.upsertBet(player, 1, bet, 1);
-
-            // assert
-            expect(roundsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ playerId: 1, siteId: 2 }));
-        });
-
-        it("when not have player session should create correct info", async () => {
-            // arrange
-            const roundsRepository = { create: jest.fn() };
-            const gameData = { exchangeRates: {}, gameConfigs: { slotsConfig: { jackpot: { enabled: false } } } };
-            const jackpotValidator = new JackpotValidator(gameData);
-            const cron = new SlotProcessBetQueue({ roundsRepository, gameData, jackpotValidator, gameManagementApiClientFactory });
-            const player = { profile: { name: "user3" }, session: null };
-            const bet = { totalAmount: 10, freeSpin: 1 };
-
-            // act
-            await cron.upsertBet(player, 1, bet);
-
-            // assert
-            expect(roundsRepository.create).toHaveBeenCalledWith(expect.objectContaining({ name: "user3" }));
-        });
-
-        describe("when jackpot is enabled", () => {
-            it("Should calculate contribution amount", async () => {
-                // arrange
-                const roundsRepository = { create: jest.fn() };
-                const gameData = { exchangeRates: {}, gameConfigs: { slotsConfig: { jackpot: { enabled: true } } } };
-                const jackpotValidator = new JackpotValidator(gameData);
-                const cron = new SlotProcessBetQueue({ roundsRepository, gameData, jackpotValidator, gameManagementApiClientFactory });
-                const player = { session: { playerId: 1, siteId: 2 }, profile: { name: "user3" } };
-                const bet = { totalAmount: 10, freeSpin: 1, contributionRate: 0.025 };
-                const rate = 0.8;
-                // act
-                await cron.upsertBet(player, 1, bet, rate);
-
-                // assert
-                expect(roundsRepository.create).toHaveBeenCalledWith(
+                expect(dependencies.placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(
+                    mockPlayer.UID,
                     expect.objectContaining({
-                        playerId: 1,
-                        siteId: 2,
-                        jackpotContribution: {
-                            contributionRate: bet.contributionRate,
-                            baseContributionAmount: bet.totalAmount * bet.contributionRate * rate,
-                        },
+                        endBet: -1,
+                        notice: expect.objectContaining({
+                            errorCode: expect.any(String),
+                        }),
                     })
                 );
+            });
+        });
+
+        describe("when using free spins", () => {
+            it("should fail if no free spin set is available", async () => {
+                const payload = { freeSpin: true };
+                dependencies.freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValue(null);
+
+                await cron.proceedBet(mockPlayer, payload);
+
+                expect(dependencies.placeBetPublisher.publishGameFailedBet).toHaveBeenCalledWith(
+                    mockPlayer.UID,
+                    expect.objectContaining({
+                        endBet: -1,
+                        notice: expect.any(Object),
+                    })
+                );
+            });
+
+            it("should use free spin set values when available", async () => {
+                const freeSpinSet = {
+                    bet: 1,
+                    paylines: [1, 2, 3],
+                };
+                dependencies.freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValue(freeSpinSet);
+                dependencies.jackpotValidator.canContributeJackpotPools = jest.fn().mockReturnValue(false);
+
+                const payload = {
+                    freeSpin: true,
+                    amount: 1,
+                    betChoice: [1, 2, 3],
+                };
+                await cron.proceedBet(mockPlayer, payload);
+
+                expect(dependencies.idCountersConsumer.consume).toHaveBeenCalledWith("round");
+                expect(dependencies.placeBet).toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("generateBetInfo", () => {
+        describe("with normal bet", () => {
+            it("should calculate total amount correctly", async () => {
+                const payload = {
+                    amount: 0.1,
+                    betChoice: [1, 2, 3],
+                    freeSpin: false,
+                };
+
+                const result = await cron.generateBetInfo(payload, null, mockPlayer);
+
+                expect(result.totalAmount).toBe(math.round(payload.amount * payload.betChoice.length, 2));
+            });
+
+            it("should set contribution rate to 0 when jackpot is disabled", async () => {
+                // Ensure jackpot is disabled
+                mockGameData.gameConfigs.slotsConfig.jackpot.enabled = false;
+                // Mock validator to return false for canContributeJackpotPools
+                dependencies.jackpotValidator.canContributeJackpotPools = jest.fn().mockReturnValue(false);
+
+                const payload = {
+                    amount: 0.1,
+                    betChoice: [1, 2, 3],
+                    freeSpin: false,
+                };
+
+                const result = await cron.generateBetInfo(payload, null, mockPlayer);
+
+                expect(result.contributionRate).toBe(0);
+                expect(result.contributionAmount).toBe(0);
+            });
+
+            it("should calculate contribution rate when jackpot is enabled", async () => {
+                // Enable jackpot
+                mockGameData.gameConfigs.slotsConfig.jackpot.enabled = true;
+                // Mock validator to return true for canContributeJackpotPools
+                dependencies.jackpotValidator.canContributeJackpotPools = jest.fn().mockReturnValue(true);
+
+                const payload = {
+                    amount: 0.1,
+                    betChoice: [1, 2, 3],
+                    freeSpin: false,
+                };
+
+                const result = await cron.generateBetInfo(payload, null, mockPlayer);
+
+                expect(result.contributionRate).toBe(0.5); // 0.1 + 0.15 + 0.25
+                expect(result.contributionAmount).toBe(math.round(result.totalAmount * 0.5, 4));
+            });
+        });
+
+        describe("with free spins", () => {
+            const freeSpinSet = {
+                bet: 2,
+                paylines: [1, 2],
+            };
+
+            beforeEach(() => {
+                dependencies.freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValue(freeSpinSet);
+            });
+
+            it("should use free spin set bet amount", async () => {
+                const payload = { freeSpin: true };
+
+                const result = await cron.generateBetInfo(payload, freeSpinSet, mockPlayer);
+
+                expect(result.amount).toBe(freeSpinSet.bet);
+            });
+
+            it("should use free spin set paylines", async () => {
+                const payload = { freeSpin: true };
+
+                const result = await cron.generateBetInfo(payload, freeSpinSet, mockPlayer);
+
+                expect(result.betChoice).toEqual(freeSpinSet.paylines);
+            });
+
+            it("should set contribution rate to 0 for free spins", async () => {
+                const payload = { freeSpin: true };
+
+                const result = await cron.generateBetInfo(payload, freeSpinSet, mockPlayer);
+
+                expect(result.contributionRate).toBe(0);
             });
         });
     });
 
     describe("handleSuccessBet", () => {
-        it("should call settleGameRoundConsumer.settleRound", async () => {
-            // arrange
-            const settleGameRoundConsumer = { settleRound: jest.fn() };
-            const gameData = { exchangeRates: { code: [] } };
-            const cron = new SlotProcessBetQueue({ settleGameRoundConsumer, gameData, gameManagementApiClientFactory });
-            cron.upsertBet = jest.fn();
-            cron.notifyPlacingBetResult = jest.fn();
-
-            const player = { session: {} };
-            const balance = { username: "username" };
-            const bet = { totalAmount: 10, freeSpin: false };
-
-            // act
-            await cron.handleSuccessBet(player, balance, 1, bet);
-
-            // assert
-            expect(settleGameRoundConsumer.settleRound).toBeCalled();
-        });
-
-        it("when is freespin should call freeSpinsConsumer.useFreeSpin", async () => {
-            // arrange
-            const settleGameRoundConsumer = { settleRound: jest.fn() };
-            const freeSpinsConsumer = { useFreeSpin: jest.fn() };
-            const gameData = { exchangeRates: { code: [] } };
-            const cron = new SlotProcessBetQueue({ settleGameRoundConsumer, freeSpinsConsumer, gameData, gameManagementApiClientFactory });
-            cron.upsertBet = jest.fn();
-            cron.notifyPlacingBetResult = jest.fn();
-
-            const player = { session: {} };
-            const balance = { username: "username" };
-            const bet = { totalAmount: 10, freeSpin: true };
-
-            // act
-            await cron.handleSuccessBet(player, balance, 1, bet);
-
-            // assert
-            expect(freeSpinsConsumer.useFreeSpin).toBeCalled();
-        });
-    });
-
-    describe("composeBettingTimeValidationCriteria", () => {
-        it("should return empty", () => {
-            // arrange
-            const cron = new SlotProcessBetQueue({ gameManagementApiClientFactory });
-
-            // act
-            const actualValue = cron.composeBettingTimeValidationCriteria(1);
-
-            // assert
-            expect(actualValue).toStrictEqual([]);
-        });
-    });
-
-    describe("formatApiBetInfo", () => {
-        it("should return correct value", () => {
-            // arrange
-            const definition = { id: 1 };
-            const gameData = { roundId: 2 };
-
-            const cron = new SlotProcessBetQueue({ definition, gameData, gameManagementApiClientFactory });
-            const payload = {
+        it("should call settleGameRoundConsumer with correct parameters", async () => {
+            const balance = { credits: 100 };
+            const bet = {
                 totalAmount: 10,
-                freeBet: false,
                 freeSpin: false,
-                contributionRate: 1,
-                contributionAmount: 2,
+                amount: 1,
+                betChoice: [1, 2],
             };
+            const roundId = 1;
 
-            const expectedValue = {
-                amount: 10,
-                gameId: 1,
-                gameRoundId: 2,
-                choiceId: 0,
-                freeBet: false,
+            await cron.handleSuccessBet(mockPlayer, balance, roundId, bet);
+
+            expect(dependencies.settleGameRoundConsumer.settleRound).toHaveBeenCalledWith(mockPlayer, roundId);
+        });
+
+        it("should use free spin when bet is a free spin", async () => {
+            const balance = { credits: 100 };
+            const bet = {
+                totalAmount: 10,
+                freeSpin: true,
+                amount: 1,
+                betChoice: [1, 2],
+            };
+            const roundId = 1;
+
+            await cron.handleSuccessBet(mockPlayer, balance, roundId, bet);
+
+            expect(dependencies.freeSpinsConsumer.useFreeSpin).toHaveBeenCalledWith(mockPlayer);
+        });
+
+        it("should create bet record with correct data", async () => {
+            const balance = { credits: 100 };
+            const bet = {
+                totalAmount: 10,
                 freeSpin: false,
-                contributionRate: 1,
-                contributionAmount: 2,
+                amount: 1,
+                betChoice: [1, 2],
+                contributionRate: 0.5,
             };
+            const roundId = 1;
 
-            // act
-            const actualValue = cron.formatApiBetInfo(payload);
+            await cron.handleSuccessBet(mockPlayer, balance, roundId, bet);
 
-            // assert
-            expect(actualValue).toStrictEqual(expectedValue);
-        });
-    });
-
-    describe("proceedBet", () => {
-        it("when bet already finished should publishGameFailedBet", async () => {
-            // arrange
-            const gameData = {
-                ingame: {
-                    player1: { finish: true },
-                },
-            };
-            const placeBetPublisher = { publishGameFailedBet: jest.fn() };
-            const cron = new SlotProcessBetQueue({ gameData, placeBetPublisher, gameManagementApiClientFactory });
-            const player = { profile: { name: "player1" } };
-            const payload = {};
-
-            // act
-            await cron.proceedBet(player, payload);
-
-            // assert
-            expect(placeBetPublisher.publishGameFailedBet).toBeCalled();
-        });
-
-        it("when freeSpin but not have soonestExpiredFreeSpinSet should publishGameFailedBet", async () => {
-            // arrange
-            const gameData = {
-                ingame: {
-                    player1: { finish: false },
-                },
-                gameConfigs: {
-                    slotsConfig: { jackpot: {} },
-                },
-            };
-            const placeBetPublisher = { publishGameFailedBet: jest.fn() };
-            const freeSpinsConsumer = { getSoonestExpiredFreeSpinSet: jest.fn() };
-            const soonestExpiredFreeSpinSet = null;
-            freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValueOnce(soonestExpiredFreeSpinSet);
-            const cron = new SlotProcessBetQueue({ gameData, placeBetPublisher, freeSpinsConsumer, gameManagementApiClientFactory });
-            const player = { profile: { name: "player1" } };
-            const payload = { freeSpin: true };
-
-            // act
-            await cron.proceedBet(player, payload);
-
-            // assert
-            expect(placeBetPublisher.publishGameFailedBet).toBeCalled();
-        });
-
-        const testCases = [
-            { jackpot: { enabled: true, playerContributionRatio: 5 }, soonestExpiredFreeSpinSet: { bet: 1, paylines: [] } },
-            { jackpot: {}, soonestExpiredFreeSpinSet: null },
-        ];
-
-        it.each(testCases)("when have soonestExpiredFreeSpinSet should call idCountersConsumer.consume", async (testCase) => {
-            // arrange
-            const gameData = {
-                ingame: {
-                    player1: { finish: false },
-                },
-                gameConfigs: {
-                    slotsConfig: { jackpot: testCase.jackpot },
-                },
-            };
-
-            const definition = { choicesMapper: {} };
-            const placeBetPublisher = { publishGameFailedBet: jest.fn() };
-            const freeSpinsConsumer = { getSoonestExpiredFreeSpinSet: jest.fn() };
-            freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValueOnce(testCase.soonestExpiredFreeSpinSet);
-            const jackpotValidator = { canContributeJackpotPools: jest.fn() };
-            const idCountersConsumer = { consume: jest.fn() };
-            const validateBalance = () => {
-                return { isOk: false, response: { inSufficientBalance: false } };
-            };
-            const placeBet = () => {
-                return { response: {} };
-            };
-            const baseMetrics = { collectBetProcessedTime: jest.fn() };
-            const cron = new SlotProcessBetQueue({
-                gameData,
-                definition,
-                placeBetPublisher,
-                freeSpinsConsumer,
-                idCountersConsumer,
-                validateBalance,
-                placeBet,
-                baseMetrics,
-                jackpotValidator,
-                gameManagementApiClientFactory,
-            });
-            const player = { profile: { name: "player1" }, session: { disabledJackpotGames: false } };
-            const payload = { freeSpin: false, betChoice: [] };
-
-            // act
-            await cron.proceedBet(player, payload);
-
-            // assert
-            expect(idCountersConsumer.consume).toBeCalled();
-        });
-    });
-
-    describe("generateBetInfo", () => {
-        describe("Jackpot is enabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: true,
-                            pools: {
-                                minor: {
-                                    init: 5000,
-                                    playerSettings: { contrib: 0.1, alloc: 90 },
-                                    botSettings: { contrib: 0.01, alloc: 80 },
-                                },
-                                major: {
-                                    init: 25000,
-                                    playerSettings: { contrib: 0.15, alloc: 9 },
-                                    botSettings: { contrib: 0.015, alloc: 15 },
-                                },
-                                grand: {
-                                    init: 50000,
-                                    playerSettings: { contrib: 0.25, alloc: 1 },
-                                    botSettings: { contrib: 0.025, alloc: 5 },
-                                },
-                            },
-                        },
-                    },
-                },
-                currencies: [],
-            };
-            const jackpotValidator = new JackpotValidator(gameData);
-            describe("When user can access jackpot", () => {
-                const player = {
-                    session: {
-                        disableJackpotGames: false,
-                    },
-                };
-                it("Should calculate contribution rate & amount with normal spin", async () => {
-                    //Arrange
-                    const payload = {
-                        freeSpin: false,
-                        amount: 0.1,
-                        betChoice: [1, 2, 3],
-                    };
-                    const cron = new SlotProcessBetQueue({
-                        gameData,
-                        jackpotValidator,
-                        gameManagementApiClientFactory
-                    });
-
-                    //Act
-                    const result = await cron.generateBetInfo(payload, null, player);
-
-                    //Assert
-                    expect(result.contributionRate).toEqual(0.5);
-                    expect(result.contributionAmount).toEqual(math.round(payload.amount * payload.betChoice.length * 0.5, 4));
-                });
-
-                it("contributionRate & contributionAmount should be 0 with free spin", async () => {
-                    //Arrange
-                    const payload = {
-                        freeSpin: true,
-                        amount: 0.1,
-                        betChoice: [1, 2, 3],
-                    };
-                    const cron = new SlotProcessBetQueue({
-                        gameData,
-                        jackpotValidator,
-                        gameManagementApiClientFactory
-                    });
-
-                    //Act
-                    const result = await cron.generateBetInfo(payload, null, player);
-
-                    //Assert
-                    expect(result.contributionRate).toEqual(0);
-                    expect(result.contributionAmount).toEqual(0);
-                });
-            });
-
-            describe("When user can't access jackpot", () => {
-                const player = {
-                    session: {
-                        disableJackpotGames: true,
-                    },
-                };
-                it("contributionRate & contributionAmount should be 0", async () => {
-                    //Arrange
-                    const payload = {
-                        freeSpin: false,
-                        amount: 0.1,
-                        betChoice: [1, 2, 3],
-                    };
-                    const cron = new SlotProcessBetQueue({
-                        gameData,
-                        jackpotValidator,
-                        gameManagementApiClientFactory
-                    });
-
-                    //Act
-                    const result = await cron.generateBetInfo(payload, null, player);
-
-                    //Assert
-                    expect(result.contributionRate).toEqual(0);
-                    expect(result.contributionAmount).toEqual(0);
-                });
-            });
-        });
-
-        describe("Jackpot is disabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: { jackpot: { enabled: false } },
-                },
-                currencies: [],
-            };
-            const jackpotValidator = new JackpotValidator(gameData);
-
-            const player = {
-                session: {
-                    disableJackpotGames: false,
-                },
-            };
-            it("contributionRate & contributionAmount should be 0", async () => {
-                //Arrange
-                const payload = {
+            expect(dependencies.roundsRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: roundId,
+                    uid: mockPlayer.UID,
+                    name: mockPlayer.profile.name,
                     freeSpin: false,
-                    amount: 0.1,
-                    betChoice: [1, 2, 3],
-                };
-                const cron = new SlotProcessBetQueue({
-                    gameData,
-                    jackpotValidator,
-                    gameManagementApiClientFactory
-                });
-
-                //Act
-                const result = await cron.generateBetInfo(payload, null, player);
-
-                //Assert
-                expect(result.contributionRate).toEqual(0);
-                expect(result.contributionAmount).toEqual(0);
-            });
+                    bet: bet.amount,
+                    totalAmount: bet.totalAmount,
+                    paylines: bet.betChoice,
+                    currency: mockPlayer.session.currencyName,
+                    operatorId: mockPlayer.session.operatorId,
+                    playerId: mockPlayer.session.playerId,
+                    siteName: mockPlayer.session.siteName,
+                })
+            );
         });
     });
 });

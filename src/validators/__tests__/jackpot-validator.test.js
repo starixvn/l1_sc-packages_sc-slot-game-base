@@ -1,290 +1,104 @@
 import JackpotValidator from "../jackpot-validator";
 
 describe("JackpotValidator", () => {
+    let gameData;
+    let jackpotConfigsConsumer;
+    let validator;
+
+    beforeEach(() => {
+        gameData = {
+            currencies: [],
+        };
+        jackpotConfigsConsumer = {
+            getJackpotConfig: jest.fn(),
+        };
+        validator = new JackpotValidator(gameData, jackpotConfigsConsumer);
+    });
+
     describe("canAccessJackpot", () => {
-        describe("Jackpot is enabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: true,
-                        },
-                    },
-                },
-            };
-            it.each([
-                [
-                    {
-                        session: {
-                            disableJackpotGames: false,
-                        },
-                    },
-                    true,
-                ],
-                [
-                    {
-                        session: {
-                            disableJackpotGames: true,
-                        },
-                    },
-                    false,
-                ],
-            ])("Should return result based on session.disableJackpotGames", (player, expectedResult) => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
+        it.each([
+            [
+                "when jackpot config exists and jackpot not disabled",
+                { session: { operatorId: "op1", siteName: "site1", disableJackpotGames: false } },
+                true,
+                {},
+            ],
+            [
+                "when jackpot config exists but jackpot disabled",
+                { session: { operatorId: "op1", siteName: "site1", disableJackpotGames: true } },
+                false,
+                {},
+            ],
+            ["when jackpot config does not exist", { session: { operatorId: "op1", siteName: "site1", disableJackpotGames: false } }, null, null],
+        ])("%s", (_, player, expected, config) => {
+            // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(config);
 
-                //Act
-                const result = validator.canAccessJackpot(player);
+            // Act
+            const result = validator.canAccessJackpot(player);
 
-                //Assert
-                expect(result).toStrictEqual(expectedResult);
-            });
-        });
-
-        describe("Jackpot is disabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: false,
-                        },
-                    },
-                },
-            };
-
-            it.each([
-                {
-                    session: {
-                        disableJackpotGames: false,
-                    },
-                },
-                {
-                    session: {
-                        disableJackpotGames: true,
-                    },
-                },
-            ])("should always return false", (player) => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
-
-                //Act
-                const result = validator.canAccessJackpot(player);
-
-                //Assert
-                expect(result).toBeFalse();
-            });
+            // Assert
+            expect(result).toBe(expected);
+            expect(jackpotConfigsConsumer.getJackpotConfig).toHaveBeenCalledWith(player.session.operatorId, player.session.siteName);
         });
     });
+
     describe("canContributeJackpotPools", () => {
-        describe("Jackpot is enabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: true,
-                        },
-                    },
-                },
-                currencies: [],
-            };
-            const player = {
-                session: {
-                    disableJackpotGames: false,
-                },
-            };
+        const player = {
+            session: {
+                operatorId: "op1",
+                siteName: "site1",
+                disableJackpotGames: false,
+                currencyName: "USD",
+            },
+        };
 
-            it("Should return false when freeSpin is true", () => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
+        it.each([
+            ["returns false when freeSpin is true", true, false, {}, []],
+            ["returns true for normal currency", false, true, {}, []],
+            ["returns false for test currency when excluded", false, false, { excludeTestCurrency: true }, [{ name: "USD", isTest: true }]],
+            ["returns true for test currency when not excluded", false, true, { excludeTestCurrency: false }, [{ name: "USD", isTest: true }]],
+            ["returns false when jackpot config does not exist", false, false, null, []],
+        ])("%s", (_, freeSpin, expected, config, currencies) => {
+            // Arrange
+            gameData.currencies = currencies;
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(config);
 
-                //Act
-                const result = validator.canContributeJackpotPools(player, true);
+            // Act
+            const result = validator.canContributeJackpotPools(player, freeSpin);
 
-                //Assert
-                expect(result).toBeFalse();
-            });
-
-            it("Should return true when freeSpin is false", () => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
-
-                //Act
-                const result = validator.canContributeJackpotPools(player, false);
-
-                //Assert
-                expect(result).toBeTrue();
-            });
-
-            describe("user with test currency", () => {
-                const player = {
-                    session: {
-                        disableJackpotGames: false,
-                        currencyName: "UUS",
-                    },
-                };
-
-                it.each([true, false])("Should return correctly based on excludeTestCurrency", (excludeTestCurrency) => {
-                    //Arrange
-                    const gameData = {
-                        gameConfigs: {
-                            slotsConfig: {
-                                jackpot: {
-                                    enabled: true,
-                                    excludeTestCurrency,
-                                },
-                            },
-                        },
-                        currencies: [{ name: "UUS", isTest: true }],
-                    };
-                    const validator = new JackpotValidator(gameData);
-
-                    //Act
-                    const result = validator.canContributeJackpotPools(player, false);
-
-                    //Assert
-                    expect(result).toStrictEqual(!excludeTestCurrency);
-                });
-            });
-        });
-
-        describe("Jackpot is disabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: false,
-                        },
-                    },
-                },
-            };
-
-            it.each([
-                {
-                    session: {
-                        disableJackpotGames: false,
-                    },
-                },
-                {
-                    session: {
-                        disableJackpotGames: true,
-                    },
-                },
-            ])("should always return false", (player) => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
-
-                //Act
-                const result = validator.canContributeJackpotPools(player, false);
-
-                //Assert
-                expect(result).toBeFalse();
-            });
-
-            
-            describe("user with test currency", () => {
-                const player = {
-                    session: {
-                        disableJackpotGames: false,
-                        currencyName: "UUS",
-                    },
-                };
-
-                it.each([true, false])("Should return correctly based on excludeTestCurrency", (excludeTestCurrency) => {
-                    //Arrange
-                    const gameData = {
-                        gameConfigs: {
-                            slotsConfig: {
-                                jackpot: {
-                                    enabled: true,
-                                    excludeTestCurrency,
-                                },
-                            },
-                        },
-                        currencies: [{ name: "UUS", isTest: true }],
-                    };
-                    const validator = new JackpotValidator(gameData);
-
-                    //Act
-                    const result = validator.canHitJackpot(player);
-
-                    //Assert
-                    expect(result).toStrictEqual(!excludeTestCurrency);
-                });
-            });
+            // Assert
+            expect(result).toBe(expected);
+            expect(jackpotConfigsConsumer.getJackpotConfig).toHaveBeenCalledWith(player.session.operatorId, player.session.siteName);
         });
     });
+
     describe("canHitJackpot", () => {
-        describe("Jackpot is enabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: true,
-                        },
-                    },
-                },
-            };
-            it.each([
-                [
-                    {
-                        session: {
-                            disableJackpotGames: false,
-                        },
-                    },
-                    true,
-                ],
-                [
-                    {
-                        session: {
-                            disableJackpotGames: true,
-                        },
-                    },
-                    false,
-                ],
-            ])("Should return result based on session.disableJackpotGames", (player, expectedResult) => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
+        const player = {
+            session: {
+                operatorId: "op1",
+                siteName: "site1",
+                disableJackpotGames: false,
+                currencyName: "USD",
+            },
+        };
 
-                //Act
-                const result = validator.canAccessJackpot(player);
+        it.each([
+            ["returns true for normal currency", true, {}, []],
+            ["returns false for test currency when excluded", false, { excludeTestCurrency: true }, [{ name: "USD", isTest: true }]],
+            ["returns true for test currency when not excluded", true, { excludeTestCurrency: false }, [{ name: "USD", isTest: true }]],
+            ["returns false when jackpot config does not exist", false, null, []],
+        ])("%s", (_, expected, config, currencies) => {
+            // Arrange
+            gameData.currencies = currencies;
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(config);
 
-                //Assert
-                expect(result).toStrictEqual(expectedResult);
-            });
-        });
+            // Act
+            const result = validator.canHitJackpot(player);
 
-        describe("Jackpot is disabled", () => {
-            const gameData = {
-                gameConfigs: {
-                    slotsConfig: {
-                        jackpot: {
-                            enabled: false,
-                        },
-                    },
-                },
-            };
-
-            it.each([
-                {
-                    session: {
-                        disableJackpotGames: false,
-                    },
-                },
-                {
-                    session: {
-                        disableJackpotGames: true,
-                    },
-                },
-            ])("should always return false", (player) => {
-                //Arrange
-                const validator = new JackpotValidator(gameData);
-
-                //Act
-                const result = validator.canHitJackpot(player);
-
-                //Assert
-                expect(result).toBeFalse();
-            });
+            // Assert
+            expect(result).toBe(expected);
+            expect(jackpotConfigsConsumer.getJackpotConfig).toHaveBeenCalledWith(player.session.operatorId, player.session.siteName);
         });
     });
 });

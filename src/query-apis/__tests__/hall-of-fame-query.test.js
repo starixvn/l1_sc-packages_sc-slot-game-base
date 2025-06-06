@@ -1,186 +1,296 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
-
 import { GameManagementApiClientFactory } from "sc-game-base/src/core/game-management-api";
 import { HallOfFameQuery } from "..";
-const famesRepository = stubMongoose(mongoose.Model);
-const jackpotsRepository = stubMongoose(mongoose.Model);
 
-const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
-const gameManagementApiClient = {
-    exchangeRates: {
-        getExchangeRatesByExIds: jest.fn(() => ({ isSuccessful: true, data: [{ exId: 1, code: { US: 1 } }] })),
-    },
-};
-gameManagementApiClientFactory.instance.mockReturnValue(gameManagementApiClient);
+describe("HallOfFameQuery", () => {
+    let famesRepository;
+    let jackpotsRepository;
+    let gameManagementApiClientFactory;
+    let gameManagementApiClient;
+    let jackpotConfigsConsumer;
+    let gameData;
+    let fameQuery;
 
-describe("queryBigWinningWinners", () => {
-    it("should return empty when page < 1", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
-        const player = {};
+    beforeEach(() => {
+        famesRepository = stubMongoose(mongoose.Model);
+        jackpotsRepository = stubMongoose(mongoose.Model);
+        gameManagementApiClient = {
+            exchangeRates: {
+                getExchangeRatesByExIds: jest.fn(() => ({ isSuccessful: true, data: [{ exId: 1, code: { US: 1 } }] })),
+            },
+        };
+        gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
+        gameManagementApiClientFactory.instance.mockReturnValue(gameManagementApiClient);
 
-        // act
-        const actualResult = await fameQuery.queryBigWinningWinners(player, 0);
+        jackpotConfigsConsumer = {
+            getJackpotConfig: jest.fn().mockReturnValue({
+                _id: "config1",
+                operatorId: "op1",
+                siteNames: ["site1"],
+                pools: {
+                    minor: { init: 5000 },
+                    major: { init: 25000 },
+                    grand: { init: 50000 },
+                },
+            }),
+        };
 
-        // assert
-        expect(actualResult).toEqual({ bigWinningWinners: {} });
+        gameData = {};
+        fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory, gameData, jackpotConfigsConsumer);
     });
 
-    it("when not have big winners should return empty", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
+    describe("queryBigWinningWinners", () => {
+        const defaultPlayer = {
+            session: {
+                operatorId: "op1",
+                siteName: "site1",
+                currencyCode: "US",
+            },
+        };
 
-        famesRepository.find().lean().exec.mockReturnValueOnce(null);
-        famesRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
-        famesRepository.countDocuments().exec.mockReturnValueOnce(0);
-        const player = {};
+        it("should return empty when page < 1", async () => {
+            const actualResult = await fameQuery.queryBigWinningWinners(defaultPlayer, 0);
+            expect(actualResult).toEqual({ bigWinningWinners: {} });
+        });
 
-        // act
-        const actualResult = await fameQuery.queryBigWinningWinners(player, 1);
+        it("should return empty when pageSize < 1", async () => {
+            const actualResult = await fameQuery.queryBigWinningWinners(defaultPlayer, 1, 0);
+            expect(actualResult).toEqual({ bigWinningWinners: {} });
+        });
 
-        // assert
-        expect(actualResult.bigWinningWinners.total).toEqual(0);
-        expect(actualResult.bigWinningWinners.winners).toStrictEqual([]);
-    });
+        it("should apply correct filter based on jackpot config", async () => {
+            // Arrange
+            const expectedFilter = {
+                operatorId: "op1",
+                siteName: { $in: ["site1"] },
+            };
 
-    it("should return data when page >= 1", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
+            famesRepository.find().lean().exec.mockReturnValueOnce([]);
+            famesRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
 
-        famesRepository
-            .find()
-            .lean()
-            .exec.mockReturnValueOnce([
-                { name: "a", totalAmount: 2, winningAmount: 7, freeSpin: false, rate: 1, exchangeRateId: 1 },
-                { name: "b", totalAmount: 1, winningAmount: 7, freeSpin: true, rate: 1, exchangeRateId: 1 },
-            ]);
+            // Act
+            await fameQuery.queryBigWinningWinners(defaultPlayer, 1);
 
-        famesRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
-        famesRepository.countDocuments().exec.mockReturnValueOnce(2);
-        const player = { session: { currencyCode: "US" } };
+            // Assert
+            expect(famesRepository.find).toHaveBeenCalledWith(expect.objectContaining(expectedFilter), expect.any(Object), expect.any(Object));
+        });
 
-        // act
-        const actualResult = await fameQuery.queryBigWinningWinners(player, 1);
+        it("should handle missing jackpot config site names", async () => {
+            // Arrange
+            jackpotConfigsConsumer.getJackpotConfig.mockReturnValueOnce({
+                _id: "config1",
+                operatorId: "op1",
+            });
 
-        // assert
-        expect(actualResult.bigWinningWinners.total).toEqual(2);
-        expect(actualResult.bigWinningWinners.winners).not.toBeEmpty();
-    });
+            const expectedFilter = {
+                operatorId: "op1",
+            };
 
-    it("should convert amount to base amount", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
+            famesRepository.find().lean().exec.mockReturnValueOnce([]);
+            famesRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
 
-        famesRepository
-            .find()
-            .lean()
-            .exec.mockReturnValueOnce([
+            // Act
+            await fameQuery.queryBigWinningWinners(defaultPlayer, 1);
+
+            // Assert
+            expect(famesRepository.find).toHaveBeenCalledWith(expect.objectContaining(expectedFilter), expect.any(Object), expect.any(Object));
+        });
+
+        it("should apply correct pagination", async () => {
+            // Arrange
+            const page = 2;
+            const pageSize = 5;
+            const expectedSkip = (page - 1) * pageSize;
+
+            famesRepository.find().lean().exec.mockReturnValueOnce([]);
+            famesRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
+
+            // Act
+            await fameQuery.queryBigWinningWinners(defaultPlayer, page, pageSize);
+
+            // Assert
+            expect(famesRepository.find).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.any(Object),
+                expect.objectContaining({
+                    skip: expectedSkip,
+                    limit: pageSize,
+                })
+            );
+        });
+
+        it("should return winners with exchange rate codes", async () => {
+            // Arrange
+            const mockWinners = [
                 {
-                    name: "a",
-                    totalAmount: 2,
-                    winningAmount: 7,
+                    name: "player1",
+                    totalAmount: 100,
+                    winningAmount: 500,
                     freeSpin: false,
-                    rate: 1.5,
-                    baseTotalAmount: 3,
-                    baseWinningAmount: 10.5,
+                    rate: 1,
                     exchangeRateId: 1,
                 },
-                { name: "b", totalAmount: 1, winningAmount: 7, freeSpin: true, rate: 1, baseTotalAmount: 1, baseWinningAmount: 7, exchangeRateId: 1 },
-                {
-                    name: "c",
-                    totalAmount: 3,
-                    winningAmount: 10,
-                    freeSpin: false,
-                    rate: 1000,
-                    baseTotalAmount: 3000,
-                    baseWinningAmount: 10000,
-                    exchangeRateId: 1,
-                },
-            ]);
+            ];
 
-        famesRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
-        famesRepository.countDocuments().exec.mockReturnValueOnce(2);
-        const player = { session: { currencyCode: "US" } };
+            famesRepository.find().lean().exec.mockReturnValueOnce(mockWinners);
+            famesRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(1) });
 
-        // act
-        const actualResult = await fameQuery.queryBigWinningWinners(player, 1);
+            // Act
+            const result = await fameQuery.queryBigWinningWinners(defaultPlayer, 1);
 
-        // assert
-        expect(actualResult.bigWinningWinners.total).toEqual(2);
-        expect(actualResult.bigWinningWinners.winners).toEqual([
-            {
-                name: "a",
-                totalAmount: 2,
-                winningAmount: 7,
-                freeSpin: false,
-                rate: 1.5,
-                baseTotalAmount: 3,
-                baseWinningAmount: 10.5,
-                exchangeRateId: 1,
-                exchangeRateCode: {
-                    US: 1,
-                },
-            },
-            {
-                name: "b",
-                totalAmount: 1,
-                winningAmount: 7,
-                freeSpin: true,
-                rate: 1,
-                baseTotalAmount: 1,
-                baseWinningAmount: 7,
-                exchangeRateId: 1,
-                exchangeRateCode: {
-                    US: 1,
-                },
-            },
-            {
-                name: "c",
-                totalAmount: 3,
-                winningAmount: 10,
-                freeSpin: false,
-                rate: 1000,
-                baseTotalAmount: 3000,
-                baseWinningAmount: 10000,
-                exchangeRateId: 1,
-                exchangeRateCode: {
-                    US: 1,
-                },
-            },
-        ]);
-    });
-});
-
-describe("queryJackpotWinners", () => {
-    const player = { session: { currencyCode: "US" } };
-    it("should return empty when page < 1", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
-
-        // act
-        const actualResult = await fameQuery.queryJackpotWinners(player, 0);
-
-        // assert
-        expect(actualResult).toEqual({ jackpotWinners: {} });
+            // Assert
+            expect(result.bigWinningWinners.winners[0]).toEqual(
+                expect.objectContaining({
+                    name: "player1",
+                    exchangeRateCode: { US: 1 },
+                })
+            );
+        });
     });
 
-    it("should return data when page >= 1", async () => {
-        // arrange
-        const fameQuery = new HallOfFameQuery(1, famesRepository, jackpotsRepository, gameManagementApiClientFactory);
-        jackpotsRepository
-            .find()
-            .lean()
-            .exec.mockReturnValueOnce([{ hitTime: "2021-06-02", winnerName: "a", amount: 7, pool: 1, winningRatio: 0.98 }]);
+    describe("queryJackpotWinners", () => {
+        const defaultPlayer = {
+            session: {
+                operatorId: "op1",
+                siteName: "site1",
+                currencyCode: "US",
+            },
+        };
 
-        jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn() });
-        jackpotsRepository.countDocuments().exec.mockReturnValueOnce(1);
+        it("should return empty when page < 1", async () => {
+            const actualResult = await fameQuery.queryJackpotWinners(defaultPlayer, 0);
+            expect(actualResult).toEqual({ jackpotWinners: {} });
+        });
 
-        // act
-        const actualResult = await fameQuery.queryJackpotWinners(player, 1);
+        it("should return empty when pageSize < 1", async () => {
+            const actualResult = await fameQuery.queryJackpotWinners(defaultPlayer, 1, 0);
+            expect(actualResult).toEqual({ jackpotWinners: {} });
+        });
 
-        // assert
-        expect(actualResult.jackpotWinners.total).toEqual(1);
-        expect(actualResult.jackpotWinners.winners).not.toBeEmpty();
+        it("should apply correct filter with jackpot config id", async () => {
+            // Arrange
+            const expectedFilter = {
+                winnerName: { $exists: true },
+                jackpotConfigId: "config1",
+            };
+
+            jackpotsRepository.find().lean().exec.mockReturnValueOnce([]);
+            jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
+
+            // Act
+            await fameQuery.queryJackpotWinners(defaultPlayer, 1);
+
+            // Assert
+            expect(jackpotsRepository.find).toHaveBeenCalledWith(expect.objectContaining(expectedFilter), expect.any(Object), expect.any(Object));
+        });
+
+        it("should calculate winning amount correctly", async () => {
+            // Arrange
+            const mockDate = new Date("2023-01-01");
+            const mockWinner = {
+                hitTime: mockDate,
+                winnerName: "player1",
+                prize: "minor",
+                pool: "minor",
+                amount: 1000,
+                winningRatio: 0.98,
+                exchangeRateId: 1,
+            };
+
+            jackpotsRepository.find.mockReturnValue({
+                lean: () => ({
+                    exec: () => [mockWinner],
+                }),
+            });
+            jackpotsRepository.countDocuments.mockReturnValue({
+                exec: jest.fn().mockResolvedValue(1),
+            });
+
+            // Act
+            const result = await fameQuery.queryJackpotWinners(defaultPlayer, 1);
+
+            // Assert
+            expect(result.jackpotWinners.winners[0]).toEqual({
+                time: mockDate,
+                name: "player1",
+                pool: "minor",
+                winningAmount: 980,
+                exchangeRateId: 1,
+                exchangeRateCode: { US: 1 },
+            });
+        });
+
+        it("should apply correct pagination", async () => {
+            // Arrange
+            const page = 2;
+            const pageSize = 5;
+            const expectedSkip = (page - 1) * pageSize;
+
+            jackpotsRepository.find().lean().exec.mockReturnValueOnce([]);
+            jackpotsRepository.countDocuments.mockReturnValue({ exec: jest.fn().mockResolvedValue(0) });
+
+            // Act
+            await fameQuery.queryJackpotWinners(defaultPlayer, page, pageSize);
+
+            // Assert
+            expect(jackpotsRepository.find).toHaveBeenCalledWith(
+                expect.any(Object),
+                expect.any(Object),
+                expect.objectContaining({
+                    skip: expectedSkip,
+                    limit: pageSize,
+                })
+            );
+        });
+    });
+
+    describe("updateExchangeRateCode", () => {
+        it("should update exchange rate codes for winners", async () => {
+            // Arrange
+            const winners = [
+                { exchangeRateId: 1, name: "player1" },
+                { exchangeRateId: 2, name: "player2" },
+            ];
+
+            gameManagementApiClient.exchangeRates.getExchangeRatesByExIds.mockResolvedValueOnce({
+                isSuccessful: true,
+                data: [
+                    { exId: 1, code: { US: 1.5 } },
+                    { exId: 2, code: { US: 2.0 } },
+                ],
+            });
+
+            const player = {
+                session: { currencyCode: "US" },
+            };
+
+            // Act
+            await fameQuery.updateExchangeRateCode(player, winners);
+
+            // Assert
+            expect(winners[0].exchangeRateCode).toEqual({ US: 1.5 });
+            expect(winners[1].exchangeRateCode).toEqual({ US: 2.0 });
+        });
+
+        it("should handle missing exchange rates", async () => {
+            // Arrange
+            const winners = [{ exchangeRateId: 1, name: "player1" }];
+
+            gameManagementApiClient.exchangeRates.getExchangeRatesByExIds.mockResolvedValueOnce({
+                isSuccessful: true,
+                data: [],
+            });
+
+            const player = {
+                session: { currencyCode: "US" },
+            };
+
+            // Act
+            await fameQuery.updateExchangeRateCode(player, winners);
+
+            // Assert
+            expect(Number.isNaN(winners[0].exchangeRateCode.US)).toBe(true);
+        });
     });
 });

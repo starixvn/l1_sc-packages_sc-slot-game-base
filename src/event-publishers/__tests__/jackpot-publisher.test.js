@@ -1,7 +1,10 @@
 import { stub } from "jest-micro-auto-stub";
 import { Core } from "sc-game-base";
+import { logger } from "sc-common";
+import authenticationHelpers from "sc-game-base/src/core/helpers/authentication-helpers";
 import NatsClient from "../../nats-client";
 import JackpotPublisher from "../jackpot-publisher";
+import JackpotValidator from "../../validators/jackpot-validator";
 
 jest.mock("sc-game-base/src/core/helpers/authentication-helpers");
 
@@ -9,6 +12,8 @@ const gameData = {
     realPlayers: [
         {
             session: {
+                operatorId: "op1",
+                siteName: "site1",
                 disableJackpotGames: true,
             },
             socketClient: {
@@ -17,6 +22,8 @@ const gameData = {
         },
         {
             session: {
+                operatorId: "op1",
+                siteName: "site1",
                 disableJackpotGames: false,
             },
             socketClient: {
@@ -27,107 +34,114 @@ const gameData = {
 };
 
 describe("jackpot-publisher", () => {
+    let logService;
+    let jackpotValidator;
+    let natsClient;
+    let publisher;
+
+    beforeEach(() => {
+        logService = {
+            logError: jest.fn(),
+            logWarning: jest.fn(),
+            logInfo: jest.fn(),
+            logCritical: jest.fn(),
+        };
+        jackpotValidator = {
+            canAccessJackpot: jest.fn(),
+        };
+        natsClient = {
+            publishJackpotWinner: jest.fn(),
+            publishJackpotRunningPools: jest.fn(),
+        };
+        publisher = new JackpotPublisher(1, "TestGame", gameData, {}, logService, jackpotValidator, natsClient);
+    });
+
     describe("extends", () => {
         it("should extend Core.BaseEventPublishers.BaseEventPublisher", () => {
-            // act
-            const publisher = new JackpotPublisher();
-
-            // assert
-            expect(publisher instanceof Core.BaseEventPublishers.BaseEventPublisher);
+            expect(publisher instanceof Core.BaseEventPublishers.BaseEventPublisher).toBe(true);
         });
     });
 
     describe("publishLatestPool", () => {
-        it("should publishToEligibleUsers with correct info", () => {
-            // arrange
-            const publisher = new JackpotPublisher(29, "FourGuardians", gameData);
-            const spy = jest.spyOn(publisher, "publishToEligibleUsers");
-            publisher.publishToAllUsers = jest.fn();
+        it("should publish to eligible users", () => {
+            // Arrange
+            const pool = { pool: "major", amount: 1000 };
+            const poolSettings = { operatorId: "op1", siteNames: ["site1"] };
+            jackpotValidator.canAccessJackpot.mockImplementation((player) => !player.session.disableJackpotGames);
 
-            // act
-            publisher.publishLatestPool(1);
+            // Act
+            publisher.publishLatestPool(pool, poolSettings);
 
-            // assert
-            expect(spy).toHaveBeenCalledWith(expect.objectContaining({ jackpotPool: 1 }));
+            // Assert
+            expect(gameData.realPlayers[0].socketClient.emit).not.toHaveBeenCalled();
+            expect(gameData.realPlayers[1].socketClient.emit).toHaveBeenCalledWith("TestGame", { jackpotPool: pool });
         });
     });
 
     describe("publishWinner", () => {
-        it("should publishToEligibleUsers with correct info", async () => {
-            // arrange
-            const publisher = new JackpotPublisher(29, "FourGuardians", gameData);
+        beforeEach(() => {
             publisher.publishToUser = jest.fn();
-            const spy = jest.spyOn(publisher, "publishToEligibleUsers");
-            publisher.sendJackpotWinner = jest.fn();
-
-            // act
-            await publisher.publishWinner(1, { username: "winner" });
-
-            // assert
-            expect(spy).toHaveBeenCalledWith(expect.objectContaining({ jackpotWinner: { username: "winner" } }));
-        });
-    });
-
-    describe("sendJackpotWinner", () => {
-        it("when not have error should publishToUser with correct info", () => {
-            // arrange
-            const notificationServiceUrl = "notification-service";
-            const appConfigs = {
-                notificationServiceSettings: {
-                    url: notificationServiceUrl,
-                },
-            };
-            const natsClient = stub(NatsClient);
-            const publisher = new JackpotPublisher(2, "", {}, appConfigs, {}, null, natsClient);
-
-            // act
-            publisher.sendJackpotWinner({ user: "winner" }, {});
-
-            // assert
-            expect(natsClient.publishJackpotWinner).toHaveBeenCalledWith({ gameId: 2, user: "winner" });
         });
 
-        it("when have error should logError", () => {
-            // arrange
-            const publisher = new JackpotPublisher(2);
-            publisher.notificationServiceCommunicator = undefined;
-            publisher.logService = { logError: jest.fn() };
+        it("should publish winner and send notification", async () => {
+            // Arrange
+            const playerId = "player1";
+            const winner = { username: "winner", amount: 1000 };
+            const poolSettings = { _id: "config1", operatorId: "op1", siteNames: ["site1"] };
+            jackpotValidator.canAccessJackpot.mockImplementation((player) => !player.session.disableJackpotGames);
 
-            // act
-            publisher.sendJackpotWinner({ user: "winner" });
+            // Act
+            await publisher.publishWinner(playerId, winner, poolSettings);
 
-            // assert
-            expect(publisher.logService.logError).toHaveBeenCalled();
+            // Assert
+            expect(publisher.publishToUser).toHaveBeenCalledWith(playerId, { winningJackpot: winner });
+            expect(gameData.realPlayers[1].socketClient.emit).toHaveBeenCalledWith("TestGame", { jackpotWinner: winner });
+            expect(natsClient.publishJackpotWinner).toHaveBeenCalledWith({
+                gameId: 1,
+                ...winner,
+                jackpotConfigId: "config1",
+            });
+        });
+
+        it("should handle notification errors gracefully", async () => {
+            // Arrange
+            const error = new Error("Failed to notify");
+            natsClient.publishJackpotWinner.mockRejectedValue(error);
+            const poolSettings = { _id: "config1" };
+
+            // Act
+            await publisher.publishWinner("player1", { username: "winner" }, poolSettings);
+
+            // Assert
+            expect(logService.logError).toHaveBeenCalledWith(error);
         });
     });
 
     describe("publishFailedJackpot", () => {
-        it("should publishToUser with correct info", () => {
-            // arrange
-            const publisher = new JackpotPublisher();
+        it("should publish error to user", () => {
+            // Arrange
+            const playerId = "player1";
+            const error = "Invalid jackpot";
             publisher.publishToUser = jest.fn();
 
-            // act
-            publisher.publishFailedJackpot(1, "error");
+            // Act
+            publisher.publishFailedJackpot(playerId, error);
 
-            // assert
-            expect(publisher.publishToUser).toBeCalledWith(1, expect.objectContaining({ jackpotError: "error" }));
+            // Assert
+            expect(publisher.publishToUser).toHaveBeenCalledWith(playerId, { jackpotError: error });
         });
     });
 
-    describe("publishToEligibleUsers", () => {
-        it("should only send data to user with disableJackpotGames = true", () => {
-            // arrange
-            const publisher = new JackpotPublisher(29, "FourGuardians", gameData);
+    describe("publishRunningPools", () => {
+        it("should publish running pools via nats", async () => {
+            // Arrange
+            const pools = [{ pool: "major", amount: 1000 }];
 
-            // act
-            publisher.publishToEligibleUsers({ jackpotPool: [] });
+            // Act
+            await publisher.publishRunningPools(pools);
 
-            // assert
-            expect(gameData.realPlayers.find((x) => x.session.disableJackpotGames).socketClient.emit).not.toHaveBeenCalled();
-            expect(gameData.realPlayers.find((x) => !x.session.disableJackpotGames).socketClient.emit).toHaveBeenCalledWith("FourGuardians", {
-                jackpotPool: [],
-            });
+            // Assert
+            expect(natsClient.publishJackpotRunningPools).toHaveBeenCalledWith(pools);
         });
     });
 });
