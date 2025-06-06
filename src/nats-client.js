@@ -13,7 +13,7 @@ export default class NatsClient {
         this.jetstreamManager = await jetstreamManager(this.nats);
 
         const { jackpotPools, jackpotWinners, subjectPrefix } = this.natsOptions.streams;
-
+        this.subjectPrefix = subjectPrefix;
         await this.jetstreamManager.streams.add({
             subjects: [`${subjectPrefix}-jackpot-pools.>`],
             max_msgs_per_subject: 1,
@@ -39,7 +39,7 @@ export default class NatsClient {
 
     async publishJackpotRunningPools(jackpotRunningPools) {
         await this.publish(
-            `jackpot-pools.${this.definition.id}-${this.definition.configName}`,
+            `${this.subjectPrefix}-jackpot-pools.${this.definition.id}-${this.definition.configName}`,
             jackpotRunningPools,
             this.natsOptions.streams.jackpotPools.name
         );
@@ -47,7 +47,7 @@ export default class NatsClient {
 
     async publishJackpotWinner(jackpotWinner) {
         await this.publish(
-            `jackpot-winners.${this.definition.id}-${this.definition.configName}`,
+            `${this.subjectPrefix}-jackpot-winners.${this.definition.id}-${this.definition.configName}`,
             jackpotWinner,
             this.natsOptions.streams.jackpotWinners.name
         );
