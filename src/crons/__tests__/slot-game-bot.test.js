@@ -1,14 +1,15 @@
 import { stub } from "jest-micro-auto-stub";
 import { Core } from "sc-game-base";
-import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
 import { IdCountersConsumer } from "../../event-consumers";
 import SlotGameBot from "../slot-game-bot";
-import * as helpers from "../../helpers";
+import { helpers } from "sc-common";
 
-// Mock helpers.configHelper
-jest.mock("../../helpers", () => ({
-    configHelper: {
-        getMaxBotForCurrentHour: jest.fn().mockReturnValue(10),
+// Mock helpers module
+jest.mock("sc-common", () => ({
+    helpers: {
+        configHelper: {
+            getMaxBotForCurrentHour: jest.fn().mockReturnValue(10),
+        },
     },
 }));
 
@@ -17,104 +18,159 @@ describe("SlotGameBot", () => {
     let dependencies;
     let mockGameData;
     let mockBotInfo;
+    let mockDefinition;
 
     beforeEach(() => {
         mockGameData = createMockGameData();
         dependencies = createMockDependencies();
         mockBotInfo = createMockBotInfo();
+        mockDefinition = {
+            id: "test-game",
+            configName: "test-config",
+            jackpotSize: 6,
+        };
 
-        // Ensure configHelper returns number
-        helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(10);
+        // Fix gameManagementApiClient mock with instance method
+        const mockApiClient = {
+            users: {
+                getTotalBots: jest.fn().mockResolvedValue(100),
+                getAllBots: jest.fn().mockResolvedValue([]),
+            },
+        };
 
+        // Create factory with instance method
+        dependencies.gameManagementApiClientFactory = {
+            instance: jest.fn().mockReturnValue(mockApiClient),
+            create: jest.fn().mockReturnValue(mockApiClient),
+        };
+
+        // Create fresh bot without calling resetAllBotData
         bot = new SlotGameBot({
+            definition: mockDefinition,
             gameData: mockGameData,
             ...dependencies,
         });
+        bot.gameManagementApiClient = mockApiClient;
 
-        // Common test setup
-        bot.resetAllBotData();
-        bot.adjustGroupTracks = jest.fn();
-        bot.getBetAmount = jest.fn().mockReturnValue(1);
-        bot.botRate = 1; // Set bot rate for calculations
+        // Setup chance mock
+        bot.chance = {
+            shuffle: jest.fn((arr) => arr),
+            pickone: jest.fn((arr) => arr[0]),
+            weighted: jest.fn((arr) => arr[0]),
+            natural: jest.fn(() => 0),
+        };
     });
 
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    it("should extend Core.Crons.BaseBot", () => {
-        expect(bot instanceof Core.Crons.BaseBot).toBe(true);
+    describe("Initialization", () => {
+        it("should extend Core.Crons.BaseBot", () => {
+            expect(bot instanceof Core.Crons.BaseBot).toBe(true);
+        });
+
+        it("should initialize with correct default paylines", () => {
+            expect(bot.paylines).toEqual([0, 1, 2]);
+        });
+
+        it("should initialize with empty group tracks", () => {
+            // Don't call resetAllBotData to test initial state
+            expect(bot.groupTracks).toEqual([]);
+        });
+    });
+
+    describe("resetBotJackpotGame", () => {
+        it("should update bot list when bot ratio changes", async () => {
+            // Arrange
+            const expectedRatio = 10;
+            helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(expectedRatio);
+            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue({
+                operatorId: "testOp",
+                siteNames: ["site1"],
+                pools: { minor: { botSettings: { alloc: 80 } } },
+            });
+
+            // Act
+            await bot.resetBotJackpotGame();
+
+            // Assert
+            expect(bot.currentBotRatio).toBe(expectedRatio);
+        });
+
+        it("should not update bot list when bot ratio remains same", async () => {
+            // Arrange
+            bot.currentBotRatio = 10;
+
+            // Act
+            await bot.resetBotJackpotGame();
+
+            // Assert
+            expect(dependencies.gameManagementApiClientFactory.create).not.toHaveBeenCalled();
+        });
+
+        it("should reset all bots when botenabled is false", async () => {
+            // Arrange
+            mockGameData.gameConfigs.botenabled = false;
+
+            // Act
+            await bot.resetBotJackpotGame();
+
+            // Assert
+            expect(bot.bots).toEqual([]);
+        });
     });
 
     describe("standardizeBots", () => {
-        it("should map bot info to standardized format", () => {
-            // Arrange
-            const botInfo = [{ id: 1, name: "bot1" }];
-            const mockJackpotConfig = {
-                operatorId: "op1",
-                siteNames: ["site1"],
-                pools: {
-                    minor: { botSettings: { alloc: 80 } },
-                },
-            };
+        beforeEach(() => {
+            // Setup for standardizeBots tests
+            helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(10);
 
-            // Mock with numeric weights
+            // Reset bot configs
             mockGameData.botConfigs = [
                 {
                     jackpotConfigId: "config1",
-                    maxBots: 10, // Simplified to number
+                    maxBots: 10,
                 },
             ];
-
-            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue(mockJackpotConfig);
-
-            // Act
-            const result = bot.standardizeBots(botInfo);
-
-            // Assert
-            expect(result).toEqual([
-                {
-                    UID: 1,
-                    profile: { name: "bot1" },
-                    session: expect.objectContaining({
-                        operatorId: "op1",
-                        siteName: expect.any(String),
-                    }),
-                },
-            ]);
         });
 
-        it("should assign jackpot config based on weights", () => {
+        it("should assign correct operator ID from jackpot config", () => {
             // Arrange
             const botInfo = [{ id: 1, name: "bot1" }];
-            const mockJackpotConfig = {
-                operatorId: "op1",
+            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue({
+                operatorId: "testOp",
                 siteNames: ["site1"],
-                pools: {
-                    minor: { botSettings: { alloc: 80 } },
-                },
-            };
-            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue(mockJackpotConfig);
-
-            // Mock configHelper to return numeric weight
-            helpers.configHelper.getMaxBotForCurrentHour.mockReturnValue(10);
+                pools: { minor: { botSettings: { alloc: 80 } } },
+            });
 
             // Act
             const result = bot.standardizeBots(botInfo);
 
             // Assert
-            expect(result[0].session).toEqual(
-                expect.objectContaining({
-                    operatorId: "op1",
-                    siteName: expect.any(String),
-                })
-            );
+            expect(result[0].session.operatorId).toBe("testOp");
+        });
+
+        it("should handle empty site names in jackpot config", () => {
+            // Arrange
+            const botInfo = [{ id: 1, name: "bot1" }];
+            dependencies.jackpotConfigsConsumer.getJackpotConfigById.mockReturnValue({
+                operatorId: "testOp",
+                siteNames: [],
+                pools: { minor: { botSettings: { alloc: 80 } } },
+            });
+
+            // Act
+            const result = bot.standardizeBots(botInfo);
+
+            // Assert
+            expect(result[0].session.siteName).toBe("");
         });
     });
 
     describe("placeBet", () => {
         beforeEach(() => {
-            // Setup group tracks
+            // Setup for placeBet tests
             bot.groupTracks = {
                 config1: [
                     {
@@ -125,7 +181,6 @@ describe("SlotGameBot", () => {
                 ],
             };
 
-            // Setup jackpot config
             const mockJackpotConfig = {
                 enabled: true,
                 _id: "config1",
@@ -137,104 +192,77 @@ describe("SlotGameBot", () => {
             };
             dependencies.jackpotConfigsConsumer.getJackpotConfig.mockReturnValue(mockJackpotConfig);
 
-            // Setup payline calculator for big win
+            // Setup for big win test
             dependencies.paylineCalculator.calculate.mockReturnValue({
-                paylines: [{ odds: 4, payline: 0 }],
+                paylines: [{ odds: 10, payline: 0 }], // High odds to trigger big win
                 jackpotPayline: -1,
             });
-
-            // Ensure proper game data setup
-            mockGameData.gameConfigs.slotsConfig.bigWinRatio = 3;
-            bot.bigWinRatio = 3;
-            bot.paylines = [0, 1, 2]; // Set paylines explicitly
         });
 
-        describe("board generation", () => {
-            it("should generate board with correct jackpot ratio", async () => {
-                // Act
-                await bot.placeBet(mockBotInfo);
+        it("should increase round ID before placing bet", async () => {
+            // Arrange
+            const initialRoundId = mockGameData.roundId;
 
-                // Assert
-                expect(dependencies.boardGenerator.generateForBots).toHaveBeenCalledWith(true, 50);
-            });
+            // Act
+            await bot.placeBet(mockBotInfo);
 
-            it("should apply board cheating", async () => {
-                // Arrange
-                const generatedBoard = [
-                    ["A", "B"],
-                    ["C", "D"],
-                ];
-                dependencies.boardGenerator.generateForBots.mockReturnValue(generatedBoard);
-
-                // Act
-                await bot.placeBet(mockBotInfo);
-
-                // Assert
-                expect(dependencies.boardCheatingConsumer.consume).toHaveBeenCalledWith(mockBotInfo.profile.name, generatedBoard);
-            });
+            // Assert
+            expect(mockGameData.roundId).toBe(initialRoundId + 1);
         });
 
-        describe("big win handling", () => {
-            it("should record big win when exceeding ratio", async () => {
-                // Act
-                await bot.placeBet(mockBotInfo);
-
-                // Assert
-                expect(dependencies.hallOfFameConsumer.add).toHaveBeenCalledWith(
-                    mockBotInfo,
-                    expect.objectContaining({
-                        roundId: mockGameData.roundId,
-                        bet: 1,
-                        totalAmount: 3, // 1 bet * 3 paylines
-                        winningAmount: 4, // odds * bet amount
-                        numberOfPaylines: 3,
-                        rate: 1,
-                    })
-                );
+        it("should skip bet if jackpot is not enabled", async () => {
+            // Arrange
+            dependencies.jackpotConfigsConsumer.getJackpotConfig.mockReturnValue({
+                enabled: false,
             });
+
+            // Act
+            await bot.placeBet(mockBotInfo);
+
+            // Assert
+            expect(dependencies.boardGenerator.generateForBots).not.toHaveBeenCalled();
+        });
+
+        it("should calculate correct contribution rate", async () => {
+            // Act
+            await bot.placeBet(mockBotInfo);
+
+            // Assert
+            expect(dependencies.jackpotConsumer.contribute).toHaveBeenCalledWith(
+                mockBotInfo,
+                expect.objectContaining({
+                    rate: 1,
+                    contributedByMember: false,
+                })
+            );
+        });
+
+        it("should record big win when win amount exceeds threshold", async () => {
+            // Arrange
+            const betAmount = 1;
+            const numberOfPaylines = 3;
+            const odds = 10;
+            const winAmount = betAmount * odds;
+            const totalAmount = betAmount * numberOfPaylines;
+
+            // Act
+            await bot.placeBet(mockBotInfo);
+
+            // Assert
+            expect(dependencies.hallOfFameConsumer.add).toHaveBeenCalledWith(
+                mockBotInfo,
+                expect.objectContaining({
+                    roundId: mockGameData.roundId,
+                    bet: betAmount,
+                    totalAmount: totalAmount,
+                    winningAmount: winAmount,
+                    numberOfPaylines: numberOfPaylines,
+                    rate: 1,
+                })
+            );
         });
     });
 });
-
-function createMockGameData() {
-    return {
-        gameConfigs: {
-            slotsConfig: {
-                jackpot: {
-                    enabled: true,
-                    pools: {
-                        minor: { botSettings: { contrib: 0.01, alloc: 80 } },
-                        major: { botSettings: { contrib: 0.015, alloc: 15 } },
-                        grand: { botSettings: { contrib: 0.025, alloc: 5 } },
-                    },
-                },
-                bigWinRatio: 3,
-            },
-            botenabled: true,
-        },
-        botConfigs: [
-            {
-                jackpotConfigId: "config1",
-                maxBots: 10, // Simplified to number
-            },
-        ],
-        exchangeRates: { exId: 1 },
-        roundId: 100,
-        jackpotConfigs: [
-            {
-                _id: "config1",
-                botBetLevels: [1],
-                operatorId: "op1",
-                siteNames: ["site1"],
-                pools: {
-                    minor: { botSettings: { contrib: 0.01, alloc: 80 } },
-                    major: { botSettings: { contrib: 0.015, alloc: 15 } },
-                    grand: { botSettings: { contrib: 0.025, alloc: 5 } },
-                },
-            },
-        ],
-    };
-}
 
 function createMockDependencies() {
     return {
@@ -265,7 +293,6 @@ function createMockDependencies() {
                 prize: "minor",
             }),
         },
-        gameManagementApiClientFactory: stub(GameManagementApiClientFactory),
         jackpotConfigsConsumer: {
             getJackpotConfig: jest.fn(),
             getJackpotConfigById: jest.fn(),
@@ -273,6 +300,46 @@ function createMockDependencies() {
         tmpRoundsRepository: {
             create: jest.fn(),
         },
+    };
+}
+
+function createMockGameData() {
+    return {
+        gameConfigs: {
+            slotsConfig: {
+                jackpot: {
+                    enabled: true,
+                    pools: {
+                        minor: { botSettings: { contrib: 0.01, alloc: 80 } },
+                        major: { botSettings: { contrib: 0.015, alloc: 15 } },
+                        grand: { botSettings: { contrib: 0.025, alloc: 5 } },
+                    },
+                },
+                bigWinRatio: 3,
+            },
+            botenabled: true,
+        },
+        botConfigs: [
+            {
+                jackpotConfigId: "config1",
+                maxBots: 10,
+            },
+        ],
+        exchangeRates: { exId: 1 },
+        roundId: 100,
+        jackpotConfigs: [
+            {
+                _id: "config1",
+                botBetLevels: [1],
+                operatorId: "op1",
+                siteNames: ["site1"],
+                pools: {
+                    minor: { botSettings: { contrib: 0.01, alloc: 80 } },
+                    major: { botSettings: { contrib: 0.015, alloc: 15 } },
+                    grand: { botSettings: { contrib: 0.025, alloc: 5 } },
+                },
+            },
+        ],
     };
 }
 

@@ -1,6 +1,7 @@
 ---
 description: 
 globs: 
+alwaysApply: false
 ---
 ---
 description: 
@@ -100,5 +101,6 @@ src/
 -   **Use proper test setup**: Leverage Jest's setup and teardown hooks
 -   **Test async operations**: Properly handle promises and async/await in tests
 -   **Group tests by functionality**: Group unit tests by function name first, and group child tests by input condition or logical context.
+-   **Jest's setup and teardown hooks**:  Organize the tests using Jest's setup and teardown hooks
 
 ## Code Examples
