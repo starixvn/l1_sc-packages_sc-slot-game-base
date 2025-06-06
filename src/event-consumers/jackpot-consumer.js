@@ -236,7 +236,7 @@ export default class JackpotConsumer {
             winnerId: { $exists: false },
         };
 
-        return await this.jackpotsRepository
+        return this.jackpotsRepository
             .find(runningPoolFilter, {
                 _id: false,
                 prize: true,

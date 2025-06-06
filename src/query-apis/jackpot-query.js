@@ -25,12 +25,10 @@ export default class JackpotQuery {
             jackpotConfigId: false,
         };
 
-        const jackpot = await this.jackpotsRepository
+        return this.jackpotsRepository
             .find(runningPoolsFilter, projection, { sort: { pool: 1 } })
             .lean()
             .exec();
-
-        return jackpot;
     }
 
     async queryJackpotWinner(operatorId, siteName) {
@@ -54,11 +52,9 @@ export default class JackpotQuery {
             exchangeRateId: true,
         };
 
-        const jackpot = await this.jackpotsRepository
+        return this.jackpotsRepository
             .find(runningPoolsFilter, projection, { sort: { hitTime: -1 } })
             .lean()
             .exec();
-
-        return jackpot;
     }
 }

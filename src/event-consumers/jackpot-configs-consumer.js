@@ -5,7 +5,7 @@ export default class JackpotConfigsConsumer {
 
     getJackpotConfig(operatorId, siteName) {
         return this.gameData.jackpotConfigs?.find(
-            (config) => config.operatorId === operatorId && (config.siteNames.includes(siteName) || config.siteNames.length == 0)
+            (config) => config.operatorId === operatorId && (config.siteNames.includes(siteName) || config.siteNames.length === 0)
         );
     }
 
