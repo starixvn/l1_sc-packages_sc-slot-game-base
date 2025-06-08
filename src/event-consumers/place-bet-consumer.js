@@ -51,10 +51,6 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
         if (player.promotion) {
             const slotSpecificCriteria = [
                 {
-                    failure: !player.promotion.BonusItemCount || player.promotion.BonusItemCount <= 0,
-                    notice: this.getNoticeObj(SlotNoticeHelper.noBonusItemsForPromotion),
-                },
-                {
                     failure: player.freeSpin,
                     notice: this.getNoticeObj(SlotNoticeHelper.promotionNotAvailableDuringFreeSpin),
                 },

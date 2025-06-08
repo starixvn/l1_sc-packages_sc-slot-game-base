@@ -13,30 +13,33 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
     }
 
     transformEventData(transformName, context) {
-        const { payload, betInfo, betRecord, betLog, bet } = context;
+        let { payload, betInfo, betRecord, betLog, bet } = context;
+        try {
+            switch (transformName) {
+                case "enhanceBetInfo":
+                    betInfo = super.transformEventData(transformName, context);
 
-        switch (transformName) {
-            case "enhanceBetInfo":
-                betInfo = super.transformEventData(transformName, context);
+                    if (payload?.betChoice && betInfo) {
+                        betInfo.contributionRate = 0;
+                        betInfo.contributionAmount = 0;
 
-                if (payload?.betChoice && betInfo) {
-                    betInfo.contributionRate = 0;
-                    betInfo.contributionAmount = 0;
+                        betInfo.promotionId = payload.promotionId;
+                    }
+                    return betInfo;
 
-                    betInfo.promotionId = context.player.promotion.promotionId;
-                }
-                return betInfo;
+                case "enhanceBetRecord":
+                    betRecord = super.transformEventData(transformName, context);
 
-            case "enhanceBetRecord":
-                betRecord = super.transformEventData(transformName, context);
+                    if (bet && betRecord) {
+                        betRecord.promotionId = payload.promotionId;
+                    }
+                    return betRecord;
 
-                if (bet && betRecord) {
-                    betRecord.promotionId = context.player.promotion.promotionId;
-                }
-                return betRecord;
-
-            default:
-                return super.transformEventData(transformName, context);
+                default:
+                    return super.transformEventData(transformName, context);
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 
