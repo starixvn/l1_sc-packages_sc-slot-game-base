@@ -37,12 +37,9 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
     }
 
     getPromotionBetAmount(player, payload) {
-        if (payload.amount) {
-            const maxPaylines = Object.keys(defaultDefinition.paylines).length;
-            return payload.amount * maxPaylines;
-        }
+        //TODO: get bet level from promotion
 
-        return super.getPromotionBetAmount?.(player, payload) || 0;
+        return payload.amount;
     }
 
     composePromotionValidationCriteria(player) {
@@ -69,6 +66,8 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
             freeSpin: payload.freeSpin ?? false,
             betChoice: [...Object.keys(defaultDefinition.paylines)],
         });
+
+        this.handlePromotionLogic(player, payload);
 
         const { amount, betChoice, freeSpin, roundId } = payload;
         const name = player.profile.name;
