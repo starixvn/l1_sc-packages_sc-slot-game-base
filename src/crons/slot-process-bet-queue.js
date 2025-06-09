@@ -153,7 +153,6 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
                 player,
                 bet,
                 balance,
-                betTime,
             });
         }
     }
