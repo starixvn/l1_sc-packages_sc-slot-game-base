@@ -104,7 +104,11 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
             }
 
             await this.processBet(player, bet, roundId);
+
+            return { betWin: bet.betWin, baseBetWin: bet.baseBetWin };
         }
+
+        return { betWin: 0, baseBetWin: 0 };
     }
 
     async publishJackpotPrize({ finish, prizes, bet }) {
