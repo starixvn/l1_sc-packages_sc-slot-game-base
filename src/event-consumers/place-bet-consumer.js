@@ -20,6 +20,15 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
     composeBetAmountValidationCriteria(player, betChoice, amount, freeSpin) {
         const betLevels = MultipleCurrencyHelper.getBetLevels(this.gameData, player);
 
+        if (player.promotion) {
+            return [
+                {
+                    failure: amount <= 0,
+                    notice: this.getNoticeObj(SlotNoticeHelper.invalidStakeLevel),
+                },
+            ];
+        }
+
         return [
             {
                 failure: amount <= 0,
