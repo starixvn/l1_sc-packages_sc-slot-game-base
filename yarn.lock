@@ -9114,10 +9114,10 @@ sc-game-base@5.4.0:
     socket.io-msgpack-parser "^3.0.1"
     socket.io-prom-metrics "^1.0.3"
 
-sc-game-management-client@0.1.4-beta.0, sc-game-management-client@^0.1.0:
-  version "0.1.4-beta.0"
-  resolved "http://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.1.4-beta.0.tgz#6f72c5d874c01706cf730dd0ceb0e71609023735"
-  integrity sha512-bE8QYpTaBGLBNzBGiSDiatyanBXd3SwVykiMcrn+CJ72GeFcPXo80924vuLekoo2dXOPA77yWpW2QUnqAd7NSA==
+sc-game-management-client@0.1.4, sc-game-management-client@^0.1.0:
+  version "0.1.4"
+  resolved "http://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.1.4.tgz#ddd6641d2f0760964a7e1e1b38ece6d61ae5757e"
+  integrity sha512-gnluRTYzpy0C0fvMViNKSpbQIGSsYB7ot4ahDyt7OPJ3EOjL64oygySNXi+0P4gL2mUyeZOlTKBFQRXLk9BXZQ==
   dependencies:
     axios "1.6.2"
     axios-retry "^4.0.0"
