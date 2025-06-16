@@ -12,6 +12,7 @@ import { SlotHttpRouter, SlotSocketRouter } from "./routers";
 import SlotGameData from "./slot-game-data";
 import SlotGameDefinition from "./slot-game-definition";
 import JackpotValidator from "./validators/jackpot-validator";
+import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
 
 export default class SlotContainerRegistry extends Table.TableContainerRegistry {
     /**
@@ -74,6 +75,7 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             placeBetPublisher: asClass(Core.BaseEventPublishers.PlaceBetPublisher).singleton(),
             jackpotPublisher: asClass(JackpotPublisher).singleton(),
             bonusPublisher: asClass(BonusPublisher).singleton(),
+            promotionFreeSpinsPublisher: asClass(PromotionFreeSpinsPublisher).singleton(),
         });
     }
 
