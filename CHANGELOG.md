@@ -1,3 +1,10 @@
+## [2.3.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.3.0...v2.3.1) (2025-06-16)
+
+
+### Bug Fixes
+
+* enable/disable nats based on app configs ([c84dcb8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c84dcb85fc1afe9a1504d2c7e6a8f1c70eb58e60))
+
 # [2.3.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.2.0...v2.3.0) (2025-06-13)
 
 
