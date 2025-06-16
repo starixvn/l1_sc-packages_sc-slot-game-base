@@ -2057,10 +2057,10 @@
   resolved "http://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/game-promotion-api-client@^1.0.1-beta.3":
-  version "1.0.1-beta.3"
-  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.3.tgz"
-  integrity sha512-GOq17+g5evufSwoVXDo8ew84EL9O91qTGEMDkNbPcjVmnDg3a9C2EwgvrmIxbK2Eb5/9OjhsXTfwQiVmyD+Sqw==
+"@sc/game-promotion-api-client@^1.0.1-beta.3", "@sc/game-promotion-api-client@^1.0.1-beta.5":
+  version "1.0.1-beta.5"
+  resolved "https://npm.lumigame.com/@sc/game-promotion-api-client/-/game-promotion-api-client-1.0.1-beta.5.tgz"
+  integrity sha512-Mxg3qkxNP0hq16PoeHl7MEJwVCcZIAZJPFYncWfHDM7BskblCma6/Hz8N2F8SJvOXDcMVH9rmNjrSdjXzvFinQ==
   dependencies:
     axios "^1.6.0"
 
@@ -8878,10 +8878,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@6.0.0-beta.20:
-  version "6.0.0-beta.20"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.20.tgz"
-  integrity sha512-Su4shPY77eYLx4+BHrCA53Ip2OY0cme6gknH0D1+T6a+AJIVimV+EnbLB2XSOfD3eaf10cTxCbL40vwyjOfnZw==
+sc-game-base@6.0.0-beta.21:
+  version "6.0.0-beta.21"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.21.tgz"
+  integrity sha512-99wT9UBcb791TwxhIhGxmDq7iDKta4Vr01o9MHj/OMYVtKK/aUOUdakQeVr2MjhyUkZdSx5HKrMu8/qSlgJJRg==
   dependencies:
     "@sc/game-promotion-api-client" "^1.0.1-beta.3"
     awilix "^8.0.0"
