@@ -5,7 +5,11 @@ export default class NatsClient {
     constructor(appConfigs, definition) {
         this.natsOptions = appConfigs.natsOptions;
         this.definition = definition;
-        this.connect();
+
+        if (this.natsOptions) {
+            this.connect();
+            this.enabled = true;
+        }
     }
 
     async connect() {
@@ -30,11 +34,13 @@ export default class NatsClient {
     }
 
     async publish(subject, payload, streamName) {
-        await this.jetstreamManager.jetstream().publish(subject, JSON.stringify(payload), {
-            expect: {
-                streamName,
-            },
-        });
+        if (this.enabled) {
+            await this.jetstreamManager.jetstream().publish(subject, JSON.stringify(payload), {
+                expect: {
+                    stream: streamName,
+                },
+            });
+        }
     }
 
     async publishJackpotRunningPools(jackpotRunningPools) {
