@@ -100,7 +100,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
             if (settlementResult.jackpot && settlementResult.jackpot.prizes?.length > 0) {
                 await this.publishJackpotPrize({ finish, prizes: settlementResult.jackpot.prizes, bet });
-                return;
+                return { betWin: bet.betWin, baseBetWin: bet.baseBetWin };
             }
 
             await this.processBet(player, bet, roundId);
