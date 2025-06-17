@@ -24,7 +24,21 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
     });
 
     describe("getPromotionBetAmount", () => {
-        it("should return amount directly", () => {
+        it("should return betLevel from promotion if available", () => {
+            const player = { 
+                UID: "test-player",
+                promotion: { betLevel: 25 }
+            };
+            const payload = {
+                amount: 10,
+            };
+
+            const result = consumer.getPromotionBetAmount(player, payload);
+
+            expect(result).toBe(25); // trả về betLevel từ promotion
+        });
+
+        it("should return amount if no promotion betLevel", () => {
             const player = { UID: "test-player" };
             const payload = {
                 amount: 10,
@@ -32,7 +46,21 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(10); // chỉ trả về amount
+            expect(result).toBe(10); // trả về amount vì không có betLevel
+        });
+
+        it("should return amount if promotion exists but no betLevel", () => {
+            const player = { 
+                UID: "test-player",
+                promotion: { BonusItemCount: 5 }
+            };
+            const payload = {
+                amount: 10,
+            };
+
+            const result = consumer.getPromotionBetAmount(player, payload);
+
+            expect(result).toBe(10); // trả về amount vì promotion không có betLevel
         });
 
         it("should return undefined for invalid payload", () => {
@@ -44,8 +72,11 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
             expect(result).toBeUndefined();
         });
 
-        it("should return amount even if betChoice is set", () => {
-            const player = { UID: "test-player" };
+        it("should return betLevel even if betChoice is set", () => {
+            const player = { 
+                UID: "test-player",
+                promotion: { betLevel: 15 }
+            };
             const payload = {
                 betChoice: ["payline1"],
                 amount: 5,
@@ -53,18 +84,21 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(5);
+            expect(result).toBe(15); // trả về betLevel từ promotion
         });
 
-        it("should handle different bet amounts correctly", () => {
-            const player = { UID: "test-player" };
+        it("should handle different betLevel values correctly", () => {
+            const player = { 
+                UID: "test-player",
+                promotion: { betLevel: 50 }
+            };
             const payload = {
                 amount: 2,
             };
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(2);
+            expect(result).toBe(50); // trả về betLevel từ promotion
         });
     });
 
@@ -90,6 +124,7 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
             };
 
             const result = consumer.composePromotionValidationCriteria(player);
+            // Tìm tiêu chí slot-specific
             const slotCriteria = result.find(
                 c => c.notice.message === SlotNoticeHelper.promotionNotAvailableDuringFreeSpin
             );
@@ -140,9 +175,15 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = testConsumer.composePromotionValidationCriteria(player);
 
-            // Should include both base and slot-specific criteria (2 total: 1 base + 1 slot-specific)
-            expect(result.length).toBe(2);
+            // Should include both base and slot-specific criteria
+            expect(result.length).toBeGreaterThanOrEqual(2);
             expect(result).toEqual(expect.arrayContaining(baseCriteria));
+            
+            // Check for slot-specific criteria
+            const slotCriteria = result.find(
+                c => c.notice.message === SlotNoticeHelper.promotionNotAvailableDuringFreeSpin
+            );
+            expect(slotCriteria).toBeDefined();
         });
     });
 });

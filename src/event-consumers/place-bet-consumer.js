@@ -46,8 +46,9 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
     }
 
     getPromotionBetAmount(player, payload) {
-        //TODO: get bet level from promotion
-
+        if (player.promotion && player.promotion.betLevel) {
+            return player.promotion.betLevel;
+        }
         return payload.amount;
     }
 

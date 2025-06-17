@@ -13,11 +13,11 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
     }
 
     transformEventData(transformName, context) {
-        let { payload, betInfo, betRecord, betLog, bet } = context;
         try {
             switch (transformName) {
                 case "enhanceBetInfo":
-                    betInfo = super.transformEventData(transformName, context);
+                    const { payload } = context;
+                    const betInfo = super.transformEventData(transformName, context);
 
                     if (payload?.betChoice && betInfo) {
                         betInfo.contributionRate = 0;
@@ -28,10 +28,11 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
                     return betInfo;
 
                 case "enhanceBetRecord":
-                    betRecord = super.transformEventData(transformName, context);
+                    const { payload: payloadRecord, bet } = context;
+                    const betRecord = super.transformEventData(transformName, context);
 
                     if (bet && betRecord) {
-                        betRecord.promotionId = payload.promotionId;
+                        betRecord.promotionId = payloadRecord.promotionId;
                     }
                     return betRecord;
 
@@ -40,6 +41,7 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
             }
         } catch (error) {
             console.log(error);
+            return null;
         }
     }
 
