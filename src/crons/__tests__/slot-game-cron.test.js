@@ -76,6 +76,7 @@ describe("slot-game-cron", () => {
             const logService = { logError: jest.fn(), log: jest.fn() };
             const bonusConsumer = { processExpiredBonus: jest.fn() };
             const freeSpinsConsumer = { reload: jest.fn() };
+            const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
             const definition = {};
             const cron = new SlotGameCron({
                 gameData,
@@ -84,6 +85,7 @@ describe("slot-game-cron", () => {
                 logService,
                 bonusConsumer,
                 freeSpinsConsumer,
+                promotionFreeSpinsConsumer,
                 roundsRepository,
                 exchangeRatesRepository,
                 currencyGroupGamesRepository,
@@ -118,6 +120,7 @@ describe("slot-game-cron", () => {
             const logService = { logError: jest.fn(), log: jest.fn() };
             const bonusConsumer = { processExpiredBonus: jest.fn() };
             const freeSpinsConsumer = { reload: jest.fn() };
+            const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
             const definition = {};
             const cron = new SlotGameCron({
                 gameData,
@@ -126,6 +129,7 @@ describe("slot-game-cron", () => {
                 logService,
                 bonusConsumer,
                 freeSpinsConsumer,
+                promotionFreeSpinsConsumer,
                 roundsRepository,
                 exchangeRatesRepository,
                 currencyGroupGamesRepository,
@@ -159,6 +163,7 @@ describe("slot-game-cron", () => {
             const logService = { logError: jest.fn(), log: jest.fn() };
             const bonusConsumer = { processExpiredBonus: jest.fn() };
             const freeSpinsConsumer = { reload: jest.fn() };
+            const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
             const definition = {};
             const cron = new SlotGameCron({
                 gameData,
@@ -167,6 +172,7 @@ describe("slot-game-cron", () => {
                 logService,
                 bonusConsumer,
                 freeSpinsConsumer,
+                promotionFreeSpinsConsumer,
                 roundsRepository,
                 exchangeRatesRepository,
                 currencyGroupGamesRepository,
@@ -205,6 +211,7 @@ describe("slot-game-cron", () => {
             const bonusConsumer = { processExpiredBonus: jest.fn() };
             const freeSpinsConsumer = { reload: jest.fn() };
             const jackpotConsumer = { initialize: jest.fn() };
+            const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
             const definition = {};
             const cron = new SlotGameCron({
                 gameData,
@@ -213,6 +220,7 @@ describe("slot-game-cron", () => {
                 logService,
                 bonusConsumer,
                 freeSpinsConsumer,
+                promotionFreeSpinsConsumer,
                 roundsRepository,
                 jackpotConsumer,
                 exchangeRatesRepository,
@@ -270,10 +278,12 @@ describe("slot-game-cron", () => {
             const definition = {};
             const jackpotConsumer = { getLatestRoundId: jest.fn() };
             jackpotConsumer.getLatestRoundId.mockReturnValueOnce(10);
+            const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
 
             const cron = new SlotGameCron({
                 definition,
                 jackpotConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -293,6 +303,7 @@ describe("slot-game-cron", () => {
     describe("proceed", () => {
         const definition = { durations: { wholeRound: 45, placingBets: 30 } };
         const bonusConsumer = { processExpiredBonus: jest.fn() };
+        const promotionFreeSpinsConsumer = { handlePromotionFreeSpinsExpiry: jest.fn() };
 
         it("should processExpiredBonus", async () => {
             // arrange
@@ -301,6 +312,7 @@ describe("slot-game-cron", () => {
                 definition,
                 gameData,
                 bonusConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -318,11 +330,12 @@ describe("slot-game-cron", () => {
 
         it("when remainingTime === durations.wholeRound and not have bot should checkGameStatus", async () => {
             // arrange
-            const gameData = { remainingTime: 45 };
+            const gameData = { remainingTime: 45, gameConfigs: { gameId: "test-game" } };
             const cron = new SlotGameCron({
                 definition,
                 gameData,
                 bonusConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -340,13 +353,14 @@ describe("slot-game-cron", () => {
 
         it("when remainingTime === durations.wholeRound and have bot should reset bot", async () => {
             // arrange
-            const gameData = { remainingTime: 45 };
+            const gameData = { remainingTime: 45, gameConfigs: { gameId: "test-game" } };
             const bot = stub(Core.Crons.BaseBot);
             const cron = new SlotGameCron({
                 definition,
                 gameData,
                 bonusConsumer,
                 bot,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -364,11 +378,12 @@ describe("slot-game-cron", () => {
 
         it("when game not disabled and not have bot should reduce remainingTime", async () => {
             // arrange
-            const gameData = { remainingTime: 45 };
+            const gameData = { remainingTime: 45, gameConfigs: { gameId: "test-game" } };
             const cron = new SlotGameCron({
                 definition,
                 gameData,
                 bonusConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -386,11 +401,12 @@ describe("slot-game-cron", () => {
 
         it("when game disabled and not have bot should not reduce remainingTime", async () => {
             // arrange
-            const gameData = { remainingTime: 45, disabled: true };
+            const gameData = { remainingTime: 45, disabled: true, gameConfigs: { gameId: "test-game" } };
             const cron = new SlotGameCron({
                 definition,
                 gameData,
                 bonusConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -408,13 +424,14 @@ describe("slot-game-cron", () => {
 
         it("when game not disabled and have bot should run bot", async () => {
             // arrange
-            const gameData = { remainingTime: 45 };
+            const gameData = { remainingTime: 45, gameConfigs: { gameId: "test-game" } };
             const bot = stub(Core.Crons.BaseBot);
             const cron = new SlotGameCron({
                 definition,
                 gameData,
                 bonusConsumer,
                 bot,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,
@@ -439,6 +456,7 @@ describe("slot-game-cron", () => {
                 gameData,
                 bonusConsumer,
                 freeSpinsConsumer,
+                promotionFreeSpinsConsumer,
                 currencyGroupGamesRepository,
                 currencyGroupRepository,
                 currencyRepository,

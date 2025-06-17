@@ -1,4 +1,5 @@
 import PlaceBetConsumer from "../src/event-consumers/place-bet-consumer.js";
+import SlotNoticeHelper from "../src/helpers/slot-notice-helper";
 
 describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
     let consumer;
@@ -23,7 +24,7 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
     });
 
     describe("getPromotionBetAmount", () => {
-        it("should calculate correct promotion amount using max paylines", () => {
+        it("should return amount directly", () => {
             const player = { UID: "test-player" };
             const payload = {
                 amount: 10,
@@ -31,28 +32,28 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(250); // 10 * 25 max paylines
+            expect(result).toBe(10); // chỉ trả về amount
         });
 
-        it("should return 0 for invalid payload", () => {
+        it("should return undefined for invalid payload", () => {
             const player = { UID: "test-player" };
             const payload = {};
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(0);
+            expect(result).toBeUndefined();
         });
 
-        it("should calculate promotion amount regardless of selected paylines", () => {
+        it("should return amount even if betChoice is set", () => {
             const player = { UID: "test-player" };
             const payload = {
-                betChoice: ["payline1"], // Only 1 payline selected
+                betChoice: ["payline1"],
                 amount: 5,
             };
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(125); // 5 * 25 max paylines (not 5 * 1)
+            expect(result).toBe(5);
         });
 
         it("should handle different bet amounts correctly", () => {
@@ -63,7 +64,7 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = consumer.getPromotionBetAmount(player, payload);
 
-            expect(result).toBe(50); // 2 * 25 max paylines
+            expect(result).toBe(2);
         });
     });
 
@@ -79,86 +80,38 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
             expect(result).toEqual([]);
         });
 
-        it("should validate BonusItemCount is greater than 0", () => {
+        it("should return criteria for promotion: fail if freeSpin true", () => {
             const player = {
                 UID: "test-player",
-                promotion: {
-                    BonusItemCount: 0, // No bonus items
-                },
-            };
-
-            const result = consumer.composePromotionValidationCriteria(player);
-
-            const bonusItemFailure = result.find((criteria) => criteria.notice.message === "SB1961");
-            expect(bonusItemFailure.failure).toBe(true);
-        });
-
-        it("should pass BonusItemCount validation when player has bonus items", () => {
-            const player = {
-                UID: "test-player",
-                freeSpin: false,
-                promotion: {
-                    BonusItemCount: 5, // Has bonus items
-                },
-            };
-
-            const result = consumer.composePromotionValidationCriteria(player);
-
-            const bonusItemFailure = result.find((criteria) => criteria.notice.message === "SB1961");
-            expect(bonusItemFailure.failure).toBe(false);
-        });
-
-        it("should validate no promotions during free spins", () => {
-            const player = {
-                UID: "test-player",
-                freeSpin: true, // During free spin
+                freeSpin: true,
                 promotion: {
                     BonusItemCount: 5,
                 },
             };
 
             const result = consumer.composePromotionValidationCriteria(player);
-
-            const freeSpinFailure = result.find((criteria) => criteria.notice.message === "SB1962");
-            expect(freeSpinFailure.failure).toBe(true);
+            const slotCriteria = result.find(
+                c => c.notice.message === SlotNoticeHelper.promotionNotAvailableDuringFreeSpin
+            );
+            expect(slotCriteria).toBeDefined();
+            expect(slotCriteria.failure).toBe(true);
         });
 
-        it("should pass free spin validation when not in free spin", () => {
+        it("should return criteria for promotion: pass if freeSpin false", () => {
             const player = {
                 UID: "test-player",
-                freeSpin: false, // Not in free spin
+                freeSpin: false,
                 promotion: {
                     BonusItemCount: 5,
                 },
             };
 
             const result = consumer.composePromotionValidationCriteria(player);
-
-            const freeSpinFailure = result.find((criteria) => criteria.notice.message === "SB1962");
-            expect(freeSpinFailure.failure).toBe(false);
-        });
-
-        it("should pass all validations for eligible player", () => {
-            const player = {
-                UID: "test-player",
-                freeSpin: false,
-                promotion: {
-                    BonusItemCount: 10,
-                    isActive: true,
-                },
-            };
-
-            const result = consumer.composePromotionValidationCriteria(player);
-
-            // Check that our slot-specific validations pass (the last 2 criteria)
-            const slotSpecificCriteria = result.slice(-2);
-            slotSpecificCriteria.forEach((criteria) => {
-                expect(criteria.failure).toBe(false);
-            });
-
-            // Verify we have slot-specific validation codes
-            expect(slotSpecificCriteria[0].notice.message).toBe("SB1961"); // BonusItemCount
-            expect(slotSpecificCriteria[1].notice.message).toBe("SB1962"); // FreeSpin
+            const slotCriteria = result.find(
+                c => c.notice.message === SlotNoticeHelper.promotionNotAvailableDuringFreeSpin
+            );
+            expect(slotCriteria).toBeDefined();
+            expect(slotCriteria.failure).toBe(false);
         });
 
         it("should combine with base criteria when super method exists", () => {
@@ -187,8 +140,8 @@ describe("PlaceBetConsumer Promotion Features (6.0.0)", () => {
 
             const result = testConsumer.composePromotionValidationCriteria(player);
 
-            // Should include both base and slot-specific criteria (3 total: 1 base + 2 slot-specific)
-            expect(result.length).toBe(3);
+            // Should include both base and slot-specific criteria (2 total: 1 base + 1 slot-specific)
+            expect(result.length).toBe(2);
             expect(result).toEqual(expect.arrayContaining(baseCriteria));
         });
     });

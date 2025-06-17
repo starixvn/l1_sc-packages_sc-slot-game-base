@@ -118,7 +118,7 @@ describe("slot-process-bet-queue", () => {
     describe("handleSuccessBet", () => {
         it("should call settleGameRoundConsumer.settleRound", async () => {
             // arrange
-            const settleGameRoundConsumer = { settleRound: jest.fn() };
+            const settleGameRoundConsumer = { settleRound: jest.fn().mockResolvedValue({ betWin: 100 }) };
             const gameData = { exchangeRates: { code: [] } };
             const cron = new SlotProcessBetQueue({ settleGameRoundConsumer, gameData, gameManagementApiClientFactory, betEventInterceptors });
             cron.upsertBet = jest.fn();
@@ -137,7 +137,7 @@ describe("slot-process-bet-queue", () => {
 
         it("when is freespin should call freeSpinsConsumer.useFreeSpin", async () => {
             // arrange
-            const settleGameRoundConsumer = { settleRound: jest.fn() };
+            const settleGameRoundConsumer = { settleRound: jest.fn().mockResolvedValue({ betWin: 100 }) };
             const freeSpinsConsumer = { useFreeSpin: jest.fn() };
             const gameData = { exchangeRates: { code: [] } };
             const cron = new SlotProcessBetQueue({
