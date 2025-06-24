@@ -9,6 +9,19 @@ The slot promotion interceptor enhances two main data structures:
 - **betInfo**: Enhanced during bet placement with promotion metadata
 - **betRecord**: Enhanced during bet recording with promotion identifiers
 
+## Important Rule for Promotion Free Spin Bets
+
+If a bet record has:
+
+- `freeSpin: true`
+- and `promotionId` is present
+
+**Then:**
+
+- `jackpotContribution.contributionRate` and `jackpotContribution.baseContributionAmount` must both be `0`.
+
+This applies to all bets that are both free spins and have a promotionId.
+
 ## Bet Info Examples
 
 ### Without Promotion
@@ -91,8 +104,8 @@ The slot promotion interceptor enhances two main data structures:
   "playerId": "pl456",
   "promotionId": "promo_summer_2024",
   "jackpotContribution": {
-    "contributionRate": 0.05,
-    "baseContributionAmount": 0.625
+    "contributionRate": 0,
+    "baseContributionAmount": 0
   }
 }
 ```
@@ -264,7 +277,7 @@ The slot promotion interceptor enhances two main data structures:
   "totalAmount": 25,
   "baseTotalAmount": 25000,
   "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-  "freeSpin": false,
+  "freeSpin": true,
   "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
   "betWin": 327,
   "baseBetWin": 327000,
@@ -274,7 +287,7 @@ The slot promotion interceptor enhances two main data structures:
   "time": { "$date": "2024-07-17T09:02:19.909Z" },
   "rate": 1000,
   "exchangeRateId": 4308,
-  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "jackpotContribution": { "contributionRate": 0, "baseContributionAmount": 0 },
   "poolAllocation": {
     "grand": { "rate": 0.005, "baseAmount": 125 },
     "major": { "rate": 0.005, "baseAmount": 125 },
@@ -287,7 +300,7 @@ The slot promotion interceptor enhances two main data structures:
   ],
   "__v": 2,
   "settlementResult": {
-    "freeSpins": { "count": 1, "odds": 0 },
+    "freeSpins": { "count": 1, "odds": 0, "promotionId": "promo_summer_2024" },
     "bonus": { "count": 3, "odds": 3 },
     "jackpot": { "winningAmount": 4905.5831, "winningLine": 1 },
     "winningPaylines": [
@@ -313,6 +326,8 @@ The slot promotion interceptor enhances two main data structures:
   "promotionId": "promo_summer_2024"
 }
 ```
+
+> **Note:** For any round with `promotionId` and `freeSpin: true`, `jackpotContribution` fields must be 0.
 
 ### Free Spin Triggered by Promotion (Rounds Example)
 
