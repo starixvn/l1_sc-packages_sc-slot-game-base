@@ -113,7 +113,12 @@ The slot promotion interceptor enhances two main data structures:
   "available": 2,
   "time": "2024-07-17T09:02:19.909Z",
   "expiryTime": "2024-07-18T09:02:19.909Z",
-  "playerId": "player-uid-123"
+  "playerId": "player-uid-123",
+  "freeSpin": true,
+  "jackpotContribution": {
+    "contributionRate": 0,
+    "baseContributionAmount": 0
+  }
 }
 ```
 
@@ -132,7 +137,12 @@ The slot promotion interceptor enhances two main data structures:
   "time": "2024-07-17T09:02:19.909Z",
   "expiryTime": "2024-07-18T09:02:19.909Z",
   "playerId": "player-uid-123",
-  "promotionId": "promo_summer_2024"
+  "freeSpin": true,
+  "promotionId": "promo_summer_2024",
+  "jackpotContribution": {
+    "contributionRate": 0,
+    "baseContributionAmount": 0
+  }
 }
 ```
 
@@ -317,7 +327,7 @@ This example shows how to recognize if a free spin in a round was triggered by a
   "totalAmount": 25,
   "baseTotalAmount": 25000,
   "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-  "freeSpin": false,
+  "freeSpin": true,
   "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
   "betWin": 327,
   "baseBetWin": 327000,
@@ -327,7 +337,7 @@ This example shows how to recognize if a free spin in a round was triggered by a
   "time": { "$date": "2024-07-17T09:02:19.909Z" },
   "rate": 1000,
   "exchangeRateId": 4308,
-  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "jackpotContribution": { "contributionRate": 0, "baseContributionAmount": 0 },
   "poolAllocation": {
     "grand": { "rate": 0.005, "baseAmount": 125 },
     "major": { "rate": 0.005, "baseAmount": 125 },
@@ -376,7 +386,7 @@ This example shows how to recognize if a free spin in a round was triggered by a
   "totalAmount": 25,
   "baseTotalAmount": 25000,
   "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-  "freeSpin": false,
+  "freeSpin": true,
   "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
   "betWin": 327,
   "baseBetWin": 327000,
@@ -386,7 +396,7 @@ This example shows how to recognize if a free spin in a round was triggered by a
   "time": { "$date": "2024-07-17T09:02:19.909Z" },
   "rate": 1000,
   "exchangeRateId": 4308,
-  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "jackpotContribution": { "contributionRate": 0, "baseContributionAmount": 0 },
   "poolAllocation": {
     "grand": { "rate": 0.005, "baseAmount": 125 },
     "major": { "rate": 0.005, "baseAmount": 125 },
@@ -447,3 +457,36 @@ This example shows how to recognize if a free spin in a round was triggered by a
 3. **Direct Fields**: Promotion data is added directly to objects rather than wrapped in sub-objects for better query performance
 4. **Backward Compatibility**: All promotion fields are additive and don't modify existing structure
 5. **No BetLog**: The slot game only uses betInfo and betRecord - there is no separate betLog entity
+
+## Best Practice and Conclusion: Distinguishing Free Spin Sources
+
+When using the `freeSpin` field to indicate a free spin bet, it is important to distinguish whether the free spin was triggered by a promotion or by regular game mechanics. The recommended approach is as follows:
+
+### Best Practice
+
+- **Always** set `freeSpin: true` for any free spin bet, regardless of its source.
+- **Always** add a `promotionId` field if the free spin was triggered by a promotion.
+- **Do not** set `promotionId` for regular (non-promotion) free spins.
+- **Document** this convention for all developers and data consumers.
+- **(Optional, for future-proofing):** If you expect more sources, consider adding a `freeSpinSource` field (e.g., `"promotion"`, `"scatter"`, etc.).
+
+### Example Table
+
+| freeSpin | promotionId       | Meaning                       |
+| -------- | ----------------- | ----------------------------- |
+| true     | (not present)     | Regular free spin             |
+| true     | promo_summer_2024 | Promotion-triggered free spin |
+| false    | (any)             | Not a free spin               |
+
+### Conclusion
+
+There is no technical confusion as long as you consistently use `promotionId` to distinguish the source of a free spin and document this clearly. If you expect more complex scenarios in the future, consider a more explicit field like `freeSpinSource` for extensibility.
+
+## Note on Jackpot Contribution for Free Spins
+
+For any bet where `freeSpin: true` (whether triggered by a promotion or not), the jackpot contribution fields should be set to 0:
+
+- `jackpotContribution.contributionRate: 0`
+- `jackpotContribution.baseContributionAmount: 0`
+
+This applies to both promotion and non-promotion free spins.
