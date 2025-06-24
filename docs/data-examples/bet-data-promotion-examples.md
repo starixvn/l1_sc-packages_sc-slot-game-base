@@ -97,6 +97,335 @@ The slot promotion interceptor enhances two main data structures:
 }
 ```
 
+## Free Spins Examples
+
+### Without Promotion
+
+```json
+{
+  "id": 1,
+  "uid": "player-uid-123",
+  "name": "player1",
+  "roundId": 1001,
+  "bet": 10,
+  "paylines": [0, 1, 2, 3, 4],
+  "total": 5,
+  "available": 2,
+  "time": "2024-07-17T09:02:19.909Z",
+  "expiryTime": "2024-07-18T09:02:19.909Z",
+  "playerId": "player-uid-123"
+}
+```
+
+### With Promotion
+
+```json
+{
+  "id": 1,
+  "uid": "player-uid-123",
+  "name": "player1",
+  "roundId": 1001,
+  "bet": 10,
+  "paylines": [0, 1, 2, 3, 4],
+  "total": 5,
+  "available": 2,
+  "time": "2024-07-17T09:02:19.909Z",
+  "expiryTime": "2024-07-18T09:02:19.909Z",
+  "playerId": "player-uid-123",
+  "promotionId": "promo_summer_2024"
+}
+```
+
+## Hall of Fames Examples
+
+### Without Promotion
+
+```json
+{
+  "uid": "player-uid-123",
+  "name": "player1",
+  "roundId": 1001,
+  "bet": 10,
+  "totalAmount": 200,
+  "baseTotalAmount": 2000,
+  "winningAmount": 700,
+  "baseWinningAmount": 7000,
+  "numberOfPaylines": 5,
+  "freeSpin": false,
+  "time": "2024-07-17T09:02:19.909Z",
+  "currency": "USD",
+  "rate": 1.5,
+  "exchangeRateId": 1,
+  "operatorId": "operator-1",
+  "playerId": "player-uid-123"
+}
+```
+
+### With Promotion
+
+```json
+{
+  "uid": "player-uid-123",
+  "name": "player1",
+  "roundId": 1001,
+  "bet": 10,
+  "totalAmount": 200,
+  "baseTotalAmount": 2000,
+  "winningAmount": 700,
+  "baseWinningAmount": 7000,
+  "numberOfPaylines": 5,
+  "freeSpin": false,
+  "time": "2024-07-17T09:02:19.909Z",
+  "currency": "USD",
+  "rate": 1.5,
+  "exchangeRateId": 1,
+  "operatorId": "operator-1",
+  "playerId": "player-uid-123",
+  "promotionId": "promo_summer_2024"
+}
+```
+
+## Rounds Examples
+
+### Without Promotion
+
+```json
+{
+  "_id": { "$oid": "6697889b1139b0670d481180" },
+  "bet": 1,
+  "totalAmount": 25,
+  "baseTotalAmount": 25000,
+  "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "freeSpin": false,
+  "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
+  "betWin": 327,
+  "baseBetWin": 327000,
+  "paid": true,
+  "id": 372531,
+  "name": "lele60010",
+  "time": { "$date": "2024-07-17T09:02:19.909Z" },
+  "rate": 1000,
+  "exchangeRateId": 4308,
+  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "poolAllocation": {
+    "grand": { "rate": 0.005, "baseAmount": 125 },
+    "major": { "rate": 0.005, "baseAmount": 125 },
+    "minor": { "rate": 0.015, "baseAmount": 375 }
+  },
+  "bonusChests": [
+    { "picked": true, "amount": 15 },
+    { "picked": true, "amount": 19 },
+    { "picked": true, "amount": 17 }
+  ],
+  "__v": 2,
+  "settlementResult": {
+    "freeSpins": { "count": 1, "odds": 0 },
+    "bonus": { "count": 3, "odds": 3 },
+    "jackpot": { "winningAmount": 4905.5831, "winningLine": 1 },
+    "winningPaylines": [
+      { "payline": 0, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 4, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 5, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 7, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 8, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 9, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 10, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 11, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 13, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 17, "symbol": "10", "count": 4, "odds": 100 },
+      { "payline": 19, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 20, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 21, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 23, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 24, "symbol": "10", "count": 2, "odds": 4 }
+    ]
+  },
+  "endTime": { "$date": "2024-07-17T09:02:52.024Z" },
+  "__archive": { "summarized": true }
+}
+```
+
+### With Promotion
+
+```json
+{
+  "_id": { "$oid": "6697889b1139b0670d481180" },
+  "bet": 1,
+  "totalAmount": 25,
+  "baseTotalAmount": 25000,
+  "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "freeSpin": false,
+  "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
+  "betWin": 327,
+  "baseBetWin": 327000,
+  "paid": true,
+  "id": 372531,
+  "name": "lele60010",
+  "time": { "$date": "2024-07-17T09:02:19.909Z" },
+  "rate": 1000,
+  "exchangeRateId": 4308,
+  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "poolAllocation": {
+    "grand": { "rate": 0.005, "baseAmount": 125 },
+    "major": { "rate": 0.005, "baseAmount": 125 },
+    "minor": { "rate": 0.015, "baseAmount": 375 }
+  },
+  "bonusChests": [
+    { "picked": true, "amount": 15 },
+    { "picked": true, "amount": 19 },
+    { "picked": true, "amount": 17 }
+  ],
+  "__v": 2,
+  "settlementResult": {
+    "freeSpins": { "count": 1, "odds": 0 },
+    "bonus": { "count": 3, "odds": 3 },
+    "jackpot": { "winningAmount": 4905.5831, "winningLine": 1 },
+    "winningPaylines": [
+      { "payline": 0, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 4, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 5, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 7, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 8, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 9, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 10, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 11, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 13, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 17, "symbol": "10", "count": 4, "odds": 100 },
+      { "payline": 19, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 20, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 21, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 23, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 24, "symbol": "10", "count": 2, "odds": 4 }
+    ]
+  },
+  "endTime": { "$date": "2024-07-17T09:02:52.024Z" },
+  "__archive": { "summarized": true },
+  "promotionId": "promo_summer_2024"
+}
+```
+
+### Free Spin Triggered by Promotion (Rounds Example)
+
+This example shows how to recognize if a free spin in a round was triggered by a bet with a promotion. The field `freeSpinTriggeredByPromotion` is set to `true` and the `promotionId` is included in the `settlementResult.freeSpins` object.
+
+#### Free Spin Triggered by Promotion
+
+```json
+{
+  "_id": { "$oid": "6697889b1139b0670d481180" },
+  "bet": 1,
+  "totalAmount": 25,
+  "baseTotalAmount": 25000,
+  "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "freeSpin": false,
+  "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
+  "betWin": 327,
+  "baseBetWin": 327000,
+  "paid": true,
+  "id": 372531,
+  "name": "lele60010",
+  "time": { "$date": "2024-07-17T09:02:19.909Z" },
+  "rate": 1000,
+  "exchangeRateId": 4308,
+  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "poolAllocation": {
+    "grand": { "rate": 0.005, "baseAmount": 125 },
+    "major": { "rate": 0.005, "baseAmount": 125 },
+    "minor": { "rate": 0.015, "baseAmount": 375 }
+  },
+  "bonusChests": [
+    { "picked": true, "amount": 15 },
+    { "picked": true, "amount": 19 },
+    { "picked": true, "amount": 17 }
+  ],
+  "__v": 2,
+  "settlementResult": {
+    "freeSpins": { "count": 1, "odds": 0, "promotionId": "promo_summer_2024" },
+    "bonus": { "count": 3, "odds": 3 },
+    "jackpot": { "winningAmount": 4905.5831, "winningLine": 1 },
+    "winningPaylines": [
+      { "payline": 0, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 4, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 5, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 7, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 8, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 9, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 10, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 11, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 13, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 17, "symbol": "10", "count": 4, "odds": 100 },
+      { "payline": 19, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 20, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 21, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 23, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 24, "symbol": "10", "count": 2, "odds": 4 }
+    ]
+  },
+  "endTime": { "$date": "2024-07-17T09:02:52.024Z" },
+  "__archive": { "summarized": true },
+  "freeSpinTriggeredByPromotion": true
+}
+```
+
+#### Free Spin Not Triggered by Promotion
+
+```json
+{
+  "_id": { "$oid": "6697889b1139b0670d481180" },
+  "bet": 1,
+  "totalAmount": 25,
+  "baseTotalAmount": 25000,
+  "paylines": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  "freeSpin": false,
+  "result": [10, 5, 4, 10, 8, 7, 10, 5, 8, 10, 0, 8, 10, 5, 0],
+  "betWin": 327,
+  "baseBetWin": 327000,
+  "paid": true,
+  "id": 372531,
+  "name": "lele60010",
+  "time": { "$date": "2024-07-17T09:02:19.909Z" },
+  "rate": 1000,
+  "exchangeRateId": 4308,
+  "jackpotContribution": { "contributionRate": 0.025, "baseContributionAmount": 625 },
+  "poolAllocation": {
+    "grand": { "rate": 0.005, "baseAmount": 125 },
+    "major": { "rate": 0.005, "baseAmount": 125 },
+    "minor": { "rate": 0.015, "baseAmount": 375 }
+  },
+  "bonusChests": [
+    { "picked": true, "amount": 15 },
+    { "picked": true, "amount": 19 },
+    { "picked": true, "amount": 17 }
+  ],
+  "__v": 2,
+  "settlementResult": {
+    "freeSpins": { "count": 1, "odds": 0 },
+    "bonus": { "count": 3, "odds": 3 },
+    "jackpot": { "winningAmount": 4905.5831, "winningLine": 1 },
+    "winningPaylines": [
+      { "payline": 0, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 4, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 5, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 7, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 8, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 9, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 10, "symbol": "5", "count": 3, "odds": 16 },
+      { "payline": 11, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 13, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 17, "symbol": "10", "count": 4, "odds": 100 },
+      { "payline": 19, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 20, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 21, "symbol": "10", "count": 2, "odds": 4 },
+      { "payline": 23, "symbol": "10", "count": 3, "odds": 25 },
+      { "payline": 24, "symbol": "10", "count": 2, "odds": 4 }
+    ]
+  },
+  "endTime": { "$date": "2024-07-17T09:02:52.024Z" },
+  "__archive": { "summarized": true },
+  "freeSpinTriggeredByPromotion": false
+}
+```
+
 ## Key Differences
 
 ### BetInfo Enhancement
