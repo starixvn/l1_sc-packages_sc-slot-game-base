@@ -118,7 +118,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
     formatApiBetInfo(payload) {
         return {
-            amount: payload.totalAmount,
+            amount: payload.freeSpin ? 0 : payload.totalAmount,
             gameId: this.definition.id,
             gameRoundId: this.gameData.roundId,
             choiceId: 0,
