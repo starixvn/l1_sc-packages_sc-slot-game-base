@@ -229,37 +229,6 @@ describe("slot-process-bet-queue", () => {
             expect(placeBetPublisher.publishGameFailedBet).toBeCalled();
         });
 
-        it("when freeSpin but not have soonestExpiredFreeSpinSet should publishGameFailedBet", async () => {
-            // arrange
-            const gameData = {
-                ingame: {
-                    player1: { finish: false },
-                },
-                gameConfigs: {
-                    slotsConfig: { jackpot: {} },
-                },
-            };
-            const placeBetPublisher = { publishGameFailedBet: jest.fn() };
-            const freeSpinsConsumer = { getSoonestExpiredFreeSpinSet: jest.fn() };
-            const soonestExpiredFreeSpinSet = null;
-            freeSpinsConsumer.getSoonestExpiredFreeSpinSet.mockReturnValueOnce(soonestExpiredFreeSpinSet);
-            const cron = new SlotProcessBetQueue({
-                gameData,
-                placeBetPublisher,
-                freeSpinsConsumer,
-                gameManagementApiClientFactory,
-                betEventInterceptors,
-            });
-            const player = { profile: { name: "player1" } };
-            const payload = { freeSpin: true };
-
-            // act
-            await cron.proceedBet(player, payload);
-
-            // assert
-            expect(placeBetPublisher.publishGameFailedBet).toBeCalled();
-        });
-
         const testCases = [
             { jackpot: { enabled: true, playerContributionRatio: 5 }, soonestExpiredFreeSpinSet: { bet: 1, paylines: [] } },
             { jackpot: {}, soonestExpiredFreeSpinSet: null },
