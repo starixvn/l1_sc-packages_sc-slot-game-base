@@ -67,11 +67,14 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         const soonestExpiredFreeSpinSet = this.freeSpinsConsumer.getSoonestExpiredFreeSpinSet(player);
 
-        payload.freeSpin = payload.freeSpin || (soonestExpiredFreeSpinSet == null ? false : true);
+        // Validate and set free spin flags
+        const isValidFreeSpin = this.validateFreeSpinEligibility(payload, soonestExpiredFreeSpinSet, player);
+        payload.freeSpin = payload.freeSpin && isValidFreeSpin;
+        payload.freeSpinExtra = this.isFreeSpinExtra(soonestExpiredFreeSpinSet);
 
-        if (payload.freeSpin && !soonestExpiredFreeSpinSet) {
-            this.placeBetPublisher.publishGameFailedBet(player.UID, { endBet: -1, notice: { errorCode: SlotNoticeHelper.invalidFreeSpin } });
-
+        // Handle invalid free spin scenario
+        if (payload.freeSpin && !this.hasValidFreeSpinSource(soonestExpiredFreeSpinSet, player)) {
+            this.handleInvalidFreeSpin(player);
             return;
         }
 
@@ -81,6 +84,62 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         this.gameData.roundId++;
 
         await super.proceedBet(player, betInfo);
+    }
+
+    /**
+     * Validates if the player is eligible for free spins
+     * @param {Object} payload - The bet payload
+     * @param {Object|null} soonestExpiredFreeSpinSet - The soonest expired free spin set
+     * @param {Object} player - The player object
+     * @returns {boolean} - Whether the player is eligible for free spins
+     */
+    validateFreeSpinEligibility(payload, soonestExpiredFreeSpinSet, player) {
+        const hasValidFreeSpinSet = soonestExpiredFreeSpinSet != null;
+        const hasValidPromotion = this.hasValidPromotion(player);
+        
+        return hasValidFreeSpinSet || hasValidPromotion;
+    }
+
+    /**
+     * Checks if the player has a valid promotion
+     * @param {Object} player - The player object
+     * @returns {boolean} - Whether the player has a valid promotion
+     */
+    hasValidPromotion(player) {
+        return player.promotion != null && 
+               player.promotion && 
+               player.promotion.isClaimed;
+    }
+
+    /**
+     * Determines if this is an extra free spin
+     * @param {Object|null} soonestExpiredFreeSpinSet - The soonest expired free spin set
+     * @returns {boolean} - Whether this is an extra free spin
+     */
+    isFreeSpinExtra(soonestExpiredFreeSpinSet) {
+        return soonestExpiredFreeSpinSet != null && 
+               soonestExpiredFreeSpinSet.promotionId != null;
+    }
+
+    /**
+     * Checks if the player has a valid source for free spins
+     * @param {Object|null} soonestExpiredFreeSpinSet - The soonest expired free spin set
+     * @param {Object} player - The player object
+     * @returns {boolean} - Whether the player has a valid free spin source
+     */
+    hasValidFreeSpinSource(soonestExpiredFreeSpinSet, player) {
+        return soonestExpiredFreeSpinSet != null || this.hasValidPromotion(player);
+    }
+
+    /**
+     * Handles the case when a player tries to use invalid free spins
+     * @param {Object} player - The player object
+     */
+    handleInvalidFreeSpin(player) {
+        this.placeBetPublisher.publishGameFailedBet(player.UID, { 
+            endBet: -1, 
+            notice: { errorCode: SlotNoticeHelper.invalidFreeSpin } 
+        });
     }
 
     async generateBetInfo(payload, freeSpinInfo, player) {
