@@ -71,7 +71,6 @@ export default class FreeSpinsConsumer {
             available: numberOfFreeSpins,
             time: createdTime,
             expiryTime,
-            promotionId: "test",
             ...(player.promotion && player.promotion.isClaimed && { promotionId: player.promotion.promotionId }),
         };
         const gainedFreeSpin = {
