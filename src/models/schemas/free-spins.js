@@ -12,4 +12,5 @@ export default new mongoose.Schema({
     time: { type: Date, required: true },
     expiryTime: { type: Date, required: true },
     playerId: { type: String, required: true },
+    promotionId: { type: String, required: false },
 });
