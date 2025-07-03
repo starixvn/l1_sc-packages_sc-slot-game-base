@@ -67,13 +67,14 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         const soonestExpiredFreeSpinSet = this.freeSpinsConsumer.getSoonestExpiredFreeSpinSet(player);
         // Validate and set free spin flags
-        const isValidFreeSpin = this.validateFreeSpinEligibility(payload, soonestExpiredFreeSpinSet, player);
+        const isValidFreeSpin = this.validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player);
         payload.freeSpin = payload.freeSpin && isValidFreeSpin;
-        payload.freeSpinExtra = this.isFreeSpinExtra(soonestExpiredFreeSpinSet);
-        if(payload.freeSpinExtra){
+
+        if(this.hasValidPromotion(player)){
             const latestExpiredFreeSpinSet = this.freeSpinsConsumer.getLatestExpiredFreeSpinSet(player);
-            payload.freeSpinExtraAvailable = latestExpiredFreeSpinSet.available;
-        }
+            player.promotion.freeSpinExtra = this.isFreeSpinExtra(latestExpiredFreeSpinSet);
+            player.promotion.freeSpinAvailable = latestExpiredFreeSpinSet.available;
+        }        
 
         // Handle invalid free spin scenario
         if (payload.freeSpin && !this.hasValidFreeSpinSource(soonestExpiredFreeSpinSet, player)) {
@@ -91,12 +92,11 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
     /**
      * Validates if the player is eligible for free spins
-     * @param {Object} payload - The bet payload
      * @param {Object|null} soonestExpiredFreeSpinSet - The soonest expired free spin set
      * @param {Object} player - The player object
      * @returns {boolean} - Whether the player is eligible for free spins
      */
-    validateFreeSpinEligibility(payload, soonestExpiredFreeSpinSet, player) {
+    validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player) {
         const hasValidFreeSpinSet = soonestExpiredFreeSpinSet != null;
         const hasValidPromotion = this.hasValidPromotion(player);
         
