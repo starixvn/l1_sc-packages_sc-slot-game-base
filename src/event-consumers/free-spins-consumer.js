@@ -210,7 +210,9 @@ export default class FreeSpinsConsumer {
      * @param {Object} newlyCachedFreeSpin - The newly cached free spin
      */
     updatePlayerPromotionFreeSpins(player, newlyCachedFreeSpin) {
+        
         if (player.promotion && player.promotion.isClaimed) {
+            player.promotion.freeSpinExtra = true;
             player.promotion.freeSpinAvailable = newlyCachedFreeSpin.available;
         }
     }
