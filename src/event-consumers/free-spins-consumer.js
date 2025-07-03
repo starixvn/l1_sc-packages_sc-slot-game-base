@@ -82,10 +82,8 @@ export default class FreeSpinsConsumer {
         const newlyCreatedFreeSpin = await this.freeSpinsRepository.create(gainedFreeSpin);
 
         if (newlyCreatedFreeSpin) {
-            newlyCachedFreeSpin.id = newlyCreatedFreeSpin.id;
-            this.gameData.ingame[memberName].freeSpins = this.gameData.ingame[memberName].freeSpins ?? [];
-
-            this.gameData.ingame[memberName].freeSpins.push(newlyCachedFreeSpin);
+            this.updateFreeSpinCache(memberName, newlyCachedFreeSpin, newlyCreatedFreeSpin);
+            this.updatePlayerPromotionFreeSpins(player, newlyCachedFreeSpin);
         }
     }
 
@@ -191,5 +189,29 @@ export default class FreeSpinsConsumer {
         const { freeSpins } = this.gameData.ingame[player.profile.name] ?? {};
 
         return freeSpins?.reduce((total, freeSpin) => total + freeSpin.available, 0) ?? 0;
+    }
+
+    /**
+     * Updates the free spin cache for a player
+     * @param {string} memberName - The player's member name
+     * @param {Object} newlyCachedFreeSpin - The free spin object to cache
+     * @param {Object} newlyCreatedFreeSpin - The created free spin from database
+     */
+    updateFreeSpinCache(memberName, newlyCachedFreeSpin, newlyCreatedFreeSpin) {
+        newlyCachedFreeSpin.id = newlyCreatedFreeSpin.id;
+        this.gameData.ingame[memberName].freeSpins = this.gameData.ingame[memberName].freeSpins ?? [];
+
+        this.gameData.ingame[memberName].freeSpins.push(newlyCachedFreeSpin);
+    }
+
+    /**
+     * Updates the player's promotion free spin availability
+     * @param {Object} player - The player object
+     * @param {Object} newlyCachedFreeSpin - The newly cached free spin
+     */
+    updatePlayerPromotionFreeSpins(player, newlyCachedFreeSpin) {
+        if (player.promotion && player.promotion.isClaimed) {
+            player.promotion.freeSpinAvailable = newlyCachedFreeSpin.available;
+        }
     }
 }
