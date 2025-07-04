@@ -197,6 +197,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             playerPromotionSlot: player.promotion, 
             payload: bet,
             firstAvailableFreeSpinSet: firstAvailableFreeSpinSet,
+            gameData: this.gameData.ingame[player.profile.name],
             test: true
         });        
 
