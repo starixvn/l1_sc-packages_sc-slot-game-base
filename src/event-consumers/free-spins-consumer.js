@@ -224,7 +224,6 @@ export default class FreeSpinsConsumer {
     updatePlayerPromotionFreeSpins(player, newlyCachedFreeSpin) {
         
         if (player.promotion && player.promotion.isClaimed) {
-            player.promotion.freeSpinExtra = true;
             player.promotion.freeSpinAvailable = newlyCachedFreeSpin.available;
         }
     }
