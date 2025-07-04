@@ -192,25 +192,6 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
     }
 
     async handleSuccessBet(player, balance, roundId, bet, applicableInterceptors) {
-        const firstAvailableFreeSpinSet = await this.freeSpinsConsumer.getSoonestExpiredFreeSpinSet(player);
-
-        const currentDateTime = new Date();
-        const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
-        const firstAvailableFreeSpinSet2 = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
-
-        this.placeBetPublisher.publishToUser(player.UID, { 
-            playerPromotionSlot: player.promotion, 
-            payload: bet,
-            currentDateTime: currentDateTime,
-            freeSpinsOfPlayer: freeSpinsOfPlayer,
-            firstAvailableFreeSpinSet: firstAvailableFreeSpinSet,
-            firstAvailableFreeSpinSet2: firstAvailableFreeSpinSet2,
-            gameData: this.gameData.ingame[player.profile.name],
-            gameData4: this.gameData.ingame[player.profile.name]?.freeSpins ?? [],
-            gameData2: this.gameData.ingame,
-            test: true
-        });        
-
         if (bet.freeSpin) {
             await this.freeSpinsConsumer.useFreeSpin(player);
         }
