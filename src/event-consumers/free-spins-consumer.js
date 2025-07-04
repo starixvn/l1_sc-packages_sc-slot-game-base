@@ -191,6 +191,18 @@ export default class FreeSpinsConsumer {
         return freeSpins?.reduce((total, freeSpin) => total + freeSpin.available, 0) ?? 0;
     }
 
+    getTotalPromotionAvaiableFreeSpins(player) {
+        const { freeSpins } = this.gameData.ingame[player.profile.name] ?? {};
+
+        return freeSpins?.reduce((total, freeSpin) => {
+            // Only count free spins that have a promotionId
+            if (freeSpin.promotionId) {
+                return total + freeSpin.available;
+            }
+            return total;
+        }, 0) ?? 0;
+    }
+
     /**
      * Updates the free spin cache for a player
      * @param {string} memberName - The player's member name
