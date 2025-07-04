@@ -74,6 +74,11 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             const latestExpiredFreeSpinSet = this.freeSpinsConsumer.getLatestExpiredFreeSpinSet(player);
             player.promotion.freeSpinExtra = this.isFreeSpinExtra(latestExpiredFreeSpinSet);
             player.promotion.freeSpinAvailable = this.freeSpinsConsumer.getTotalAvaiableFreeSpins(player);
+            this.placeBetPublisher.publishToUser(player.UID, { 
+                latestExpiredFreeSpinSet: latestExpiredFreeSpinSet,
+                playerPromotionSlot: player.promotion, 
+                payload: payload
+            });
         }        
 
         // Handle invalid free spin scenario
