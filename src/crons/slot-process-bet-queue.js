@@ -196,7 +196,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         const currentDateTime = new Date();
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
-        const firstAvailableFreeSpinSet2 = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
+        const firstAvailableFreeSpinSet2 = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
 
         this.placeBetPublisher.publishToUser(player.UID, { 
             playerPromotionSlot: player.promotion, 
