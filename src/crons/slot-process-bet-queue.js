@@ -69,8 +69,9 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         // Validate and set free spin flags
         const isValidFreeSpin = this.validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player);
         payload.freeSpin = payload.freeSpin && isValidFreeSpin;
-        player.promotion.freeSpinAvailable = this.freeSpinsConsumer.getTotalPromotionAvaiableFreeSpins(player);
-
+        if(this.hasValidPromotion(player)){
+            player.promotion.freeSpinAvailable = this.freeSpinsConsumer.getTotalPromotionAvaiableFreeSpins(player);
+        }
         // Handle invalid free spin scenario
         if (payload.freeSpin && !this.hasValidFreeSpinSource(soonestExpiredFreeSpinSet, player)) {
             this.handleInvalidFreeSpin(player);
