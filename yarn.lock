@@ -8846,20 +8846,20 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-sc-api-client@1.4.0:
-  version "1.4.0"
-  resolved "https://npm.lumigame.com/sc-api-client/-/sc-api-client-1.4.0.tgz"
-  integrity sha512-Hp6kmKufWQM2KuCdog8pGkjEW5qqGaN1SzKq1jAI/jnrZsevAWMXLS3OU37GHt1ySgI1rEpDxjacOMfXfIfgng==
+sc-api-client@1.4.1-beta.0:
+  version "1.4.1-beta.0"
+  resolved "https://npm.lumigame.com/sc-api-client/-/sc-api-client-1.4.1-beta.0.tgz"
+  integrity sha512-C94VVn6nvRNv84YSqJZNc7r1+9BGZpEVjkbNOqHkNhpJ4vxVWTJiLzk0/lDAYgX+5pACBvWUag8nrOSBQuELcQ==
   dependencies:
     axios "^0.19.2"
 
-sc-base-apis@3.0.0-beta.1:
-  version "3.0.0-beta.1"
-  resolved "https://npm.lumigame.com/sc-base-apis/-/sc-base-apis-3.0.0-beta.1.tgz"
-  integrity sha512-XQ8k52hl5KJclYbYcQwjaz8H6lDZNGcSW3h6QpnGH7k4sddklG+aQ6wazJ0cT3tpai/sR27JZUmLqlKe5iCxIw==
+sc-base-apis@3.0.0-beta.3:
+  version "3.0.0-beta.3"
+  resolved "https://npm.lumigame.com/sc-base-apis/-/sc-base-apis-3.0.0-beta.3.tgz"
+  integrity sha512-hZigpFFN52RXGwn2p4kMoNbPJUw/ZbXvOSsuPWfukHjxYQmBFpTvQLcViPBDQMKPtqordY58fEpBhfJ2TnwRlw==
   dependencies:
     moment "^2.29.4"
-    sc-api-client "1.4.0"
+    sc-api-client "1.4.1-beta.0"
     sc-common "1.8.1"
 
 sc-common@1.8.1:
@@ -8873,10 +8873,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@6.0.0-beta.55:
-  version "6.0.0-beta.55"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.55.tgz"
-  integrity sha512-2/Ak6FiV+nJq9MPx3nZXAreH9lpE4Vx5sjIqqixdIJTs3X29X9M8DAMJA0V9TKAgMbHXVRt4JLyiUyQWPUhgfQ==
+sc-game-base@6.0.0-beta.56:
+  version "6.0.0-beta.56"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.56.tgz"
+  integrity sha512-fKaFAO2RlZEaY6P5/5GZhiCVt6hTPFHT9lwyZttAY+hIGI0tNLCyJgGFHXZ1ZEeVdX8aPtKwr/H0snTUFh/7rw==
   dependencies:
     "@sc/game-promotion-api-client" "^1.0.1-beta.14"
     awilix "^8.0.0"
@@ -8896,7 +8896,7 @@ sc-game-base@6.0.0-beta.55:
     prom-client "^11.2.1"
     random-js "^2.1.0"
     randomstring "^1.3.0"
-    sc-base-apis "3.0.0-beta.1"
+    sc-base-apis "3.0.0-beta.3"
     sc-common "1.8.1"
     sc-game-management-client "^0.1.0"
     sc-instrument "1.1.1-beta.2"
