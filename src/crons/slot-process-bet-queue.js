@@ -229,6 +229,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             baseTotalAmount: bet.totalAmount * rate,
             rate: rate,
             exchangeRateId: this.gameData.exchangeRates.exId,
+            appType: player.session.system,
         };
 
         if (this.jackpotValidator.canAccessJackpot(player)) {
