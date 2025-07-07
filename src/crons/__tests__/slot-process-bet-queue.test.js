@@ -71,7 +71,7 @@ describe("slot-process-bet-queue", () => {
                 gameManagementApiClientFactory,
                 betEventInterceptors,
             });
-            const player = { profile: { name: "user3" }, session: null };
+            const player = { profile: { name: "user3" }, session: { system: 1 } };
             const bet = { totalAmount: 10, freeSpin: 1 };
 
             // act

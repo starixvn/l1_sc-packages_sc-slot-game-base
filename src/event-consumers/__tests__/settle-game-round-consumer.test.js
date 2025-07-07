@@ -291,7 +291,7 @@ describe("SettleGameRoundConsumer", () => {
                     operatorId: undefined,
                     playerId: 2,
                 },
-                settlementInfo: { redPlay: 10, freeBet: false },
+                settlementInfo: { redPlay: 10, freeBet: false, promotionId: undefined },
             };
 
             // act
@@ -319,7 +319,7 @@ describe("SettleGameRoundConsumer", () => {
                     operatorId: undefined,
                     playerId: 2,
                 },
-                settlementInfo: { redPlay: 0, freeBet: true },
+                settlementInfo: { redPlay: 0, freeBet: true, promotionId: undefined },
             };
 
             // act
