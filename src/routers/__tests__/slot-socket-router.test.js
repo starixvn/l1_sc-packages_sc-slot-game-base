@@ -56,7 +56,7 @@ describe("init", () => {
         router.init(socketClient);
 
         // assert
-        expect(socketClient.on).toHaveBeenCalledTimes(12);
+        expect(socketClient.on).toHaveBeenCalledTimes(13);
     });
 });
 
