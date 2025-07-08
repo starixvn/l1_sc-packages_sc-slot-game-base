@@ -11,6 +11,7 @@ import FreeSpinsConsumer from "./free-spins-consumer";
 import GenerateResultConsumer from "./generate-result-consumer";
 import HallOfFameConsumer from "./hall-of-fame-consumer";
 import JackpotConsumer from "./jackpot-consumer";
+import PromotionFreeSpinsConsumer from "./promotion-free-spins-consumer";
 
 export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameRoundConsumer {
     /**
@@ -23,6 +24,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
      * @param {FreeSpinsConsumer} dependencies.freeSpinsConsumer
      * @param {HallOfFameConsumer} dependencies.hallOfFameConsumer
      * @param {JackpotConsumer} dependencies.jackpotConsumer
+     * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      * @param {endGameApi} endGame
      * @param {hitJackpotApi} hitJackpot
      * @param {mongoose.Model} dependencies.roundsRepository
@@ -40,6 +42,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         freeSpinsConsumer,
         hallOfFameConsumer,
         jackpotConsumer,
+        promotionFreeSpinsConsumer,
         endGame,
         hitJackpot,
         roundsRepository,
@@ -65,6 +68,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         this.freeSpinsConumer = freeSpinsConsumer;
         this.hallOfFameConsumer = hallOfFameConsumer;
         this.jackpotConsumer = jackpotConsumer;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
         this.hitJackpot = hitJackpot;
         this.logService = logService;
         this.jackpotPrizeGenerator = jackpotPrizeGenerator;
@@ -256,6 +260,15 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                         betByFreeSpin: bet.freeSpin,
                     })
                 );
+
+                await this.userBetResultPublisher.publishToUser(
+                    bet.uid,
+                    bet
+                );
+
+                if (bet.promotionId && bonusChests.length > 0) {
+                    await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
+                }
 
                 if (betResult.bigWin) {
                     await this.hallOfFameConsumer.add(player, {

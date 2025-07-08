@@ -6,10 +6,14 @@ export default class PromotionFreeSpinsConsumer {
     /**
      * @param {PromotionClient} dependencies.gamePromotionApiClient
      * @param {PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
+     * @param {Object} dependencies.logService
+     * @param {Object} dependencies.definition
      */
-    constructor(gamePromotionApiClient, promotionFreeSpinsPublisher) {
+    constructor(gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition) {
         this.promotionApiClient = gamePromotionApiClient?.instance();
         this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
+        this.logService = logService;
+        this.definition = definition;
     }
 
     toYMDHM = (date) => moment.utc(date).format("YYYY-MM-DDTHH:mm");
@@ -21,6 +25,39 @@ export default class PromotionFreeSpinsConsumer {
             if (this.toYMDHM(now) === this.toYMDHM(new Date(promotion.endDate))) {
                 this.promotionFreeSpinsPublisher.publishEndPromotion(promotion.players);
             }
+        }
+    }
+
+    async handleBonusInGame(player, bet) {
+        try {
+            const ticketDto = {
+                playerId: player.session.playerId,
+                operatorId: player.session.operatorId,
+                siteName: player.session.siteName,
+                promotionId: player.promotion.promotionId,
+                gameId: this.definition.id,
+                gameRoundId: bet.roundId,
+                appType: player.session.system,
+                betAmount: bet.amount,
+                winAmount: bet.betWin
+            };
+            this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
+            const ticketResult =await this.promotionApiClient.updatePromotionTicket(ticketDto);
+            this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketResult);
+            if (!ticketResult || !ticketResult.success) {
+                this.logService.logError(`Failed to update promotion ticket for player ${player.profile.name}:`, {
+                    error: ticketResult?.error || "Unknown error",
+                    promotionId: bet.promotionId,
+                    gameRoundId: bet.roundId,
+                });
+                return;
+            }
+        } catch (error) {
+            this.logService.logError(`Error updating promotion ticket for player ${player.profile.name}:`, {
+                error: error.message,
+                promotionId: bet.promotionId,
+                stack: error.stack,
+            });
         }
     }
 }
