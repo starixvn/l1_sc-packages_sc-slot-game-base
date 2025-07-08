@@ -36,9 +36,9 @@ export default class PromotionFreeSpinsConsumer {
                 siteName: player.session.siteName,
                 promotionId: player.promotion.promotionId,
                 gameId: this.definition.id,
-                gameRoundId: bet.roundId,
+                gameRoundId: bet.id,
                 appType: player.session.system,
-                betAmount: bet.amount,
+                betAmount: bet.bet,
                 winAmount: bet.betWin
             };
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
