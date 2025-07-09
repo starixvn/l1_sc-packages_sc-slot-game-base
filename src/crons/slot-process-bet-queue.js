@@ -69,7 +69,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         // Validate and set free spin flags
         const isValidFreeSpin = this.validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player);
         payload.freeSpin = payload.freeSpin && isValidFreeSpin;
-        if(this.hasValidPromotion(player)){
+        if (this.hasValidPromotion(player)) {
             player.promotion.freeSpinAvailable = this.freeSpinsConsumer.getTotalPromotionAvaiableFreeSpins(player);
             player.promotion.bonus = 0;
         }
@@ -96,7 +96,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
     validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player) {
         const hasValidFreeSpinSet = soonestExpiredFreeSpinSet != null;
         const hasValidPromotion = this.hasValidPromotion(player);
-        
+
         return hasValidFreeSpinSet || hasValidPromotion;
     }
 
@@ -106,9 +106,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @returns {boolean} - Whether the player has a valid promotion
      */
     hasValidPromotion(player) {
-        return player.promotion != null && 
-               player.promotion && 
-               player.promotion.isClaimed;
+        return player.promotion != null && player.promotion && player.promotion.isClaimed;
     }
 
     /**
@@ -117,8 +115,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @returns {boolean} - Whether this is an extra free spin
      */
     isFreeSpinExtra(soonestExpiredFreeSpinSet) {
-        return soonestExpiredFreeSpinSet != null && 
-               soonestExpiredFreeSpinSet.promotionId != null;
+        return soonestExpiredFreeSpinSet != null && soonestExpiredFreeSpinSet.promotionId != null;
     }
 
     /**
@@ -136,9 +133,9 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @param {Object} player - The player object
      */
     handleInvalidFreeSpin(player) {
-        this.placeBetPublisher.publishGameFailedBet(player.UID, { 
-            endBet: -1, 
-            notice: { errorCode: SlotNoticeHelper.invalidFreeSpin } 
+        this.placeBetPublisher.publishGameFailedBet(player.UID, {
+            endBet: -1,
+            notice: { errorCode: SlotNoticeHelper.invalidFreeSpin },
         });
     }
 
@@ -246,9 +243,10 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
+            newBet.siteName = player.session.siteName;
         }
 
-        if(player.usePromotion){
+        if (player.usePromotion) {
             newBet.promotionId = player.promotion.promotionId;
         }
 
