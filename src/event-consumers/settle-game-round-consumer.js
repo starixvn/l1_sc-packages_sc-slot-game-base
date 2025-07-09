@@ -178,6 +178,9 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         const { result, settlementResult } = finish;
         this.updateBonusTime(player, afterJackpot);
         await this.userBetResultPublisher.publishToUser(bet.uid, this.collectBonusResult({ result, settlementResult, roundId: finish.roundId }));
+        if (bet.promotionId && settlementResult.bonus.odds > 0) {
+            player.promotion.bonus = settlementResult.bonus.odds;
+        }
     }
 
     updateBonusTime(player, afterJackpot) {
@@ -265,11 +268,8 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
                 if (bet.promotionId && bonusChests.length > 0) {
                     await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
-                }
-
-                // Call endPromotionEvent if promotion bet interceptor is available
-                if (this.slotPromotionInterceptor && bet.promotionId) {
                     await this.slotPromotionInterceptor.endPromotionEvent({ player, bet });
+                    player.promotion.bonus = 0;
                 }
 
                 if (betResult.bigWin) {
