@@ -261,11 +261,6 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                     })
                 );
 
-                await this.userBetResultPublisher.publishToUser(
-                    bet.uid,
-                    bet
-                );
-
                 if (bet.promotionId && bonusChests.length > 0) {
                     await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
                 }
