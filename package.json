@@ -1,6 +1,6 @@
 {
     "name": "sc-slot-game-base",
-    "version": "2.3.0-beta.88",
+    "version": "2.3.0-beta.89",
     "description": "The codebase of Saba slot games.",
     "main": "src/index.js",
     "scripts": {
@@ -66,5 +66,6 @@
         "hooks": {
             "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
         }
-    }
+    },
+    "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
