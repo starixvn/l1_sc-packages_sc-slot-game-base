@@ -25,7 +25,7 @@ export default class FreeSpinsConsumer {
         if (freeSpinsOfPlayer && freeSpinsOfPlayer.length > 0) {
             const currentDateTime = new Date();
 
-            return freeSpinsOfPlayer.some((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
+            return freeSpinsOfPlayer.some((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
         }
 
         return false;
@@ -51,7 +51,7 @@ export default class FreeSpinsConsumer {
         const currentDateTime = new Date();
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
 
-        return freeSpinsOfPlayer.reverse().find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
+        return freeSpinsOfPlayer.reverse().find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
     }
 
     async gainFreeSpin(player, { roundId, bet, paylines, numberOfFreeSpins }, timeToLive) {
