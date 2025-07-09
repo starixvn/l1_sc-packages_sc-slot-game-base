@@ -52,6 +52,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         generateResultConsumer,
         boardDefinition,
         gameManagementApiClientFactory,
+        slotPromotionInterceptor,
     }) {
         super({
             definition,
@@ -74,6 +75,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         this.jackpotPrizeGenerator = jackpotPrizeGenerator;
         this.generateResultConsumer = generateResultConsumer;
         this.boardDefinition = boardDefinition ?? defaultDefinition;
+        this.slotPromotionInterceptor = slotPromotionInterceptor;
     }
 
     async autoSettleRound(player, roundId) {
@@ -263,6 +265,11 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
                 if (bet.promotionId && bonusChests.length > 0) {
                     await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
+                }
+
+                // Call endPromotionEvent if promotion bet interceptor is available
+                if (this.slotPromotionInterceptor && bet.promotionId) {
+                    await this.slotPromotionInterceptor.endPromotionEvent({ player, bet });
                 }
 
                 if (betResult.bigWin) {

@@ -19,6 +19,7 @@ import {
     paylineCalculator,
     roundResultPublisher,
     roundsRepository,
+    slotPromotionInterceptor,
     userBetResultPublisher,
 } from "./stubs";
 
@@ -927,6 +928,7 @@ function initDependencies() {
         logService,
         generateResultConsumer,
         gameManagementApiClientFactory,
+        slotPromotionInterceptor,
     };
 }
 

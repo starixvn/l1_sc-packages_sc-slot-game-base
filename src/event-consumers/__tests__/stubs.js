@@ -15,6 +15,7 @@ import {
 import { BoardGenerator, BonusBoardGenerator, JackpotPrizeGenerator, PaylineCalculator } from "../../board";
 import { JackpotPublisher } from "../../event-publishers";
 import JackpotValidator from "../../validators/jackpot-validator";
+import SlotPromotionInterceptor from "../../event-interceptors/slot-promotion-interceptor";
 
 const settleConsumer = stub(SettleGameRoundConsumer);
 const jackpotPublisher = stub(JackpotPublisher);
@@ -34,6 +35,7 @@ const jackpotPrizeGenerator = stub(JackpotPrizeGenerator);
 const bonusConsumer = stub(BonusConsumer);
 const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
 gameManagementApiClientFactory.instance.mockReturnValue({});
+const slotPromotionInterceptor = stub(SlotPromotionInterceptor);
 
 /** @type {mongoose.Model}*/
 const roundsRepository = stubMongoose(mongoose.Model);
@@ -60,6 +62,7 @@ export {
     roundResultPublisher,
     roundsRepository,
     settleConsumer,
+    slotPromotionInterceptor,
     userBetResultPublisher
 };
 
