@@ -8873,10 +8873,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@6.0.0-beta.61:
-  version "6.0.0-beta.61"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.61.tgz"
-  integrity sha512-WLQ1gMAKR3bAXistro0N8I1xPR1VdX+B5gMPiSUrFTRHPYBm3vYgxXgI2eNn9+/zD6EeSrVLWWAxnoKd1iWP/w==
+sc-game-base@6.0.0-beta.62:
+  version "6.0.0-beta.62"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.0.0-beta.62.tgz"
+  integrity sha512-WARzCnlqFA/swMCDbYVLKvJ0aBJXRMFDjTBhdmaCLITjAhl6L9kQUcvEI4XfmW1uf94ZweXRw8TKbC3jsRvCsw==
   dependencies:
     "@sc/game-promotion-api-client" "^1.0.1-beta.16"
     awilix "^8.0.0"
