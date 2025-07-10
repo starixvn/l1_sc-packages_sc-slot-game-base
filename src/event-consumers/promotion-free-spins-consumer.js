@@ -43,7 +43,6 @@ export default class PromotionFreeSpinsConsumer {
             };
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
             const ticketResult =await this.promotionApiClient.updatePromotionTicket(ticketDto);
-            this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketResult);
             if (!ticketResult || !ticketResult.success) {
                 this.logService.logError(`Failed to update promotion ticket for player ${player.profile.name}:`, {
                     error: ticketResult?.error || "Unknown error",
