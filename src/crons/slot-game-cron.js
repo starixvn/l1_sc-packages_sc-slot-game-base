@@ -120,9 +120,13 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     async proceed() {
         const { durations } = this.definition;
+        const currentSecond = new Date().getSeconds();
+
+        if (currentSecond === 0) {
+            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
+        }
 
         if (this.gameData.remainingTime === durations.wholeRound) {
-            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
             await this.checkGameStatus();
             this.bot && (await this.bot.reset());
         }
