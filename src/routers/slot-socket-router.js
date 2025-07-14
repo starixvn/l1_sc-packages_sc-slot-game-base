@@ -1,6 +1,6 @@
 import { Core } from "sc-game-base";
 
-import { BonusConsumer, InGameConsumer, PlaceBetConsumer, JackpotGameConsumer } from "./../event-consumers";
+import { BonusConsumer, InGameConsumer, PlaceBetConsumer } from "./../event-consumers";
 import { HallOfFameQuery, SlotHistoryQuery } from "./../query-apis";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
@@ -38,6 +38,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         playGamePermissionValidator,
         jackpotGameConsumer,
         redeemConsumer,
+        bonusWinConsumer,
     }) {
         super({
             definition,
@@ -51,6 +52,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
             historyQuery,
             logService,
             playGamePermissionValidator,
+            bonusWinConsumer,
         });
 
         this.bonusConsumer = bonusConsumer;
