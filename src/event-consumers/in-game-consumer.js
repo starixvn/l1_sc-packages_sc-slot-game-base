@@ -62,7 +62,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
             },
         };
 
-        if (realPlayer.promotion) {
+        if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
             payload.promotion = realPlayer.promotion;
         }
 
