@@ -62,7 +62,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
             },
         };
 
-        if (realPlayer.promotion) {
+        if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
             payload.promotion = realPlayer.promotion;
         }
 
@@ -75,6 +75,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
                 canClaim: realPlayer.promotionTOProgress.canClaim,
                 win: realPlayer.promotionTOProgress.totalWinAmount,
                 expire: realPlayer.promotionTOProgress.claimExpirationDate,
+                promotionId: realPlayer.promotion.promotionId,
             }
         }
 
