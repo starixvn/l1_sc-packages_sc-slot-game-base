@@ -53,7 +53,7 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
     }
 
     composePromotionValidationCriteria(player) {
-        const baseCriteria = super.composePromotionValidationCriteria?.(player) || [];
+        const baseCriteria = super.composePromotionValidationCriteria(player) || [];
 
         if (player.promotion) {
             const slotSpecificCriteria = [

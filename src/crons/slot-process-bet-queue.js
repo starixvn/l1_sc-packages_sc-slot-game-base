@@ -196,7 +196,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         const rate = this.calculateCurrencyRate(player.session);
 
-        await this.upsertBet(player, roundId, bet, rate);
+        await this.upsertBet(player, roundId, bet, rate, applicableInterceptors);
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
         const { betWin } = await this.settleGameRoundConsumer.settleRound(player, roundId);
@@ -213,7 +213,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         }
     }
 
-    async upsertBet(player, roundId, bet, rate) {
+    async upsertBet(player, roundId, bet, rate, applicableInterceptors) {
         const newBet = {
             id: roundId,
             uid: player.UID,
@@ -230,6 +230,13 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             appType: player.session.system,
         };
 
+        if (applicableInterceptors) {
+            newBet = this.executeInterceptorTransform("enhanceBetRecord", applicableInterceptors, {
+                betRecord: newBet,
+                bet,
+            });
+        }
+
         if (this.jackpotValidator.canAccessJackpot(player)) {
             newBet.jackpotContribution = {
                 contributionRate: bet.contributionRate,
@@ -244,10 +251,6 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
             newBet.siteName = player.session.siteName;
-        }
-
-        if (player.usePromotion) {
-            newBet.promotionId = player.promotion.promotionId;
         }
 
         await this.roundsRepository.create(newBet);

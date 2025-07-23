@@ -1,10 +1,10 @@
-import { asClass, asValue, asFunction } from "awilix";
+import { asClass, asValue } from "awilix";
 import { hitJackpot } from "sc-base-apis";
 import { Core, Table } from "sc-game-base";
+import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
-import SlotPromotionInterceptor from "./event-interceptors/slot-promotion-interceptor";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters, Jackpots } from "./models";
 import { HallOfFameQuery, SlotHistoryQuery } from "./query-apis";
@@ -12,7 +12,6 @@ import { SlotHttpRouter, SlotSocketRouter } from "./routers";
 import SlotGameData from "./slot-game-data";
 import SlotGameDefinition from "./slot-game-definition";
 import JackpotValidator from "./validators/jackpot-validator";
-import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
 
 export default class SlotContainerRegistry extends Table.TableContainerRegistry {
     /**
@@ -123,31 +122,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
 
         this.container.register({
             jackpotValidator: asClass(JackpotValidator).singleton(),
-        });
-    }
-
-    registerInterceptors() {
-        // Register slot-specific promotion interceptor
-        this.container.register({
-            slotPromotionInterceptor: asClass(SlotPromotionInterceptor).singleton().proxy(),
-        });
-    }
-
-    registerInterceptorArrays() {
-        // Register interceptor arrays with both base and slot-specific interceptors
-        this.container.register({
-            betEventInterceptors: asFunction(() => {
-                const interceptors = [];
-
-                // Resolve the proxied interceptor manually to avoid undefined issues
-                const slotPromotionInterceptor = this.container.resolve("slotPromotionInterceptor");
-
-                if (slotPromotionInterceptor) {
-                    interceptors.push(slotPromotionInterceptor);
-                }
-
-                return interceptors;
-            }).singleton(),
         });
     }
 }
