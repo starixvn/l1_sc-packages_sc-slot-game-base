@@ -5,6 +5,7 @@ import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
+import SlotPromotionInterceptor from "./event-interceptors/slot-promotion-interceptor";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters, Jackpots } from "./models";
 import { HallOfFameQuery, SlotHistoryQuery } from "./query-apis";
@@ -23,9 +24,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         this.registerBoardUtilities();
 
         super.register(appConfigs, definition, gameData);
-
-        this.registerInterceptors();
-        this.registerInterceptorArrays();
 
         return this.container;
     }
@@ -122,6 +120,14 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
 
         this.container.register({
             jackpotValidator: asClass(JackpotValidator).singleton(),
+        });
+    }
+
+    registerInterceptors() {
+        super.registerInterceptors();
+
+        this.container.register({
+            promotionBetInterceptor: asClass(SlotPromotionInterceptor).singleton().proxy(),
         });
     }
 }
