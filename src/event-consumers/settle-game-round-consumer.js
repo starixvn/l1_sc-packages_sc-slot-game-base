@@ -251,7 +251,9 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                 bet.endTime = new Date();
 
                 await bet.save();
-                await this.callEndGame(bet, roundId, bet.endTime, betResult);
+
+                const metaData = this.createMetadata({ bet, settlementResult, result });
+                await this.callEndGame(bet, roundId, bet.endTime, betResult, metaData);
 
                 await this.userBetResultPublisher.publishToUser(
                     bet.uid,
