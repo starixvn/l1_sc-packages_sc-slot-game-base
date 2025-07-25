@@ -62,7 +62,8 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
                     notice: this.getNoticeObj(SlotNoticeHelper.promotionNotAvailableDuringFreeSpin),
                 },
                 {
-                    failure: player.usePromotion && player.promotion.remainingBonusItems <= 0 && player.promotion.freeSpinAvailable <= 0,
+                    failure: player.usePromotion && player.promotion.remainingBonusItems <= 0 &&
+                    (player.promotion.freeSpinAvailable <= 0 || !player.promotion.freeSpinAvailable),
                     notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No promotions available" }),
                 }
             ];
@@ -111,7 +112,7 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
         const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
         const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
         
-        if(freeSpinExtra || !soonestExpiredFreeSpinSet) {
+        if(payload.freeSpin && ( freeSpinExtra || !soonestExpiredFreeSpinSet)) {
             this.handlePromotionLogic(player, payload);
         }
     }
