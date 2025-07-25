@@ -109,7 +109,7 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
     handlePromotionLogic(player, payload) {
         const currentDateTime = new Date();
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
-        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
+        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
         const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
         
         if (player.promotion) {
