@@ -77,7 +77,7 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
             betChoice: [...Object.keys(defaultDefinition.paylines)],
         });
 
-        this.handlePromotionLogic(player, payload);
+        this.handlePromotionSlotGameLogic(player, payload);
 
         const { amount, betChoice, freeSpin, roundId } = payload;
         const name = player.profile.name;
@@ -99,5 +99,16 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
         }
 
         this.gameData.ingame[name].betQueue.push({ player, payload });
+    }
+    
+    handlePromotionSlotGameLogic(player, payload) {
+        const currentDateTime = new Date();
+        const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
+        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
+        const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
+        
+        if(freeSpinExtra || !soonestExpiredFreeSpinSet) {
+            this.handlePromotionLogic(player, payload);
+        }
     }
 }

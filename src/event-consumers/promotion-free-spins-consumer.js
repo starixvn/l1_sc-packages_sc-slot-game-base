@@ -1,8 +1,8 @@
-import moment from "moment";
 import PromotionClient from "sc-game-base/src/core/promotion-client/promotion-client";
 import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
+import { Core } from "sc-game-base";
 
-export default class PromotionFreeSpinsConsumer {
+export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.PromotionFreeSpinsConsumer{
     /**
      * @param {PromotionClient} dependencies.gamePromotionApiClient
      * @param {PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
@@ -10,22 +10,14 @@ export default class PromotionFreeSpinsConsumer {
      * @param {Object} dependencies.definition
      */
     constructor(gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition) {
-        this.promotionApiClient = gamePromotionApiClient?.instance();
-        this.promotionFreeSpinsPublisher = promotionFreeSpinsPublisher;
-        this.logService = logService;
+        super({
+            gameData: { gameConfigs: { gameId: definition?.id } },
+            promotionFreeSpinsPublisher,
+            logService,
+            gamePromotionApiClient
+        });
+        
         this.definition = definition;
-    }
-
-    toYMDHM = (date) => moment.utc(date).format("YYYY-MM-DDTHH:mm");
-
-    async handlePromotionFreeSpinsExpiry(gameId) {
-        const now = moment.utc();          
-        const runningPromotions = await this.promotionApiClient.getExpiringPromotions(gameId);
-        for (const promotion of runningPromotions) {
-            if (this.toYMDHM(now) === this.toYMDHM(new Date(promotion.endDate))) {
-                this.promotionFreeSpinsPublisher.publishEndPromotion(promotion.players);
-            }
-        }
     }
 
     async handleBonusInGame(player, bet) {
