@@ -8,10 +8,11 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
      * @param {PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
      * @param {Object} dependencies.logService
      * @param {Object} dependencies.definition
+     * @param {GameData} dependencies.gameData
      */
-    constructor(gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition) {
+    constructor(gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition, gameData) {
         super({
-            gameData: { gameConfigs: { gameId: definition?.id } },
+            gameData,
             promotionFreeSpinsPublisher,
             logService,
             gamePromotionApiClient
