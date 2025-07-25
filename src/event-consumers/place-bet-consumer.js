@@ -118,6 +118,8 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
 
         if(payload.freeSpin && ( freeSpinExtra || !soonestExpiredFreeSpinSet)) {
             super.handlePromotionLogic(player, payload);
+        }else{
+            player.usePromotion = false;
         }
     }
 
