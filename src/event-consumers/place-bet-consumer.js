@@ -111,7 +111,12 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
         const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && freeSpin.expiryTime > currentDateTime);
         const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
-        
+        if (soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId) {
+            player.promotion.freeSpinAvailable = soonestExpiredFreeSpinSet.available;
+        } else {
+            player.promotion.freeSpinAvailable = 0;
+        }
+
         if(payload.freeSpin && ( freeSpinExtra || !soonestExpiredFreeSpinSet)) {
             super.handlePromotionLogic(player, payload);
         }
