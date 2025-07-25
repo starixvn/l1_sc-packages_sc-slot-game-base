@@ -4,4 +4,10 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
     shouldCompletePromotion(player) {
         return player.promotion.remainingBonusItems === 0 && player.promotion.freeSpinAvailable <= 1 && player.promotion.bonus === 0;
     }
+
+    async beforeEvent(context) {
+        if (player.promotion.freeSpinAvailable === 0) {
+            await super.beforeEvent(context);
+        }
+    }
 }

@@ -214,7 +214,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
     }
 
     async upsertBet(player, roundId, bet, rate, applicableInterceptors) {
-        const newBet = {
+        let newBet = {
             id: roundId,
             uid: player.UID,
             name: player.profile.name,

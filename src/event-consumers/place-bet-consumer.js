@@ -61,6 +61,10 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
                     failure: player.freeSpin,
                     notice: this.getNoticeObj(SlotNoticeHelper.promotionNotAvailableDuringFreeSpin),
                 },
+                {
+                    failure: player.promotion.remainingBonusItems <= 0 && player.promotion.freeSpinAvailable <= 0,
+                    notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No promotions available" }),
+                }
             ];
 
             return baseCriteria.concat(slotSpecificCriteria);
