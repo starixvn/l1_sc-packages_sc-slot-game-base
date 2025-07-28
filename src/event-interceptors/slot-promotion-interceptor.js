@@ -9,6 +9,8 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
         const { player } = context;
         if (player.promotion.freeSpinAvailable === 0) {
             await super.beforeEvent(context);
+        }else{
+            player.promotion.freeSpinAvailable--;
         }
     }
 }
