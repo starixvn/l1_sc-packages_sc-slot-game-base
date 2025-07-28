@@ -307,7 +307,7 @@ describe("slot-game-cron", () => {
 
         it("should processExpiredBonus", async () => {
             // arrange
-            const gameData = { remainingTime: 1 };
+            const gameData = { remainingTime: 1, gameConfigs: { gameId: 1 } };
             const cron = new SlotGameCron({
                 definition,
                 gameData,
@@ -449,7 +449,7 @@ describe("slot-game-cron", () => {
 
         it("when remainingTime < 0 should call freeSpinsConsumer.reload", async () => {
             // arrange
-            const gameData = { remainingTime: -1 };
+            const gameData = { remainingTime: -1, gameConfigs: { gameId: 1 } };
             const freeSpinsConsumer = { reload: jest.fn() };
             const cron = new SlotGameCron({
                 definition,

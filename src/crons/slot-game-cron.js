@@ -120,9 +120,6 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
     async proceed() {
         const { durations } = this.definition;
-        if (this.gameData.remainingTimeForFirstSecond === this.gameData.remainingTime) {
-            await this.promotionFreeSpinsConsumer.handlePromotionFreeSpinsExpiry(this.gameData.gameConfigs.gameId);
-        }
 
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
@@ -142,6 +139,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
         await this.jackpotGameConsumer.processExpired();
         await this.bonusConsumer.processExpiredBonus();
+        await this.checkPromotionFreeSpinsExpiry();
     }
 
     async loadUnsettledBetsToIngame() {
