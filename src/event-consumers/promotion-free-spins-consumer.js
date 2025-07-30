@@ -1,8 +1,8 @@
-import PromotionClient from "sc-game-base/src/core/promotion-client/promotion-client";
-import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
 import { Core } from "sc-game-base";
+import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
+import PromotionClient from "sc-game-base/src/core/promotion-client/promotion-client";
 
-export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.PromotionFreeSpinsConsumer{
+export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.PromotionFreeSpinsConsumer {
     /**
      * @param {PromotionClient} dependencies.gamePromotionApiClient
      * @param {PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
@@ -15,9 +15,9 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
             gameData,
             promotionFreeSpinsPublisher,
             logService,
-            gamePromotionApiClient
+            gamePromotionApiClient,
         });
-        
+
         this.definition = definition;
     }
 
@@ -32,10 +32,10 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
                 gameRoundId: bet.id,
                 appType: player.session.system,
                 betAmount: bet.bet,
-                winAmount: bet.betWin
+                winAmount: bet.betWin,
             };
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
-            const ticketResult =await this.promotionApiClient.updatePromotionTicket(ticketDto);
+            const ticketResult = await this.promotionApiClient.updatePromotionTicket(ticketDto);
             if (!ticketResult || !ticketResult.success) {
                 this.logService.logError(`Failed to update promotion ticket for player ${player.profile.name}:`, {
                     error: ticketResult?.error || "Unknown error",
