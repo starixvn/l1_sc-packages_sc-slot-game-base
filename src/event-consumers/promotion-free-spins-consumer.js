@@ -1,11 +1,9 @@
 import { Core } from "sc-game-base";
-import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
-import PromotionClient from "sc-game-base/src/core/promotion-client/promotion-client";
 
 export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.PromotionFreeSpinsConsumer {
     /**
-     * @param {PromotionClient} dependencies.gamePromotionApiClient
-     * @param {PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
+     * @param {Core.PromotionClient} dependencies.gamePromotionApiClient
+     * @param {Core.EventPublishers.PromotionFreeSpinsPublisher} dependencies.promotionFreeSpinsPublisher
      * @param {Object} dependencies.logService
      * @param {Object} dependencies.definition
      * @param {GameData} dependencies.gameData
@@ -37,19 +35,21 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
             const ticketResult = await this.promotionApiClient.updatePromotionTicket(ticketDto);
             if (!ticketResult || !ticketResult.success) {
-                this.logService.logError(`Failed to update promotion ticket for player ${player.profile.name}:`, {
+                this.logService.logError(`Failed to update promotion ticket for player ${{
                     error: ticketResult?.error || "Unknown error",
+                    playerName: player.profile.name,
                     promotionId: bet.promotionId,
                     gameRoundId: bet.roundId,
-                });
+                }}`);
                 return;
             }
         } catch (error) {
-            this.logService.logError(`Error updating promotion ticket for player ${player.profile.name}:`, {
+            this.logService.logError(`Error updating promotion ticket for player ${{
                 error: error.message,
+                playerName: player.profile.name,
                 promotionId: bet.promotionId,
                 stack: error.stack,
-            });
+            }}`);
         }
     }
 }

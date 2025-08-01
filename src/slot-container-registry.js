@@ -1,7 +1,6 @@
 import { asClass, asValue } from "awilix";
 import { hitJackpot } from "sc-base-apis";
 import { Core, Table } from "sc-game-base";
-import PromotionFreeSpinsPublisher from "sc-game-base/src/core/event-publishers/promotion-free-spins-publisher";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
@@ -72,7 +71,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             placeBetPublisher: asClass(Core.BaseEventPublishers.PlaceBetPublisher).singleton(),
             jackpotPublisher: asClass(JackpotPublisher).singleton(),
             bonusPublisher: asClass(BonusPublisher).singleton(),
-            promotionFreeSpinsPublisher: asClass(PromotionFreeSpinsPublisher).singleton(),
         });
     }
 
