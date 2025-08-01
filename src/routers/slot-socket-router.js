@@ -1,6 +1,6 @@
 import { Core } from "sc-game-base";
 
-import { BonusConsumer, InGameConsumer, PlaceBetConsumer } from "./../event-consumers";
+import { BonusConsumer, InGameConsumer, PlaceBetConsumer, JackpotGameConsumer } from "./../event-consumers";
 import { HallOfFameQuery, SlotHistoryQuery } from "./../query-apis";
 import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
@@ -20,8 +20,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
      * @param {HallOfFameQuery} dependencies.hallOfFameQuery
      * @param {logger} dependencies.logService
      * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
-     * @param {InGameConsumer} dependencies.jackpotGameConsumer
-     * @param {Core.BaseEventConsumers.RedeemConsumer} dependencies.redeemConsumer
+     * @param {JackpotGameConsumer} dependencies.jackpotGameConsumer
      */
     constructor({
         definition,
@@ -37,7 +36,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         logService,
         playGamePermissionValidator,
         jackpotGameConsumer,
-        redeemConsumer,
+        promotionFreeSpinsConsumer,
         bonusWinConsumer,
     }) {
         super({
@@ -52,6 +51,7 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
             historyQuery,
             logService,
             playGamePermissionValidator,
+            promotionFreeSpinsConsumer,
             bonusWinConsumer,
         });
 
