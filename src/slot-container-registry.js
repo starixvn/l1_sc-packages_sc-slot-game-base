@@ -1,6 +1,6 @@
 import { asClass, asValue } from "awilix";
 import { hitJackpot } from "sc-base-apis";
-import { Core, Table } from "sc-game-base";
+import { Table } from "sc-game-base";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
