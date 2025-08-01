@@ -45,7 +45,6 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
             userSignInConsumer,
             inGameConsumer,
             placeBetConsumer,
-            redeemConsumer,
             userDisconnectConsumer,
             userSignInPublisher,
             historyQuery,
