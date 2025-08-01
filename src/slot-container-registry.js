@@ -68,7 +68,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         super.registerPublishers();
 
         this.container.register({
-            placeBetPublisher: asClass(Core.BaseEventPublishers.PlaceBetPublisher).singleton(),
             jackpotPublisher: asClass(JackpotPublisher).singleton(),
             bonusPublisher: asClass(BonusPublisher).singleton(),
         });
