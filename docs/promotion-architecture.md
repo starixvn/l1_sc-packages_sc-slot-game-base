@@ -4,6 +4,15 @@ This documentation provides comprehensive diagrams and explanations of the promo
 
 ## 📊 Documentation Overview
 
+### 🎯 [High-Level Overview](./promotion-overview.md)
+Bird's-eye view of the promotion system focusing on major phases and business logic.
+
+**Key Features:**
+- System phases (Initialization, Bet Processing, Game Execution, Settlement)
+- Key decision points and flow characteristics
+- Business logic abstraction
+- User experience perspective
+
 ### 🔄 [Main Flow Diagram](./promotion-main-flow.md)
 Complete end-to-end flow showing how promotion logic works from bet placement to settlement.
 
@@ -28,6 +37,15 @@ Time-based sequence showing the order of operations in a promotion-enabled betti
 - Chronological flow of events
 - Inter-component communication
 - Decision points and error handling
+
+### 🔍 [Detailed Function Logic](./promotion-detailed-logic.md)
+In-depth analysis of each key function with internal logic checks and conditions.
+
+**Key Features:**
+- Function-level flowcharts
+- Logic validation steps
+- Error handling patterns
+- Parameter validation flows
 
 ## 🎯 System Components
 
@@ -70,9 +88,25 @@ freeSpinSet = {
 
 ## 🚀 Quick Start
 
-1. **Understanding the Flow**: Start with the [Main Flow Diagram](./promotion-main-flow.md) to get an overview
-2. **Component Details**: Review [Component Interactions](./promotion-components.md) for technical details
-3. **Implementation Sequence**: Check [Sequence Diagram](./promotion-sequence.md) for timing and order
+1. **Business Overview**: Start with [High-Level Overview](./promotion-overview.md) for business logic understanding
+2. **Technical Flow**: Review [Main Flow Diagram](./promotion-main-flow.md) for complete technical flow
+3. **Component Architecture**: Study [Component Interactions](./promotion-components.md) for system architecture
+4. **Implementation Timing**: Check [Sequence Diagram](./promotion-sequence.md) for execution order
+5. **Function Details**: Dive into [Detailed Function Logic](./promotion-detailed-logic.md) for specific implementations
+
+### 📚 Reading Path by Role
+
+**🏢 Business Analysts / Product Managers:**
+- [High-Level Overview](./promotion-overview.md) → [Main Flow Diagram](./promotion-main-flow.md)
+
+**👨‍💻 Developers (New to Codebase):**
+- [High-Level Overview](./promotion-overview.md) → [Component Interactions](./promotion-components.md) → [Detailed Function Logic](./promotion-detailed-logic.md)
+
+**🔧 Developers (Implementation/Debugging):**
+- [Detailed Function Logic](./promotion-detailed-logic.md) → [Sequence Diagram](./promotion-sequence.md) → [Main Flow Diagram](./promotion-main-flow.md)
+
+**🧪 QA Engineers:**
+- [High-Level Overview](./promotion-overview.md) → [Main Flow Diagram](./promotion-main-flow.md) → [Detailed Function Logic](./promotion-detailed-logic.md)
 
 ## 🔍 Important Notes
 

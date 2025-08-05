@@ -1,134 +1,201 @@
 # Promotion System - Component Interactions
 
-This diagram illustrates how data structures and methods in each component interact with each other in the promotion system.
+This document shows how components interact in the promotion system, organized by functional layers for better clarity.
+
+## 🏗️ System Architecture Overview
 
 ```mermaid
-graph LR
-    subgraph "Data Structures"
-        A["player.promotion:<br/>promotionId, isClaimed<br/>freeSpinAvailable, bonus<br/>remainingBonusItems, endDate"]
-        B["freeSpinSet:<br/>id, promotionId, available<br/>expiryTime, bet, paylines"]
-        C["betInfo:<br/>freeSpin, amount<br/>betChoice, totalAmount"]
+flowchart TD
+    subgraph "🎮 Client Layer"
+        A[Player Request] --> B[in-game-consumer.js]
     end
     
-    subgraph "place-bet-consumer.js"
-        D["handlePromotionLogic()"]
-        E["updatePlayerPromotionFreeSpins()"]
-        F["composePromotionValidationCriteria()"]
+    subgraph "🎯 Processing Layer" 
+        C[place-bet-consumer.js] --> D[slot-process-bet-queue.js]
+        D --> E[settle-game-round-consumer.js]
     end
     
-    subgraph "slot-process-bet-queue.js"
-        G["hasValidPromotion()"]
-        H["validateFreeSpinEligibility()"]
-        I["hasValidFreeSpinSource()"]
+    subgraph "🎁 Promotion Layer"
+        F[slot-promotion-interceptor.js] --> G[promotion-free-spins-consumer.js]
     end
     
-    subgraph "free-spins-consumer.js"
-        J["getSoonestExpiredFreeSpinSet()"]
-        K["getTotalPromotionAvaiableFreeSpins()"]
-        L["useFreeSpin()"]
-        M["gainFreeSpin()"]
+    subgraph "💫 Free Spins Layer"
+        H[free-spins-consumer.js]
     end
     
-    subgraph "settle-game-round-consumer.js"
-        N["processFreeSpins()"]
-        O["processBonus()"]
-        P["settleBets()"]
-    end
-    
-    subgraph "slot-promotion-interceptor.js"
-        Q["shouldCompletePromotion()"]
-        R["beforeEvent()"]
-    end
-    
-    subgraph "promotion-free-spins-consumer.js"
-        S["handleBonusInGame()"]
-    end
-    
-    subgraph "in-game-consumer.js"
-        T["getAvailableFreeSpins()"]
-        U["buildPayload()"]
-    end
-    
-    A --> D
-    A --> G
-    A --> Q
-    B --> J
-    B --> K
+    B --> C
+    E --> F
+    E --> H
     C --> H
     
-    D --> E
-    G --> H
-    H --> I
-    J --> L
-    M --> K
-    N --> M
-    O --> R
-    P --> S
-    Q --> R
-    T --> J
-    U --> T
-    
-    style A fill:#ffecb3
-    style B fill:#ffecb3
-    style C fill:#ffecb3
-    style D fill:#e3f2fd
-    style G fill:#e8f5e8
-    style J fill:#f3e5f5
-    style N fill:#fff3e0
-    style Q fill:#fce4ec
-    style S fill:#e0f2f1
-    style T fill:#f9fbe7
+    style A fill:#e3f2fd
+    style C fill:#fff3e0
+    style F fill:#fce4ec
+    style H fill:#e8f5e8
 ```
 
-## Component Responsibilities:
+## 📊 Core Data Flow
 
-### 📊 Data Structures (Yellow)
-- **player.promotion**: Contains player's promotion information
-- **freeSpinSet**: Detailed information about free spin sets
-- **betInfo**: Information about current bet
+```mermaid
+flowchart LR
+    subgraph "📋 Data"
+        A[player.promotion]
+        B[freeSpinSet]
+        C[betInfo]
+    end
+    
+    subgraph "🔄 Validation"
+        D[hasValidPromotion]
+        E[validateFreeSpinEligibility]
+    end
+    
+    subgraph "⚙️ Processing"
+        F[handlePromotionLogic]
+        G[useFreeSpin]
+        H[gainFreeSpin]
+    end
+    
+    subgraph "✅ Completion"
+        I[shouldCompletePromotion]
+        J[handleBonusInGame]
+    end
+    
+    A --> D --> F
+    B --> E --> G
+    C --> F --> H
+    H --> I --> J
+    
+    style A fill:#ffecb3
+    style D fill:#e3f2fd
+    style F fill:#e8f5e8
+    style I fill:#fce4ec
+```
 
-### 🔵 place-bet-consumer.js (Blue)
-- **handlePromotionLogic()**: Handles promotion logic when player places bet
-- **updatePlayerPromotionFreeSpins()**: Updates promotion free spins count
-- **composePromotionValidationCriteria()**: Creates criteria to validate promotion
+## 🔄 Key Function Interactions
 
-### 🟢 slot-process-bet-queue.js (Green)
-- **hasValidPromotion()**: Checks if promotion is valid
-- **validateFreeSpinEligibility()**: Validates free spin eligibility
-- **hasValidFreeSpinSource()**: Checks free spin source
+### Bet Processing Flow
+```mermaid
+graph TD
+    A[place-bet-consumer] --> B[handlePromotionLogic]
+    B --> C[getSoonestExpiredFreeSpinSet]
+    C --> D[hasValidPromotion]
+    D --> E[validateFreeSpinEligibility]
+    
+    style A fill:#e3f2fd
+    style B fill:#e8f5e8
+    style C fill:#f3e5f5
+    style D fill:#fff3e0
+    style E fill:#fce4ec
+```
 
-### 🟣 free-spins-consumer.js (Purple)
-- **getSoonestExpiredFreeSpinSet()**: Gets the soonest expiring free spin set
-- **getTotalPromotionAvaiableFreeSpins()**: Calculates total promotion free spins
-- **useFreeSpin()**: Uses one free spin
-- **gainFreeSpin()**: Creates new free spin
+### Free Spin Lifecycle
+```mermaid
+graph TD
+    A[Win Free Spins] --> B[gainFreeSpin]
+    B --> C[updateFreeSpinCache]
+    C --> D[updatePlayerPromotionFreeSpins]
+    
+    E[Use Free Spin] --> F[getSoonestExpiredFreeSpinSet]
+    F --> G[useFreeSpin]
+    G --> H[Database Update]
+    
+    style A fill:#e8f5e8
+    style B fill:#f3e5f5
+    style E fill:#fff3e0
+    style F fill:#f3e5f5
+```
 
-### 🟠 settle-game-round-consumer.js (Orange)
-- **processFreeSpins()**: Processes free spins from game results
-- **processBonus()**: Processes bonus
-- **settleBets()**: Settles bets
+### Promotion Completion
+```mermaid
+graph TD
+    A[Settlement] --> B[processBonus]
+    B --> C[beforeEvent]
+    C --> D[shouldCompletePromotion]
+    D --> E[handleBonusInGame]
+    E --> F[Complete Promotion]
+    
+    style A fill:#fff3e0
+    style B fill:#fce4ec
+    style C fill:#e8f5e8
+    style D fill:#f3e5f5
+    style E fill:#e0f2f1
+    style F fill:#ffecb3
+```
 
-### 🔴 slot-promotion-interceptor.js (Red)
-- **shouldCompletePromotion()**: Checks promotion completion conditions
-- **beforeEvent()**: Handles processing before event occurs
+## 🏗️ Layer Responsibilities
 
-### 🟢 promotion-free-spins-consumer.js (Light Green)
-- **handleBonusInGame()**: Handles in-game bonus for promotion
+### 🎮 Client Layer
+- **in-game-consumer.js**: Handles player requests and builds game payload
+- **Purpose**: Interface between player and game system
+- **Key Functions**: `buildPayload()`, `getAvailableFreeSpins()`
 
-### 🟤 in-game-consumer.js (Brown)
-- **getAvailableFreeSpins()**: Gets available free spins information
-- **buildPayload()**: Creates payload to send to client
+### 🎯 Processing Layer  
+- **place-bet-consumer.js**: Validates and processes bet placement
+- **slot-process-bet-queue.js**: Manages bet queue and promotion validation
+- **settle-game-round-consumer.js**: Orchestrates game settlement
+- **Purpose**: Core game logic and bet processing
 
-## Data Flow Patterns:
+### 🎁 Promotion Layer
+- **slot-promotion-interceptor.js**: Manages promotion lifecycle
+- **promotion-free-spins-consumer.js**: Handles promotion-specific bonuses
+- **Purpose**: Promotion-specific logic and completion
 
-1. **Validation Chain**: A → G → H → I
-2. **Free Spin Management**: B → J → L → M → K
-3. **Settlement Processing**: N → M → O → R → P → S
-4. **Client Communication**: U → T → J
+### 💫 Free Spins Layer
+- **free-spins-consumer.js**: Complete free spin lifecycle management
+- **Purpose**: Free spin creation, usage, and expiry management
 
-## Key Integration Points:
+## 🔄 Key Interaction Patterns
 
-- **player.promotion** is the central data structure used by multiple components
-- **free-spins-consumer.js** is the core component managing free spins
-- **slot-promotion-interceptor.js** coordinates promotion lifecycle
-- **settle-game-round-consumer.js** orchestrates the entire settlement process 
+### 1. **Top-Down Flow**
+```
+Player Request → Client Layer → Processing Layer → Promotion/Free Spins
+```
+
+### 2. **Data-Driven Validation**
+```
+Data Structures → Validation Functions → Processing Logic → Completion Check
+```
+
+### 3. **Cross-Layer Communication**
+- **Processing ↔ Free Spins**: Bet processing triggers free spin usage/creation
+- **Processing ↔ Promotion**: Settlement triggers promotion logic
+- **Client ↔ Free Spins**: Client queries free spin availability
+
+## 📊 Core Data Structures
+
+```javascript
+// Central promotion data
+player.promotion = {
+    promotionId: string,
+    isClaimed: boolean,
+    freeSpinAvailable: number,
+    bonus: number,
+    remainingBonusItems: number,
+    endDate: Date
+}
+
+// Free spin set information  
+freeSpinSet = {
+    id: number,
+    promotionId: string | null,
+    available: number,
+    expiryTime: Date,
+    bet: number,
+    paylines: array
+}
+
+// Bet information
+betInfo = {
+    freeSpin: boolean,
+    amount: number,
+    betChoice: array,
+    totalAmount: number
+}
+```
+
+## 🎯 Design Benefits
+
+✅ **Clear Separation**: Each layer has distinct responsibilities  
+✅ **Easy to Follow**: Linear flows instead of complex interconnections  
+✅ **Maintainable**: Changes in one layer have minimal impact on others  
+✅ **Testable**: Each flow can be tested independently 

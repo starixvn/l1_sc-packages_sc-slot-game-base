@@ -21,11 +21,11 @@ This document provides detailed flowcharts for each key function in the promotio
 
 ```mermaid
 flowchart TD
-    A[hasValidPromotion player] --> B{player.promotion not null?}
+    A[hasValidPromotion(player)] --> B{player.promotion != null?}
     B -->|No| C[❌ Return false]
-    B -->|Yes| D{player.promotion is truthy?}
+    B -->|Yes| D{player.promotion == truthy?}
     D -->|No| E[❌ Return false]
-    D -->|Yes| F{player.promotion.isClaimed equals true?}
+    D -->|Yes| F{player.promotion.isClaimed == true?}
     F -->|No| G[❌ Return false]
     F -->|Yes| H[✅ Return true]
     
@@ -49,12 +49,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[validateFreeSpinEligibility freeSpinSet player freeSpin] --> B{soonestExpiredFreeSpinSet not null?}
+    A[validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player, freeSpin)] --> B{soonestExpiredFreeSpinSet != null?}
     B -->|Yes| C[✅ Return true<br/>Has valid free spin set]
-    B -->|No| D[hasValidPromotion player]
-    D --> E{hasValidPromotion equals true?}
+    B -->|No| D[hasValidPromotion(player)]
+    D --> E{hasValidPromotion == true?}
     E -->|No| F[❌ Return false]
-    E -->|Yes| G{freeSpin equals true?}
+    E -->|Yes| G{freeSpin == true?}
     G -->|No| H[❌ Return false]
     G -->|Yes| I[✅ Return true<br/>Valid promotion + freeSpin requested]
     
@@ -79,9 +79,9 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[handlePromotionLogic player payload] --> B[Get current date/time]
-    B --> C[Get player free spins array]
-    C --> D["Find soonest expired free spin set<br/>available greater than 0 AND not expired"]
+    A[handlePromotionLogic(player, payload)] --> B[Get current date/time]
+    B --> C[Get player's free spins array]
+    C --> D[Find soonest expired free spin set<br/>available > 0 && expiryTime > now]
     
     D --> E{soonestExpiredFreeSpinSet found?}
     E -->|Yes| F{soonestExpiredFreeSpinSet.promotionId exists?}
@@ -94,20 +94,20 @@ flowchart TD
     H --> J
     I --> J
     
-    J -->|Yes| K[updatePlayerPromotionFreeSpins]
+    J -->|Yes| K[updatePlayerPromotionFreeSpins(player, soonestExpiredFreeSpinSet)]
     J -->|No| L{payload.freeSpin == true?}
     
     K --> M{payload.freeSpin == true?}
-    M -->|Yes| N{freeSpinExtra OR no soonestExpiredFreeSpinSet?}
+    M -->|Yes| N{freeSpinExtra == true OR !soonestExpiredFreeSpinSet?}
     M -->|No| O[player.usePromotion = false]
     
-    N -->|Yes| P[super.handlePromotionLogic]
+    N -->|Yes| P[super.handlePromotionLogic(player, payload)]
     N -->|No| Q[player.usePromotion = false]
     
-    L -->|Yes| R{freeSpinExtra OR no soonestExpiredFreeSpinSet?}
+    L -->|Yes| R{freeSpinExtra == true OR !soonestExpiredFreeSpinSet?}
     L -->|No| S[End function]
     
-    R -->|Yes| T[super.handlePromotionLogic]
+    R -->|Yes| T[super.handlePromotionLogic(player, payload)]
     R -->|No| U[player.usePromotion = false]
     
     style P fill:#e8f5e8
@@ -132,9 +132,9 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[getSoonestExpiredFreeSpinSet player] --> B[Get current date/time]
-    B --> C["Get player free spins array<br/>default to empty array"]
-    C --> D["Find first free spin where:<br/>available greater than 0 AND not expired"]
+    A[getSoonestExpiredFreeSpinSet(player)] --> B[Get current date/time]
+    B --> C[Get player's free spins array<br/>default to empty array]
+    C --> D[Find first free spin where:<br/>available > 0 AND expiryTime > currentDateTime]
     D --> E{Free spin found?}
     E -->|Yes| F[✅ Return free spin set]
     E -->|No| G[❌ Return null]
@@ -157,12 +157,12 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[useFreeSpin player] --> B[getSoonestExpiredFreeSpinSet player]
+    A[useFreeSpin(player)] --> B[getSoonestExpiredFreeSpinSet(player)]
     B --> C{firstAvailableFreeSpinSet exists?}
     C -->|No| D[❌ End - No free spins available]
-    C -->|Yes| E["Update database:<br/>decrease available count by 1"]
+    C -->|Yes| E[Update database:<br/>{ id: freeSpinSet.id }, { $inc: { available: -1 } }]
     E --> F[await database update]
-    F --> G["Update memory cache:<br/>decrease available count"]
+    F --> G[Update memory cache:<br/>firstAvailableFreeSpinSet.available--]
     G --> H[✅ Free spin consumed successfully]
     
     style D fill:#ffebee
@@ -184,21 +184,21 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[gainFreeSpin player roundInfo timeToLive] --> B["Create timestamps:<br/>createdTime = now<br/>expiryTime = now + timeToLive"]
+    A[gainFreeSpin(player, roundInfo, timeToLive)] --> B[Create timestamps:<br/>createdTime = now<br/>expiryTime = now + timeToLive]
     B --> C[Increment free spin ID counter]
     C --> D{player.usePromotion == true?}
     
-    D -->|Yes| E["Set expiry = player.promotion.endDate<br/>Add promotionId to free spin"]
-    D -->|No| F["Set expiry = calculated expiryTime<br/>No promotionId"]
+    D -->|Yes| E[Set expiry = player.promotion.endDate<br/>Add promotionId to free spin]
+    D -->|No| F[Set expiry = calculated expiryTime<br/>No promotionId]
     
-    E --> G["Create free spin record with:<br/>- ID, roundId, bet, paylines<br/>- total, available, timestamps<br/>- promotionId if promotion"]
+    E --> G[Create free spin record with:<br/>- ID, roundId, bet, paylines<br/>- total, available, timestamps<br/>- promotionId (if promotion)]
     F --> G
     
     G --> H[Save to database]
     H --> I{Database save successful?}
     I -->|No| J[❌ Creation failed]
-    I -->|Yes| K[updateFreeSpinCache memberName newFreeSpin]
-    K --> L[updatePlayerPromotionFreeSpins player newFreeSpin]
+    I -->|Yes| K[updateFreeSpinCache(memberName, newFreeSpin)]
+    K --> L[updatePlayerPromotionFreeSpins(player, newFreeSpin)]
     L --> M[✅ Free spin set created successfully]
     
     style J fill:#ffebee
@@ -220,11 +220,11 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[shouldCompletePromotion player] --> B{remainingBonusItems equals 0?}
+    A[shouldCompletePromotion(player)] --> B{player.promotion.remainingBonusItems == 0?}
     B -->|No| C[❌ Return false<br/>Still has bonus items]
-    B -->|Yes| D{freeSpinAvailable less than or equal 0?}
+    B -->|Yes| D{player.promotion.freeSpinAvailable <= 0?}
     D -->|No| E[❌ Return false<br/>Still has free spins]
-    D -->|Yes| F{bonus equals 0?}
+    D -->|Yes| F{player.promotion.bonus == 0?}
     F -->|No| G[❌ Return false<br/>Still has pending bonus]
     F -->|Yes| H[✅ Return true<br/>All promotion items consumed]
     
