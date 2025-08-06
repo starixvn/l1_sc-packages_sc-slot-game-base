@@ -34,22 +34,26 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
             };
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
             const ticketResult = await this.promotionApiClient.updatePromotionTicket(ticketDto);
+
             if (!ticketResult || !ticketResult.success) {
-                this.logService.logError(`Failed to update promotion ticket for player ${{
-                    error: ticketResult?.error || "Unknown error",
-                    playerName: player.profile.name,
-                    promotionId: bet.promotionId,
-                    gameRoundId: bet.roundId,
-                }}`);
-                return;
+                this.logService.logError(
+                    `Failed to update promotion ticket for player ${{
+                        error: ticketResult?.error || "Unknown error",
+                        playerName: player.profile.name,
+                        promotionId: bet.promotionId,
+                        gameRoundId: bet.roundId,
+                    }}`
+                );
             }
         } catch (error) {
-            this.logService.logError(`Error updating promotion ticket for player ${{
-                error: error.message,
-                playerName: player.profile.name,
-                promotionId: bet.promotionId,
-                stack: error.stack,
-            }}`);
+            this.logService.logError(error);
         }
+    }
+
+    extendPromo(baseData, originalPromotion) {
+        return {
+            ...baseData,
+            betLevel: originalPromotion.betLevel,
+        };
     }
 }

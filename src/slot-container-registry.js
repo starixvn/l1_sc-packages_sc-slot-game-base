@@ -90,6 +90,7 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             jackpotGameConsumer: asClass(EventConsumers.JackpotGameConsumer).singleton().proxy(),
             generateResultConsumer: asClass(EventConsumers.GenerateResultConsumer).singleton().proxy(),
             promotionFreeSpinsConsumer: asClass(EventConsumers.PromotionFreeSpinsConsumer).singleton(),
+            userSignInConsumer: asClass(EventConsumers.SlotUserSignInConsumer).singleton().proxy(),
         });
     }
 

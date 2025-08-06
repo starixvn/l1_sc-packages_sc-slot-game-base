@@ -11,6 +11,7 @@ import SettleGameRoundConsumer from "./settle-game-round-consumer";
 import JackpotGameConsumer from "./jackpot-game-consumer";
 import GenerateResultConsumer from "./generate-result-consumer";
 import PromotionFreeSpinsConsumer from "./promotion-free-spins-consumer";
+import SlotUserSignInConsumer from "./slot-user-signin-consumer";
 
 export {
     BoardCheatingConsumer,
@@ -26,4 +27,5 @@ export {
     JackpotGameConsumer,
     GenerateResultConsumer,
     PromotionFreeSpinsConsumer,
+    SlotUserSignInConsumer,
 };
