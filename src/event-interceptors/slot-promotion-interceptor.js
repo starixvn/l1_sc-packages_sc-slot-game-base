@@ -7,10 +7,12 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
 
     async beforeEvent(context) {
         const { player } = context;
+
         if (player.promotion.freeSpinAvailable === 0) {
             await super.beforeEvent(context);
-        }else{
-            player.promotion.freeSpinAvailable--;
+            return;
         }
+
+        player.promotion.freeSpinAvailable--;
     }
 }
