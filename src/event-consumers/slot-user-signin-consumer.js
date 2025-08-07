@@ -38,6 +38,7 @@ export default class SlotUserSignInConsumer extends Table.EventConsumers.TableUs
         return {
             ...baseData,
             betLevel: originalPromotion.betLevel,
+            bonus: 0,
         };
     }
 }
