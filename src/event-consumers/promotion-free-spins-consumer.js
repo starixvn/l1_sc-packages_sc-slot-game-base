@@ -19,6 +19,10 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
         this.definition = definition;
     }
 
+    isPromotionCompleted(player) {
+        return player.promotion.remainingBonusItems === 0 && player.promotion.freeSpinAvailable <= 0 && player.promotion.bonus === 0;
+    }
+
     async handleBonusInGame(player, bet) {
         try {
             const ticketDto = {
