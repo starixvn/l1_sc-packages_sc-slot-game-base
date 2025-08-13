@@ -51,7 +51,7 @@ export default class FreeSpinsConsumer {
         const currentDateTime = new Date();
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
 
-        return freeSpinsOfPlayer.reverse().find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
+        return [...freeSpinsOfPlayer].reverse().find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
     }
 
     async gainFreeSpin(player, { roundId, bet, paylines, numberOfFreeSpins }, timeToLive) {
@@ -194,13 +194,15 @@ export default class FreeSpinsConsumer {
     getTotalPromotionAvaiableFreeSpins(player) {
         const { freeSpins } = this.gameData.ingame[player.profile.name] ?? {};
 
-        return freeSpins?.reduce((total, freeSpin) => {
-            // Only count free spins that have a promotionId
-            if (freeSpin.promotionId) {
-                return total + freeSpin.available;
-            }
-            return total;
-        }, 0) ?? 0;
+        return (
+            freeSpins?.reduce((total, freeSpin) => {
+                // Only count free spins that have a promotionId
+                if (freeSpin.promotionId) {
+                    return total + freeSpin.available;
+                }
+                return total;
+            }, 0) ?? 0
+        );
     }
 
     /**
@@ -222,7 +224,6 @@ export default class FreeSpinsConsumer {
      * @param {Object} newlyCachedFreeSpin - The newly cached free spin
      */
     updatePlayerPromotionFreeSpins(player, newlyCachedFreeSpin) {
-        
         if (player.promotion && player.promotion.isClaimed) {
             player.promotion.freeSpinAvailable = newlyCachedFreeSpin.available;
         }
