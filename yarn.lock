@@ -8915,10 +8915,10 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@5.5.1-beta.8:
-  version "5.5.1-beta.8"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.8.tgz"
-  integrity sha512-UQSag2cHhbuoGuLJcl7voEsTVGfSdHTVBNx6TRoAoZinXioaRRzeVuznBKmoFVkDCbsrM9C+520uuABcjfDKUQ==
+sc-game-base@5.5.1-beta.9:
+  version "5.5.1-beta.9"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.9.tgz"
+  integrity sha512-Bd955LbqNFAxcBKziEM7wAUNGxat2TyhkwT2RCMhUfShO1eR+xp18AHb1q2PE6QFZhEcRfWjqZHI1Q4iytI8Sw==
   dependencies:
     "@sc/user-tracking-client" "0.0.2-beta.4"
     awilix "^8.0.0"
