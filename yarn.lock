@@ -2056,10 +2056,10 @@
   resolved "https://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/user-tracking-client@0.0.2-beta.3":
-  version "0.0.2-beta.3"
-  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.3.tgz"
-  integrity sha512-wP61L6gy/wNuG9rDBxTLk3UQ2jF1gscbYmQ2cHThDFdlVXh46jcAH4I63U9ge67/ysOPWsRO8sP9g+d+m997ig==
+"@sc/user-tracking-client@0.0.2-beta.4":
+  version "0.0.2-beta.4"
+  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.4.tgz"
+  integrity sha512-g6FJ6WPI9yWYEzhQBuJFmbNn7v4nSt0GAyUxJPK2WoQcVR5d6DgKi10YgG7fJpVQdgpZZCZBH4Q7IyihHzt5Rw==
   dependencies:
     axios "^1.11.0"
     axios-retry "^4.0.0"
@@ -4618,12 +4618,7 @@ find-versions@^4.0.0:
   dependencies:
     semver-regex "^3.1.2"
 
-follow-redirects@^1.14.0, follow-redirects@^1.15.0:
-  version "1.15.2"
-  resolved "http://npm.lumigame.com/follow-redirects/-/follow-redirects-1.15.2.tgz"
-  integrity sha512-VQLG33o04KaQ8uYi2tVNbdrWp1QWxNNea+nmIB4EVM28v0hmP17z7aG1+wAkNzVq4KeXTq3221ye5qTJP91JwA==
-
-follow-redirects@^1.15.6:
+follow-redirects@^1.14.0, follow-redirects@^1.15.0, follow-redirects@^1.15.6:
   version "1.15.11"
   resolved "https://npm.lumigame.com/follow-redirects/-/follow-redirects-1.15.11.tgz"
   integrity sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==
@@ -8920,12 +8915,12 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@5.5.1-beta.5:
-  version "5.5.1-beta.5"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.5.tgz"
-  integrity sha512-rcI1+11QV0Q5CG9chlaEIC3FzAOLlshh5vjG7Kw3b+QREyIlbCHvZ37p8/U7b+xCks8Frae1GKmEOrqv388xHg==
+sc-game-base@5.5.1-beta.6:
+  version "5.5.1-beta.6"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.6.tgz"
+  integrity sha512-F1ZqQCx0kL0sXgHDeZ6gxCsA8toOPb3lm3IX71zXqck8RtTyUCDmk/5oRmvHTyYSu+9HN6DFxlnAxEYdXFAIqg==
   dependencies:
-    "@sc/user-tracking-client" "0.0.2-beta.3"
+    "@sc/user-tracking-client" "0.0.2-beta.4"
     awilix "^8.0.0"
     axios "^1.0.0"
     chance "^1.1.7"
