@@ -14,15 +14,8 @@ export default class OutGameConsumer extends Core.BaseEventConsumers.UserDisconn
      * @param {FreeSpinsConsumer} freeSpinsConsumer
      * @param {JackpotGameConsumer} jackpotGameConsumer
      */
-    constructor(
-        gameId,
-        gameData,
-        bonusConsumer,
-        freeSpinsConsumer,
-        jackpotGameConsumer,
-        gameManagementApiClientFactory
-    ) {
-        super(gameData);
+    constructor(gameId, gameData, bonusConsumer, freeSpinsConsumer, jackpotGameConsumer, gameManagementApiClientFactory, userTrackingClient) {
+        super(gameData, userTrackingClient);
 
         this.gameId = gameId;
         this.bonusConsumer = bonusConsumer;
@@ -48,7 +41,7 @@ export default class OutGameConsumer extends Core.BaseEventConsumers.UserDisconn
 
     async upsertFreeSpinNotification(realPlayer) {
         const latestExpiredFreeSpinSet = this.freeSpinsConsumer.getLatestExpiredFreeSpinSet(realPlayer);
-        
+
         if (latestExpiredFreeSpinSet) {
             await post(
                 this.gameManagementApiClient.gameNotifications.updateGameNotification({
