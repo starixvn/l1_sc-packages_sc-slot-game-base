@@ -2056,10 +2056,10 @@
   resolved "https://npm.lumigame.com/@protobufjs/utf8/-/utf8-1.1.0.tgz"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@sc/user-tracking-client@0.0.2-beta.4":
-  version "0.0.2-beta.4"
-  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.4.tgz"
-  integrity sha512-g6FJ6WPI9yWYEzhQBuJFmbNn7v4nSt0GAyUxJPK2WoQcVR5d6DgKi10YgG7fJpVQdgpZZCZBH4Q7IyihHzt5Rw==
+"@sc/user-tracking-client@0.0.2-beta.5":
+  version "0.0.2-beta.5"
+  resolved "https://npm.lumigame.com/@sc/user-tracking-client/-/user-tracking-client-0.0.2-beta.5.tgz"
+  integrity sha512-fcAt4iVLeZw1Q7ncPJbhoyvrQvmuJpkTeHYQsXeqLXLEf3YFbWGZHiznSmcFmuHHd6ieg45kQFBwKYcwvHZLHA==
   dependencies:
     axios "^1.11.0"
     axios-retry "^4.0.0"
@@ -8915,12 +8915,12 @@ sc-common@1.8.1:
     mongoose-long "^0.3.0"
     numeral "^2.0.6"
 
-sc-game-base@5.5.1-beta.9:
-  version "5.5.1-beta.9"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.9.tgz"
-  integrity sha512-Bd955LbqNFAxcBKziEM7wAUNGxat2TyhkwT2RCMhUfShO1eR+xp18AHb1q2PE6QFZhEcRfWjqZHI1Q4iytI8Sw==
+sc-game-base@5.5.1-beta.11:
+  version "5.5.1-beta.11"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-5.5.1-beta.11.tgz"
+  integrity sha512-aQ2X7Qttwp4BuBVhutt3FwfpHY0ljrbig0hdh6qaWIDcNIyf7A5/Nz6BpF0uYQqp2rY1D2sOKIqQnnRWx2BYRA==
   dependencies:
-    "@sc/user-tracking-client" "0.0.2-beta.4"
+    "@sc/user-tracking-client" "0.0.2-beta.5"
     awilix "^8.0.0"
     axios "^1.0.0"
     chance "^1.1.7"
