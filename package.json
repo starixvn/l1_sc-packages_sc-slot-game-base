@@ -11,7 +11,9 @@
         "pub": "npm publish --registry https://npm.lumigame.com",
         "betaver": "npm version prerelease --preid beta",
         "pubbeta": "npm publish --registry https://npm.lumigame.com --tag beta",
-        "semantic-release": "semantic-release"
+        "semantic-release": "semantic-release",
+        "prepare": "husky",
+        "commitlint": "commitlint --edit"
     },
     "jestSonar": {
         "reportPath": "reports",
