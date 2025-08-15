@@ -99,6 +99,6 @@ export default class HallOfFameQuery {
     }
 
     async getExchangeRates(exIds) {
-        return await getOrDefault(this.gameManagementApiClient.exchangeRates.getExchangeRatesByExIds(exIds), [])
+        return getOrDefault(this.gameManagementApiClient.exchangeRates.getExchangeRatesByExIds(exIds), []);
     }
 }
