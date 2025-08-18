@@ -32,7 +32,7 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
         const { player } = context;
 
         if (player.promotion.freeSpinAvailable === 0 || !player.promotion.freeSpinAvailable) {
-            await super.afterFailedEvent(context);
+            await super.afterFailureEvent(context);
         }
     }
 }
