@@ -2,7 +2,11 @@ import { EventInterceptors } from "sc-game-base/src/core";
 
 export default class SlotPromotionInterceptor extends EventInterceptors.PromotionBetInterceptor {
     shouldCompletePromotion(player) {
-        return player.promotion.remainingBonusItems === 0 && player.promotion.freeSpinAvailable <= 0 && ( player.promotion.bonus === 0 || !player.promotion.bonus );
+        return (
+            player.promotion.remainingBonusItems === 0 &&
+            player.promotion.freeSpinAvailable <= 0 &&
+            (player.promotion.bonus === 0 || !player.promotion.bonus)
+        );
     }
 
     async beforeEvent(context) {
@@ -12,7 +16,23 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
             await super.beforeEvent(context);
             return;
         }
+    }
 
-        player.promotion.freeSpinAvailable--;
+    async afterSuccessEvent(context) {
+        const { player } = context;
+
+        if (player.promotion.freeSpinAvailable > 0) {
+            player.promotion.freeSpinAvailable--;
+        }
+
+        await super.afterSuccessEvent(context);
+    }
+
+    async afterFailureEvent(context) {
+        const { player } = context;
+
+        if (player.promotion.freeSpinAvailable === 0 || !player.promotion.freeSpinAvailable) {
+            await super.afterFailedEvent(context);
+        }
     }
 }
