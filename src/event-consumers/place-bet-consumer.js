@@ -62,10 +62,12 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
                     notice: this.getNoticeObj(SlotNoticeHelper.promotionNotAvailableDuringFreeSpin),
                 },
                 {
-                    failure: player.usePromotion && player.promotion.remainingBonusItems <= 0 &&
-                    (player.promotion.freeSpinAvailable <= 0 || !player.promotion.freeSpinAvailable),
+                    failure:
+                        player.usePromotion &&
+                        player.promotion.remainingBonusItems <= 0 &&
+                        (player.promotion.freeSpinAvailable <= 0 || !player.promotion.freeSpinAvailable),
                     notice: this.getNoticeObj(helpers.noticeHelper.invalidBet, { msg: "No promotions available" }),
-                }
+                },
             ];
 
             return baseCriteria.concat(slotSpecificCriteria);
@@ -105,20 +107,22 @@ export default class PlaceBetConsumer extends Core.BaseEventConsumers.PlaceBetCo
 
         this.gameData.ingame[name].betQueue.push({ player, payload });
     }
-    
+
     handlePromotionLogic(player, payload) {
         const currentDateTime = new Date();
         const freeSpinsOfPlayer = this.gameData.ingame[player.profile.name]?.freeSpins ?? [];
-        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
+        const soonestExpiredFreeSpinSet = freeSpinsOfPlayer.find(
+            (freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime
+        );
         const freeSpinExtra = soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId ? true : false;
-        
+
         if (player.promotion) {
             this.updatePlayerPromotionFreeSpins(player, soonestExpiredFreeSpinSet);
         }
 
-        if(payload.freeSpin && ( freeSpinExtra || !soonestExpiredFreeSpinSet)) {
+        if (freeSpinExtra || (payload.freeSpin && !soonestExpiredFreeSpinSet)) {
             super.handlePromotionLogic(player, payload);
-        }else{
+        } else {
             player.usePromotion = false;
         }
     }
