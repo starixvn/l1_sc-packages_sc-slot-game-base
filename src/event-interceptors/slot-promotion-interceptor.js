@@ -14,7 +14,6 @@ export default class SlotPromotionInterceptor extends EventInterceptors.Promotio
 
         if (player.promotion.freeSpinAvailable === 0) {
             await super.beforeEvent(context);
-            return;
         }
     }
 
