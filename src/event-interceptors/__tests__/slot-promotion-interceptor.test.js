@@ -156,7 +156,7 @@ describe("SlotPromotionInterceptor", () => {
     });
 
     describe("beforeEvent", () => {
-        it("should decrement freeSpinAvailable when it is greater than 0", async () => {
+        it("should not decrement freeSpinAvailable when it is greater than 0", async () => {
             // Arrange
             const player = {
                 promotion: {
@@ -175,7 +175,7 @@ describe("SlotPromotionInterceptor", () => {
             await slotPromotionInterceptor.beforeEvent(context);
 
             // Assert
-            expect(player.promotion.freeSpinAvailable).toBe(4);
+            expect(player.promotion.freeSpinAvailable).toBe(5); // Should remain unchanged
         });
 
         it("should not call super.beforeEvent when freeSpinAvailable is greater than 0", async () => {
@@ -193,22 +193,14 @@ describe("SlotPromotionInterceptor", () => {
             };
 
             // Mock the super.beforeEvent method
-            const superBeforeEventSpy = jest.spyOn(slotPromotionInterceptor, 'beforeEvent').mockImplementation(async (ctx) => {
-                if (ctx.player.promotion.freeSpinAvailable === 0) {
-                    // Call parent implementation
-                    return Promise.resolve();
-                } else {
-                    ctx.player.promotion.freeSpinAvailable--;
-                    return Promise.resolve();
-                }
-            });
+            const superBeforeEventSpy = jest.spyOn(EventInterceptors.PromotionBetInterceptor.prototype, 'beforeEvent');
 
             // Act
             await slotPromotionInterceptor.beforeEvent(context);
 
             // Assert
-            expect(superBeforeEventSpy).toHaveBeenCalledWith(context);
-            expect(context.player.promotion.freeSpinAvailable).toBe(2);
+            expect(superBeforeEventSpy).not.toHaveBeenCalled();
+            expect(context.player.promotion.freeSpinAvailable).toBe(3); // Should remain unchanged
         });
 
         it("should handle multiple consecutive calls correctly", async () => {
@@ -232,7 +224,7 @@ describe("SlotPromotionInterceptor", () => {
             await slotPromotionInterceptor.beforeEvent(context);
 
             // Assert
-            expect(player.promotion.freeSpinAvailable).toBe(0);
+            expect(player.promotion.freeSpinAvailable).toBe(3); // Should remain unchanged
         });
 
         it("should handle edge case when freeSpinAvailable becomes 0", async () => {
@@ -254,7 +246,7 @@ describe("SlotPromotionInterceptor", () => {
             await slotPromotionInterceptor.beforeEvent(context);
 
             // Assert
-            expect(player.promotion.freeSpinAvailable).toBe(0);
+            expect(player.promotion.freeSpinAvailable).toBe(1); // Should remain unchanged
         });
 
         it("should handle negative freeSpinAvailable gracefully", async () => {
@@ -276,7 +268,99 @@ describe("SlotPromotionInterceptor", () => {
             await slotPromotionInterceptor.beforeEvent(context);
 
             // Assert
-            expect(player.promotion.freeSpinAvailable).toBe(-2);
+            expect(player.promotion.freeSpinAvailable).toBe(-1); // Should remain unchanged
+        });
+    });
+
+    describe("afterSuccessEvent", () => {
+        it("should decrement freeSpinAvailable when it is greater than 0", async () => {
+            // Arrange
+            const player = {
+                promotion: {
+                    freeSpinAvailable: 5,
+                },
+            };
+            const context = {
+                player,
+                payload: {
+                    amount: 100,
+                    usePromotion: true,
+                },
+            };
+
+            // Act
+            await slotPromotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.freeSpinAvailable).toBe(4);
+        });
+
+        it("should not decrement when freeSpinAvailable is 0", async () => {
+            // Arrange
+            const player = {
+                promotion: {
+                    freeSpinAvailable: 0,
+                },
+            };
+            const context = {
+                player,
+                payload: {
+                    amount: 100,
+                    usePromotion: true,
+                },
+            };
+
+            // Act
+            await slotPromotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.freeSpinAvailable).toBe(0);
+        });
+
+        it("should not decrement when freeSpinAvailable is negative", async () => {
+            // Arrange
+            const player = {
+                promotion: {
+                    freeSpinAvailable: -1,
+                },
+            };
+            const context = {
+                player,
+                payload: {
+                    amount: 100,
+                    usePromotion: true,
+                },
+            };
+
+            // Act
+            await slotPromotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(player.promotion.freeSpinAvailable).toBe(-1);
+        });
+
+        it("should call super.afterSuccessEvent", async () => {
+            // Arrange
+            const context = {
+                player: {
+                    promotion: {
+                        freeSpinAvailable: 3,
+                    },
+                },
+                payload: {
+                    amount: 100,
+                    usePromotion: true,
+                },
+            };
+
+            // Mock the super.afterSuccessEvent method
+            const superAfterSuccessEventSpy = jest.spyOn(EventInterceptors.PromotionBetInterceptor.prototype, 'afterSuccessEvent');
+
+            // Act
+            await slotPromotionInterceptor.afterSuccessEvent(context);
+
+            // Assert
+            expect(superAfterSuccessEventSpy).toHaveBeenCalledWith(context);
         });
     });
 
@@ -385,19 +469,68 @@ describe("SlotPromotionInterceptor", () => {
             // Act & Assert - First spin
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
             await slotPromotionInterceptor.beforeEvent({ player, payload: {} });
-            expect(player.promotion.freeSpinAvailable).toBe(2);
+            expect(player.promotion.freeSpinAvailable).toBe(3); // Should remain unchanged in beforeEvent
+            
+            // Simulate successful spin by calling afterSuccessEvent
+            await slotPromotionInterceptor.afterSuccessEvent({ player, payload: {} });
+            expect(player.promotion.freeSpinAvailable).toBe(2); // Should be decremented in afterSuccessEvent
 
             // Second spin
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
             await slotPromotionInterceptor.beforeEvent({ player, payload: {} });
-            expect(player.promotion.freeSpinAvailable).toBe(1);
+            expect(player.promotion.freeSpinAvailable).toBe(2); // Should remain unchanged in beforeEvent
+            
+            await slotPromotionInterceptor.afterSuccessEvent({ player, payload: {} });
+            expect(player.promotion.freeSpinAvailable).toBe(1); // Should be decremented in afterSuccessEvent
 
             // Third spin
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
             await slotPromotionInterceptor.beforeEvent({ player, payload: {} });
-            expect(player.promotion.freeSpinAvailable).toBe(0);
+            expect(player.promotion.freeSpinAvailable).toBe(1); // Should remain unchanged in beforeEvent
+            
+            await slotPromotionInterceptor.afterSuccessEvent({ player, payload: {} });
+            expect(player.promotion.freeSpinAvailable).toBe(0); // Should be decremented in afterSuccessEvent
 
             // After all spins are used
+            expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(true);
+        });
+
+        it("should handle case: Hit Free spin on the last bonus turn", async () => {
+            // Arrange - Player has 1 free spin left (last bonus turn)
+            const player = {
+                profile: { name: "testPlayer" },
+                promotion: {
+                    remainingBonusItems: 0,
+                    freeSpinAvailable: 1, // Last free spin
+                    bonus: 0,
+                },
+            };
+
+            // Act - Use the last free spin
+            await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                } 
+            });
+            
+            // Assert - Free spin should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                } 
+            });
+            
+            // Assert - Free spin should be decremented to 0 in afterSuccessEvent
+            expect(player.promotion.freeSpinAvailable).toBe(0);
+
+            // Verify promotion should be completed
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(true);
         });
 
@@ -437,34 +570,6 @@ describe("SlotPromotionInterceptor", () => {
                 const result = slotPromotionInterceptor.shouldCompletePromotion(player);
                 expect(result).toBe(expected);
             });
-        });
-
-        it("should handle case: Hit Free spin on the last bonus turn", async () => {
-            // Arrange - Player has 1 free spin left (last bonus turn)
-            const player = {
-                profile: { name: "testPlayer" },
-                promotion: {
-                    remainingBonusItems: 0,
-                    freeSpinAvailable: 1, // Last free spin
-                    bonus: 0,
-                },
-            };
-
-            // Act - Use the last free spin
-            await slotPromotionInterceptor.beforeEvent({ 
-                player, 
-                payload: { 
-                    amount: 100, 
-                    usePromotion: true,
-                    freeSpin: true 
-                } 
-            });
-
-            // Assert - Free spin should be decremented to 0
-            expect(player.promotion.freeSpinAvailable).toBe(0);
-
-            // Verify promotion should be completed
-            expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(true);
         });
 
         it("should handle case: Reload game after hitting Free spin on last bonus turn", async () => {
@@ -518,6 +623,15 @@ describe("SlotPromotionInterceptor", () => {
                         freeSpin: true 
                     } 
                 });
+                // Simulate successful spin by calling afterSuccessEvent
+                await slotPromotionInterceptor.afterSuccessEvent({ 
+                    player, 
+                    payload: { 
+                        amount: 100, 
+                        usePromotion: true,
+                        freeSpin: true 
+                    } 
+                });
             }
 
             // Assert - All free spins should be used
@@ -547,6 +661,19 @@ describe("SlotPromotionInterceptor", () => {
 
             // Act - Use the last free spin
             await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
+            // Assert - Free spin should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
                 player, 
                 payload: { 
                     amount: 100, 
@@ -596,6 +723,15 @@ describe("SlotPromotionInterceptor", () => {
                         freeSpin: true 
                     } 
                 });
+                // Simulate successful spin by calling afterSuccessEvent
+                await slotPromotionInterceptor.afterSuccessEvent({ 
+                    player, 
+                    payload: { 
+                        amount: 100, 
+                        usePromotion: true,
+                        freeSpin: true 
+                    } 
+                });
             }
 
             // Assert - All extra free spins should be used
@@ -616,6 +752,19 @@ describe("SlotPromotionInterceptor", () => {
 
             // Act - Try to use the extra free spin after reload
             await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
+            // Assert - Free spin should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
                 player, 
                 payload: { 
                     amount: 100, 
@@ -653,6 +802,19 @@ describe("SlotPromotionInterceptor", () => {
                 } 
             });
 
+            // Assert - Free spin should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
             // Assert - Free spin should be used and promotion completed
             expect(player.promotion.freeSpinAvailable).toBe(0);
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(true);
@@ -679,6 +841,19 @@ describe("SlotPromotionInterceptor", () => {
                 } 
             });
 
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(3);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
             // Assert - Should not be completed yet (still has 2 free spins)
             expect(player.promotion.freeSpinAvailable).toBe(2);
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
@@ -693,12 +868,36 @@ describe("SlotPromotionInterceptor", () => {
                 } 
             });
 
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(2);
+            
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
             // Assert - Should not be completed yet (still has 1 free spin)
             expect(player.promotion.freeSpinAvailable).toBe(1);
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
 
             // Use last extra free spin
             await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            await slotPromotionInterceptor.afterSuccessEvent({ 
                 player, 
                 payload: { 
                     amount: 100, 
@@ -733,6 +932,19 @@ describe("SlotPromotionInterceptor", () => {
                 } 
             });
 
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
             // Assert - Should be completed after using the extra free spin
             expect(player.promotion.freeSpinAvailable).toBe(0);
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(true);
@@ -751,6 +963,19 @@ describe("SlotPromotionInterceptor", () => {
 
             // Act - Use the extra free spin after reload
             await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
                 player, 
                 payload: { 
                     amount: 100, 
@@ -778,6 +1003,15 @@ describe("SlotPromotionInterceptor", () => {
             // Act - Use all extra free spins
             for (let i = 0; i < 3; i++) {
                 await slotPromotionInterceptor.beforeEvent({ 
+                    player, 
+                    payload: { 
+                        amount: 100, 
+                        usePromotion: true,
+                        freeSpin: true 
+                    } 
+                });
+                // Simulate successful spin by calling afterSuccessEvent
+                await slotPromotionInterceptor.afterSuccessEvent({ 
                     player, 
                     payload: { 
                         amount: 100, 
@@ -813,12 +1047,38 @@ describe("SlotPromotionInterceptor", () => {
                 } 
             });
 
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(2);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
             // Assert - Should NOT show finish popup yet (still has 1 free spin)
             expect(player.promotion.freeSpinAvailable).toBe(1);
             expect(slotPromotionInterceptor.shouldCompletePromotion(player)).toBe(false);
 
             // Use second (last) extra free spin
             await slotPromotionInterceptor.beforeEvent({ 
+                player, 
+                payload: { 
+                    amount: 100, 
+                    usePromotion: true,
+                    freeSpin: true 
+                } 
+            });
+
+            // Assert - Should remain unchanged in beforeEvent
+            expect(player.promotion.freeSpinAvailable).toBe(1);
+            
+            // Simulate successful spin
+            await slotPromotionInterceptor.afterSuccessEvent({ 
                 player, 
                 payload: { 
                     amount: 100, 
