@@ -15,6 +15,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
      * @param {SlotGameBot} dependencies.bot
      * @param {EventConsumers.SettleGameRoundConsumer} dependencies.settleGameRoundConsumer
      * @param {EventConsumers.FreeSpinsConsumer} dependencies.freeSpinsConsumer
+     * @param {EventConsumers.PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      * @param {EventConsumers.BonusConsumer} dependencies.bonusConsumer
      * @param {EventConsumers.IdCountersConsumer} dependencies.idCountersConsumer
      * @param {EventConsumers.JackpotConsumer} dependencies.jackpotConsumer
@@ -39,6 +40,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         roundsRepository,
         jackpotGameConsumer,
         roundIdConsumer,
+        promotionFreeSpinsConsumer,
         gameManagementApiClientFactory,
     }) {
         super({
@@ -59,6 +61,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         this.jackpotConsumer = jackpotConsumer;
         this.jackpotGameConsumer = jackpotGameConsumer;
         this.roundsRepository = roundsRepository;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
     }
 
     async start() {
@@ -85,6 +88,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         await this.freeSpinsConsumer.reload();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
+        this.checkPromotionReadiness();
 
         if (this.gameData.gameConfigs.slotsConfig?.jackpot.enabled) {
             await this.jackpotConsumer.initialize();
@@ -136,6 +140,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
 
         await this.jackpotGameConsumer.processExpired();
         await this.bonusConsumer.processExpiredBonus();
+        await this.promotionFreeSpinsConsumer.checkExpiry(this.gameData.gameConfigs.gameId);
     }
 
     async loadUnsettledBetsToIngame() {

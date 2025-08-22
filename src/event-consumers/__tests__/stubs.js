@@ -1,5 +1,6 @@
 import { stub, stubMongoose } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
+import { EventInterceptors } from "sc-game-base/src/core";
 import { RoundResultPublisher, UserBetResultPublisher } from "sc-game-base/src/core/event-publishers";
 import GameManagementApiClientFactory from "sc-game-base/src/core/game-management-api";
 import {
@@ -34,6 +35,7 @@ const jackpotPrizeGenerator = stub(JackpotPrizeGenerator);
 const bonusConsumer = stub(BonusConsumer);
 const gameManagementApiClientFactory = stub(GameManagementApiClientFactory);
 gameManagementApiClientFactory.instance.mockReturnValue({});
+const promotionBetInterceptor = stub(EventInterceptors.PromotionBetInterceptor);
 
 /** @type {mongoose.Model}*/
 const roundsRepository = stubMongoose(mongoose.Model);
@@ -57,9 +59,9 @@ export {
     jackpotPublisher,
     jackpotValidator,
     paylineCalculator,
+    promotionBetInterceptor,
     roundResultPublisher,
     roundsRepository,
     settleConsumer,
-    userBetResultPublisher
+    userBetResultPublisher,
 };
-

@@ -1,6 +1,6 @@
 {
     "name": "sc-slot-game-base",
-    "version": "2.2.4-beta.20",
+    "version": "2.3.0-beta.150",
     "description": "The codebase of Saba slot games.",
     "main": "src/index.js",
     "scripts": {
@@ -42,7 +42,7 @@
     "dependencies": {
         "chance": "^1.1.9",
         "lodash": "^4.17.21",
-        "sc-game-base": "5.5.1-beta.21",
+        "sc-game-base": "6.0.0-beta.105",
         "sc-game-management-client": "0.1.5"
     },
     "devDependencies": {

@@ -11,6 +11,7 @@ import FreeSpinsConsumer from "./free-spins-consumer";
 import GenerateResultConsumer from "./generate-result-consumer";
 import HallOfFameConsumer from "./hall-of-fame-consumer";
 import JackpotConsumer from "./jackpot-consumer";
+import PromotionFreeSpinsConsumer from "./promotion-free-spins-consumer";
 
 export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameRoundConsumer {
     /**
@@ -23,6 +24,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
      * @param {FreeSpinsConsumer} dependencies.freeSpinsConsumer
      * @param {HallOfFameConsumer} dependencies.hallOfFameConsumer
      * @param {JackpotConsumer} dependencies.jackpotConsumer
+     * @param {PromotionFreeSpinsConsumer} dependencies.promotionFreeSpinsConsumer
      * @param {endGameApi} endGame
      * @param {hitJackpotApi} hitJackpot
      * @param {mongoose.Model} dependencies.roundsRepository
@@ -40,6 +42,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         freeSpinsConsumer,
         hallOfFameConsumer,
         jackpotConsumer,
+        promotionFreeSpinsConsumer,
         endGame,
         hitJackpot,
         roundsRepository,
@@ -49,6 +52,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         generateResultConsumer,
         boardDefinition,
         gameManagementApiClientFactory,
+        promotionBetInterceptor,
     }) {
         super({
             definition,
@@ -65,11 +69,13 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         this.freeSpinsConumer = freeSpinsConsumer;
         this.hallOfFameConsumer = hallOfFameConsumer;
         this.jackpotConsumer = jackpotConsumer;
+        this.promotionFreeSpinsConsumer = promotionFreeSpinsConsumer;
         this.hitJackpot = hitJackpot;
         this.logService = logService;
         this.jackpotPrizeGenerator = jackpotPrizeGenerator;
         this.generateResultConsumer = generateResultConsumer;
         this.boardDefinition = boardDefinition ?? defaultDefinition;
+        this.promotionBetInterceptor = promotionBetInterceptor;
     }
 
     async autoSettleRound(player, roundId) {
@@ -100,11 +106,15 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
             if (settlementResult.jackpot && settlementResult.jackpot.prizes?.length > 0) {
                 await this.publishJackpotPrize({ finish, prizes: settlementResult.jackpot.prizes, bet });
-                return;
+                return { betWin: bet.betWin, baseBetWin: bet.baseBetWin };
             }
 
             await this.processBet(player, bet, roundId);
+
+            return { betWin: bet.betWin, baseBetWin: bet.baseBetWin };
         }
+
+        return { betWin: 0, baseBetWin: 0 };
     }
 
     async publishJackpotPrize({ finish, prizes, bet }) {
@@ -168,6 +178,9 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         const { result, settlementResult } = finish;
         this.updateBonusTime(player, afterJackpot);
         await this.userBetResultPublisher.publishToUser(bet.uid, this.collectBonusResult({ result, settlementResult, roundId: finish.roundId }));
+        if (bet.promotionId && settlementResult.bonus.odds > 0) {
+            player.promotion.bonus = settlementResult.bonus.odds;
+        }
     }
 
     updateBonusTime(player, afterJackpot) {
@@ -233,13 +246,16 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                 bet.settlementResult = bet.settlementResult ?? settlementResult;
                 bet.bonusChests = bonusChests;
                 bet.betWin = betResult.totalWin;
+                bet.betwin = betResult.totalWin;
                 bet.baseBetWin = betResult.totalWin * bet.rate;
                 bet.paid = true;
                 bet.endTime = new Date();
                 bet.sessionId = player.session?.sessionId;
 
                 await bet.save();
-                await this.callEndGame(bet, roundId, bet.endTime, betResult);
+
+                const metaData = this.createMetadata({ bet, settlementResult, result });
+                await this.callEndGame(bet, roundId, bet.endTime, betResult, metaData);
 
                 await this.userBetResultPublisher.publishToUser(
                     bet.uid,
@@ -253,6 +269,14 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                         betByFreeSpin: bet.freeSpin,
                     })
                 );
+
+                if (bet.promotionId && bonusChests.length > 0) {
+                    this.logService.log(`Settle bet with bonus ${JSON.stringify(bet)} `);
+
+                    await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
+                    player.promotion.bonus = 0;
+                    await this.promotionBetInterceptor.endPromotionEvent({ player, bet });
+                }
 
                 if (betResult.bigWin) {
                     await this.hallOfFameConsumer.add(player, {

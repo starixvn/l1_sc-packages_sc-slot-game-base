@@ -52,7 +52,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
         const { rate, multiplier } = this.getExchangeRate(session);
 
-        return {
+        const payload = {
             gameConfigs,
             jackpotPools,
             freeSpins,
@@ -63,6 +63,25 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
                 disableJackpotGames: session.disableJackpotGames,
             },
         };
+
+        if (realPlayer.promotion && !realPlayer.promotionTOProgress) {
+            payload.promotion = realPlayer.promotion;
+        }
+
+        if(realPlayer.promotionTOProgress) {
+            payload.promotionTOProgress = {
+                totalTO: realPlayer.promotionTOProgress.totalTurnover,
+                minTO: realPlayer.promotionTOProgress.minRequiredTurnover,
+                remainTO: realPlayer.promotionTOProgress.remainingTO,
+                progress: realPlayer.promotionTOProgress.progressPercentage,
+                canClaim: realPlayer.promotionTOProgress.canClaim,
+                win: realPlayer.promotionTOProgress.totalWinAmount,
+                expire: realPlayer.promotionTOProgress.claimExpirationDate,
+                promotionId: realPlayer.promotion.promotionId,
+            }
+        }
+
+        return payload;
     }
 
     getSlotGameConfig(realPlayer, canAccessJackpot) {
@@ -102,6 +121,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
             total: totalOfFreeSpins,
             bet: soonestExpiredFreeSpinSet.bet,
             paylines: soonestExpiredFreeSpinSet.paylines,
+            ...(soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId && { promotionId: soonestExpiredFreeSpinSet.promotionId }),
         };
     }
 

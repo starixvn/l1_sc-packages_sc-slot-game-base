@@ -18,9 +18,9 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
      * @param {Core.BaseEventPublishers.UserSignInPublisher} dependencies.userSignInPublisher
      * @param {SlotHistoryQuery} dependencies.historyQuery
      * @param {HallOfFameQuery} dependencies.hallOfFameQuery
-     * @param {logger} ldependencies.logService
+     * @param {logger} dependencies.logService
      * @param {PlayGamePermissionValidator} dependencies.playGamePermissionValidator
-     * @param {InGameConsumer} dependencies.jackpotGameConsumer
+     * @param {JackpotGameConsumer} dependencies.jackpotGameConsumer
      */
     constructor({
         definition,
@@ -36,6 +36,8 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
         logService,
         playGamePermissionValidator,
         jackpotGameConsumer,
+        promotionFreeSpinsConsumer,
+        bonusWinConsumer,
     }) {
         super({
             definition,
@@ -48,6 +50,8 @@ export default class SlotSocketRouter extends Core.Routers.BaseSocketRouter {
             historyQuery,
             logService,
             playGamePermissionValidator,
+            promotionFreeSpinsConsumer,
+            bonusWinConsumer,
         });
 
         this.bonusConsumer = bonusConsumer;

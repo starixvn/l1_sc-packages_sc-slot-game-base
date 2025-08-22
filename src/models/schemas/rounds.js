@@ -95,4 +95,7 @@ export default new mongoose.Schema({
     operatorId: { type: String, required: true },
     playerId: { type: String, required: true },
     sessionId: { type: String },
+    promotionId: { type: String, required: false },
+    appType: { type: Number, default: 0 },
+    siteName: { type: String },
 });

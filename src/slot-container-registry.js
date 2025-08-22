@@ -1,9 +1,10 @@
 import { asClass, asValue } from "awilix";
 import { hitJackpot } from "sc-base-apis";
-import { Core, Table } from "sc-game-base";
+import { Table } from "sc-game-base";
 import * as Board from "./board";
 import { SlotGameBot, SlotGameCron, SlotProcessBetQueue } from "./crons";
 import * as EventConsumers from "./event-consumers";
+import SlotPromotionInterceptor from "./event-interceptors/slot-promotion-interceptor";
 import { BonusPublisher, JackpotPublisher } from "./event-publishers";
 import { IdCounters, Jackpots } from "./models";
 import { HallOfFameQuery, SlotHistoryQuery } from "./query-apis";
@@ -67,7 +68,6 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
         super.registerPublishers();
 
         this.container.register({
-            placeBetPublisher: asClass(Core.BaseEventPublishers.PlaceBetPublisher).singleton(),
             jackpotPublisher: asClass(JackpotPublisher).singleton(),
             bonusPublisher: asClass(BonusPublisher).singleton(),
         });
@@ -89,6 +89,8 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
             settleGameRoundConsumer: asClass(EventConsumers.SettleGameRoundConsumer).singleton().proxy(),
             jackpotGameConsumer: asClass(EventConsumers.JackpotGameConsumer).singleton().proxy(),
             generateResultConsumer: asClass(EventConsumers.GenerateResultConsumer).singleton().proxy(),
+            promotionFreeSpinsConsumer: asClass(EventConsumers.PromotionFreeSpinsConsumer).singleton().proxy(),
+            userSignInConsumer: asClass(EventConsumers.SlotUserSignInConsumer).singleton().proxy(),
         });
     }
 
@@ -116,6 +118,14 @@ export default class SlotContainerRegistry extends Table.TableContainerRegistry 
 
         this.container.register({
             jackpotValidator: asClass(JackpotValidator).singleton(),
+        });
+    }
+
+    registerInterceptors() {
+        super.registerInterceptors();
+
+        this.container.register({
+            promotionBetInterceptor: asClass(SlotPromotionInterceptor).singleton().proxy(),
         });
     }
 }

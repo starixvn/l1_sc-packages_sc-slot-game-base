@@ -17,6 +17,7 @@ import {
     jackpotConsumer,
     jackpotPublisher,
     paylineCalculator,
+    promotionBetInterceptor,
     roundResultPublisher,
     roundsRepository,
     userBetResultPublisher,
@@ -287,11 +288,12 @@ describe("SettleGameRoundConsumer", () => {
                     gameId: 5,
                     gameRoundId: 1,
                     siteId: 3,
+                    siteName: undefined,
                     time: 4,
                     operatorId: undefined,
                     playerId: 2,
                 },
-                settlementInfo: { redPlay: 10, freeBet: false },
+                settlementInfo: { redPlay: 10, freeBet: false, promotionId: undefined },
             };
 
             // act
@@ -315,11 +317,12 @@ describe("SettleGameRoundConsumer", () => {
                     gameId: 5,
                     gameRoundId: 1,
                     siteId: 3,
+                    siteName: undefined,
                     time: 4,
                     operatorId: undefined,
                     playerId: 2,
                 },
-                settlementInfo: { redPlay: 0, freeBet: true },
+                settlementInfo: { redPlay: 0, freeBet: true, promotionId: undefined },
             };
 
             // act
@@ -925,6 +928,7 @@ function initDependencies() {
         logService,
         generateResultConsumer,
         gameManagementApiClientFactory,
+        promotionBetInterceptor,
     };
 }
 

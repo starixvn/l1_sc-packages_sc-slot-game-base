@@ -207,6 +207,12 @@ function stubPlayer() {
             currencyName: "US",
             currencyGroupId: "617a650628b7a500016388f5",
         },
+        promotion: {
+            freeSpinAvailable: 0,
+            remainingBonusItems: 0,
+            bonus: 0,
+            betLevel: null
+        },
     };
 }
 
