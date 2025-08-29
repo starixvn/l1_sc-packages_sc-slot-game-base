@@ -199,7 +199,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         await this.upsertBet(player, roundId, bet, rate, applicableInterceptors);
         this.notifyPlacingBetResult(player, balance, bet, rate);
 
-        const { betWin } = await this.settleGameRoundConsumer.settleRound(player, roundId);
+        const { betWin, baseBetWin } = await this.settleGameRoundConsumer.settleRound(player, roundId);
 
         if (applicableInterceptors) {
             bet.roundId = roundId;
@@ -207,7 +207,13 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
             await this.executeInterceptorEvent("afterSuccessEvent", applicableInterceptors, {
                 player,
-                bet,
+                bet: {
+                    roundId,
+                    betWin,
+                    baseBetWin,
+                    amount: bet.totalAmount,
+                    baseAmount: bet.totalAmount * rate,
+                },
                 balance,
             });
         }
