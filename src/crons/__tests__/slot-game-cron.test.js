@@ -79,6 +79,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const definition = {};
             const cron = new SlotGameCron({
@@ -126,6 +127,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const definition = {};
             const cron = new SlotGameCron({
@@ -172,6 +174,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const definition = {};
             const cron = new SlotGameCron({
@@ -223,6 +226,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const definition = {};
             const cron = new SlotGameCron({
@@ -273,6 +277,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const definition = {};
             const cron = new SlotGameCron({
@@ -344,6 +349,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
 
             const cron = new SlotGameCron({
@@ -372,6 +378,7 @@ describe("slot-game-cron", () => {
         const promotionFreeSpinsConsumer = {
             checkExpiry: jest.fn(),
             hasPromotionApiClient: jest.fn().mockReturnValue(true),
+            getAllPromotionsRunning: jest.fn(),
         };
 
         it("should processExpiredBonus", async () => {
@@ -547,6 +554,7 @@ describe("slot-game-cron", () => {
             const promotionFreeSpinsConsumer = {
                 checkExpiry: jest.fn(),
                 hasPromotionApiClient: jest.fn().mockReturnValue(true),
+                getAllPromotionsRunning: jest.fn(),
             };
             const cron = new SlotGameCron({
                 definition,
