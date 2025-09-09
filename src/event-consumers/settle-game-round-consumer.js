@@ -304,7 +304,10 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
     formatEndGameInfo(bet, roundId, time, betResult) {
         const { gameInfo, settlementInfo } = super.formatEndGameInfo(bet, roundId, time, betResult);
 
-        settlementInfo.redPlay = bet.freeSpin ? 0 : settlementInfo.redPlay;
+        if (bet.freeSpin) {
+            settlementInfo.redPlay = 0;
+            settlementInfo.baseTotalAmount = 0;
+        }
 
         return { gameInfo, settlementInfo };
     }
