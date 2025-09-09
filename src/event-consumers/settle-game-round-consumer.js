@@ -179,7 +179,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
         this.updateBonusTime(player, afterJackpot);
         await this.userBetResultPublisher.publishToUser(bet.uid, this.collectBonusResult({ result, settlementResult, roundId: finish.roundId }));
         if (bet.promotionId && settlementResult.bonus.odds > 0) {
-            player?.promotion?.bonus = settlementResult.bonus.odds;
+            player.promotion.bonus = settlementResult.bonus.odds;
         }
     }
 
