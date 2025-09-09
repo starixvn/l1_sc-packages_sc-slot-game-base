@@ -33,7 +33,7 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
                 playerId: player.session.playerId,
                 operatorId: player.session.operatorId,
                 siteName: player.session.siteName,
-                promotionId: player.promotion.promotionId,
+                promotionId: bet.promotionId,
                 gameId: this.definition.id,
                 gameRoundId: bet.id,
                 appType: player.session.system,
