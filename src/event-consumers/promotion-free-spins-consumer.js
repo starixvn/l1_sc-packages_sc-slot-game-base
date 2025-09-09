@@ -20,9 +20,11 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
     }
 
     isPromotionCompleted(player) {
-        return player.promotion.remainingBonusItems === 0 &&
+        return (
+            player.promotion.remainingBonusItems === 0 &&
             (player.promotion.freeSpinAvailable <= 0 || !player.promotion.freeSpinAvailable) &&
-            (player.promotion.bonus === 0 || !player.promotion.bonus);
+            (player.promotion.bonus === 0 || !player.promotion.bonus)
+        );
     }
 
     async handleBonusInGame(player, bet) {
@@ -37,6 +39,7 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
                 appType: player.session.system,
                 betAmount: bet.bet,
                 winAmount: bet.betWin,
+                baseWinAmount: bet.baseBetWin,
             };
             this.promotionFreeSpinsPublisher.publishToUser(bet.uid, ticketDto);
             const ticketResult = await this.promotionApiClient.updatePromotionTicket(ticketDto);
