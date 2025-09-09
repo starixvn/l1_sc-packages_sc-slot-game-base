@@ -322,7 +322,7 @@ describe("SettleGameRoundConsumer", () => {
                     operatorId: undefined,
                     playerId: 2,
                 },
-                settlementInfo: { redPlay: 0, freeBet: true, promotionId: undefined, baseTotalAmount: 10 },
+                settlementInfo: { redPlay: 0, freeBet: true, promotionId: undefined, baseTotalAmount: 0 },
             };
 
             // act
