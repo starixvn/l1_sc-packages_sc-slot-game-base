@@ -54,6 +54,9 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
                     }}`
                 );
             }
+            if (player.promotion) {
+                player.promotion.bonus = 0;
+            }
         } catch (error) {
             this.logService.logError(error);
         }
