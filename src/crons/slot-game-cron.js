@@ -88,7 +88,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         await this.freeSpinsConsumer.reload();
         await this.getSettingForNewRound();
         await this.updateExchangeRates();
-        await this.promotionFreeSpinsConsumer.getAllPromotionsRunning();
+        await this.promotionFreeSpinsConsumer.loadPromotionsRunning();
         this.checkPromotionReadiness();
 
         if (this.gameData.gameConfigs.slotsConfig?.jackpot.enabled) {
@@ -136,7 +136,7 @@ export default class SlotGameCron extends Core.Crons.BaseGameCron {
         if (this.gameData.remainingTime < 0) {
             this.gameData.remainingTime = durations.wholeRound;
 
-            await this.promotionFreeSpinsConsumer.getAllPromotionsRunning();
+            await this.promotionFreeSpinsConsumer.loadPromotionsRunning();
             await this.freeSpinsConsumer.reload();
         }
 
