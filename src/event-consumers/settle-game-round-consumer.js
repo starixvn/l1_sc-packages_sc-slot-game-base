@@ -271,8 +271,12 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                 );
 
                 if (bet.promotionId && bonusChests.length > 0) {
-                    await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
-                    await this.promotionBetInterceptor.endPromotionEvent({ player, bet });
+                    const realPlayers = Object.values(this.gameData.realPlayers || {}).filter((realPlayer) => {
+                        return realPlayer.UID === player.UID;
+                    });
+                    const playerResult = realPlayers[0] ?? player;
+                    await this.promotionFreeSpinsConsumer.handleBonusInGame(playerResult, bet);
+                    await this.promotionBetInterceptor.endPromotionEvent({ player: playerResult, bet });
                 }
 
                 if (betResult.bigWin) {
