@@ -271,8 +271,6 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
                 );
 
                 if (bet.promotionId && bonusChests.length > 0) {
-                    this.logService.log(`Settle bet with bonus ${JSON.stringify(bet)} `);
-
                     await this.promotionFreeSpinsConsumer.handleBonusInGame(player, bet);
                     await this.promotionBetInterceptor.endPromotionEvent({ player, bet });
                 }
