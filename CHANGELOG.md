@@ -1,3 +1,25 @@
+# [3.1.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.0.0...v3.1.0) (2025-09-11)
+
+
+### Bug Fixes
+
+* bug auto settle bonus ingame - GL - 4625 ([27f46aa](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/27f46aa817fabf3f910eb64a03c999d19eb51f38))
+* bug handleBonusInGame in FSB - GL - 4670 ([c2363c2](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/c2363c28d4c4b4ac44955cc291cc799d508aa987))
+* bug handleBonusInGame in FSB - GL - 4670 ([bf70064](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/bf70064503a96a5d48c5c4099571ba0ec96a8e4f))
+* bug handleBonusInGame in FSB - GL - 4670 ([1c7d1f8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/1c7d1f8a61d7eafe4fbd373ecee121fa21769e48))
+* handleBonusInGame - add baseWinAmount sc-game-base@6.0.2-beta.13 - Epic GL-4670 - Epic GL-4670 ([9071e09](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/9071e09d96005f8a79abf2cb279356d6add01553))
+* unit test fail ([eb4394e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/eb4394e267cb85722fa654eacfa0fb876f10fba5))
+
+
+### Features
+
+* get all promotion running ([1f22242](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/1f222423e609c3a8e2e7c05c2efe0096bb848379))
+* promotion ticket - add base currency amount - Epic GL-4670 ([cb41c55](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/cb41c55179dcdeb3e6a8a891cbdd1ef4200c3956))
+* remove log unuse - GL - 4625 ([9064bbc](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/9064bbc2d55d5dd1ac090d34f3e62e8a764ca603))
+* update version sc-game-base 6.0.2-beta.4 ([ae5ae8b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/ae5ae8bba6c90b86ec8b2642c366e9e575df8807))
+* update version sc-game-base 6.0.2-beta.6 ([424795b](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/424795b2f36db1a1adbf0f708671f0019fc70281))
+* update version sc-game-base 6.0.2-beta.8 - GL - 4625 ([14756c5](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/14756c5bb529e73e7a28dd80af0330421cfadddc))
+
 # [3.0.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v2.2.0...v3.0.0) (2025-08-25)
 
 
