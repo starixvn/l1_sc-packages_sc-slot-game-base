@@ -1,3 +1,12 @@
+## [3.1.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.1.0...v3.1.1) (2025-10-02)
+
+
+### Bug Fixes
+
+*  assign idCountersConsumer.consume to gameData.roundId  - Epic GL-5369 - Epic GL-5369 - Epic GL-5369 ([157f164](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/157f1641de051d26842e602a4861e5c728f8fdbc))
+* sc-game-base@6.2.0 - Epic GL-5369 ([bd5e93d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/bd5e93d8c95a14eef36ba6e76054452f0e2f3f2f))
+* update generateBetInfo: assign gameData.roundId value, formatApiBetInfo: assign payload.roundId value instead of using gameData.roundId - Epic GL-5369 ([5963459](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/59634597397e6e1664177e931ef9b0bc5e2508bd))
+
 # [3.1.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.0.0...v3.1.0) (2025-09-11)
 
 
