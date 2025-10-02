@@ -188,6 +188,7 @@ describe("slot-process-bet-queue", () => {
                 freeSpin: false,
                 contributionRate: 1,
                 contributionAmount: 2,
+                roundId: 2,
             };
 
             const expectedValue = {

@@ -242,13 +242,13 @@ describe("SlotGameBot", () => {
         it("should call idCountersConsumer.consume and increase round id", async () => {
             // Arrange
             bot.gameData = { roundId: 1 };
-
+            idCountersConsumer.consume.mockReturnValueOnce(2);
             // Act
             await bot.increaseRoundId();
 
             // Assert
             expect(bot.gameData.roundId).toBe(2);
-            expect(idCountersConsumer.consume).toBeCalled();
+            expect(idCountersConsumer.consume).toHaveBeenCalled();
         });
     });
 
