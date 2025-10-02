@@ -79,8 +79,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         const betInfo = await this.generateBetInfo(payload, soonestExpiredFreeSpinSet, player);
 
-        await this.idCountersConsumer.consume("round");
-        this.gameData.roundId++;
+        this.gameData.roundId = await this.idCountersConsumer.consume("round");
 
         await super.proceedBet(player, betInfo);
     }

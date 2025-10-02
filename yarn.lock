@@ -9602,10 +9602,10 @@ sc-common@3.0.0:
     mongoose-long "0.8.0"
     numeral "2.0.6"
 
-sc-game-base@6.1.0:
-  version "6.1.0"
-  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.1.0.tgz#a12de56409ae484403a9f2d26cc109ac24ac9c6b"
-  integrity sha512-zcCWXvmLkUQ1FCH18JUuyBzkgt6d3jksuhYhKjoan/Qrzc2RIvP2zKCuHfNHhvVUAS/GT80rhZb5BT07xNOhJw==
+sc-game-base@6.1.2-beta.4:
+  version "6.1.2-beta.4"
+  resolved "https://npm.lumigame.com/sc-game-base/-/sc-game-base-6.1.2-beta.4.tgz#561cc46bbe765cc64e573eea514dd9d1773e209c"
+  integrity sha512-e6aKeV1bmKBYEohywuZPpN1E/z5dmw5CdWSeMN4E9M2WrFhGJgOiR7xCHjvekFUmne4uJ0bED3k9lioQQrFajA==
   dependencies:
     "@sc/game-promotion-api-client" "1.0.2"
     "@sc/user-tracking-client" "1.0.0"
