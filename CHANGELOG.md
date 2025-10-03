@@ -1,3 +1,16 @@
+# [3.2.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.1.1...v3.2.0) (2025-10-03)
+
+
+### Bug Fixes
+
+* sc-game-base@6.3.1 ([69fee39](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/69fee39a0479e529a45783a22ac089d6a9c7c07a))
+
+
+### Features
+
+* update version game promotion api - Epic GL - 5383 ([e639ff2](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e639ff237aa776bf455da05862708aaca338a28f))
+* update version game promotion api - Epic GL - 5383 ([4e7a8a8](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/4e7a8a8eafda4419b820459fbab104af18f906a6))
+
 ## [3.1.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.1.0...v3.1.1) (2025-10-02)
 
 
