@@ -1,3 +1,10 @@
+## [3.2.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.2.0...v3.2.1) (2025-10-10)
+
+
+### Bug Fixes
+
+* claiming bonus - sc-game-base@6.3.2 ([cd135a3](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/cd135a3e92323a65902b0e62c5e09ef9b551006c))
+
 # [3.2.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.1.1...v3.2.0) (2025-10-03)
 
 
