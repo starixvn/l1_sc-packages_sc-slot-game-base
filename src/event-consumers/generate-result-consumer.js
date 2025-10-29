@@ -54,7 +54,8 @@ export default class GenerateResultConsumer {
 
     generateResult({ name, promotionId }) {
         const { mode } = this.gameData.gameConfigs.slotsConfig;
-        const board = this.boardGenerator.generate(mode, promotionId ? fsbDefinition : null);
+        const { enablePromotionRTP } = this.gameData.gameConfigs;
+        const board = this.boardGenerator.generate(mode, enablePromotionRTP && promotionId ? fsbDefinition : null);
 
         return this.boardCheatingConsumer.consume(name, board);
     }
