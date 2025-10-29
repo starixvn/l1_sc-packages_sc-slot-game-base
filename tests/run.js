@@ -59,8 +59,8 @@ function getOddsRange(noPaylines) {
 
 export function runOneMillions(mode, boardDefinition) {
     const chance = new Chance();
-    const stakes = [0.1, 1, 5];
-    const generator = new BoardGenerator(boardDefinition);
+    const stakes = [0.1];
+    const generator = new BoardGenerator(boardDefinition, { gameConfigs: { slotsConfig: { symbolWeight: {} } } });
     const calculator = new PaylineCalculator();
     const paylines = [...Array(25).keys()];
 
@@ -93,10 +93,10 @@ export function runOneMillions(mode, boardDefinition) {
             .fill()
             .map((x) => ({ winAmount: 0 })),
     };
-    for (let counter = 0; counter < 100000; counter++) {
+    for (let counter = 0; counter < 20; counter++) {
         const amount = chance.pickone(stakes);
         const board = generator.generate(mode);
-        const randomPaylines = [paylines[0]];
+        const randomPaylines = paylines;
         //const randomPaylines = [chance.pickone(paylines)];
         //const randomPaylines = chance.pickset(paylines, chance.integer({ min: 1, max: 25 }));
         const result = calculator.calculate(board, randomPaylines, odds);
@@ -166,8 +166,8 @@ export function runOneMillions(mode, boardDefinition) {
     }
 
     summary.winLoss = summary.totalAmount - summary.winAmount;
-    summary.payoutRatio = `${((summary.winAmount / summary.totalAmount) * 100).toFixed(2)}%`;
-    console.log(summary);
+    summary.payoutRatio = (summary.winAmount / summary.totalAmount) * 100;
+    //console.log(summary);
 
     return summary;
 }
@@ -312,4 +312,23 @@ function checkPosibility() {
     console.log(generator.anySymbolPossibilities);
 }
 
-runOneMillionsForBots();
+const results = [];
+for (let i = 0; i < 1000; i++) {
+    results.push(runOneMillions(difficulties.easy));
+}
+
+const rtp = (results.reduce((acc, result) => acc + result.winAmount, 0) * 100) / results.reduce((acc, result) => acc + result.totalAmount, 0);
+const highestRtp = Math.max(...results.map((result) => result.payoutRatio));
+const lowestRtp = Math.min(...results.map((result) => result.payoutRatio));
+const rtpLessThan30 = results.filter((result) => result.payoutRatio <= 30).length;
+const rtp30To50 = results.filter((result) => result.payoutRatio > 30 && result.payoutRatio <= 50).length;
+const rtp50To100 = results.filter((result) => result.payoutRatio > 50 && result.payoutRatio <= 100).length;
+const rtpGreaterThan100 = results.filter((result) => result.payoutRatio > 100).length;
+
+console.log(`RTP: ${rtp}`);
+console.log(`Highest RTP: ${highestRtp}`);
+console.log(`Lowest RTP: ${lowestRtp}`);
+console.log(`RTP Less Than 30: ${rtpLessThan30}`);
+console.log(`RTP 30 To 50: ${rtp30To50}`);
+console.log(`RTP 50 To 100: ${rtp50To100}`);
+console.log(`RTP Greater Than 100: ${rtpGreaterThan100}`);

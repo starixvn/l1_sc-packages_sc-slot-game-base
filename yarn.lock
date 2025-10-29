@@ -9644,6 +9644,14 @@ sc-game-management-client@0.1.5:
     axios "1.6.2"
     axios-retry "^4.0.0"
 
+sc-game-management-client@0.1.6:
+  version "0.1.6"
+  resolved "https://npm.lumigame.com/sc-game-management-client/-/sc-game-management-client-0.1.6.tgz#6a8d1a8c85b1344ce6ad8c587e4c12c88981f85c"
+  integrity sha512-6DBHFlWrebaAqtsneo1aG04gycLdDHr9IcZAux65zma4pmRXnfJE8LW4Gvb2ELV1lPAa3MWFIoGKFNbGxciFkg==
+  dependencies:
+    axios "1.6.2"
+    axios-retry "^4.0.0"
+
 sc-pf-client-seed@1.0.5:
   version "1.0.5"
   resolved "http://npm.lumigame.com/sc-pf-client-seed/-/sc-pf-client-seed-1.0.5.tgz"

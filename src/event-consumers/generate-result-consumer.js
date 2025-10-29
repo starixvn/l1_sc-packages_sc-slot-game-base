@@ -3,6 +3,7 @@ import SlotGameData from "./../slot-game-data";
 import SlotGameDefinition from "./../slot-game-definition";
 
 import { BoardGenerator, BonusBoardGenerator, JackpotPrizeGenerator, PaylineCalculator } from "./../board";
+import fsbDefinition from "./../board/fsb-definition";
 import BoardCheatingConsumer from "./board-cheating-consumer";
 
 export default class GenerateResultConsumer {
@@ -38,7 +39,7 @@ export default class GenerateResultConsumer {
     }
 
     generateSettlementResult(player, bet, odds) {
-        const result = this.generateResult(bet.name);
+        const result = this.generateResult(bet);
         const settlementResult = this.paylineCalculator.calculate(result, bet.paylines, odds);
         const prizes = this.settleJackpot(player, settlementResult);
 
@@ -51,11 +52,11 @@ export default class GenerateResultConsumer {
         return { result, settlementResult };
     }
 
-    generateResult(playerName) {
+    generateResult({ name, promotionId }) {
         const { mode } = this.gameData.gameConfigs.slotsConfig;
-        const board = this.boardGenerator.generate(mode);
+        const board = this.boardGenerator.generate(mode, promotionId ? fsbDefinition : null);
 
-        return this.boardCheatingConsumer.consume(playerName, board);
+        return this.boardCheatingConsumer.consume(name, board);
     }
 
     settleWinningPaylines(settlementResult) {

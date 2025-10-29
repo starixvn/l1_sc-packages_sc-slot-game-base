@@ -1,5 +1,5 @@
-import { boardGenerator, boardCheatingConsumer, paylineCalculator, bonusBoardGenerator, jackpotPrizeGenerator } from "./stubs";
 import GenerateResultConsumer from "./../generate-result-consumer";
+import { boardCheatingConsumer, boardGenerator, bonusBoardGenerator, jackpotPrizeGenerator, paylineCalculator } from "./stubs";
 
 describe("GenerateResultConsumer", () => {
     let consumer;
@@ -44,7 +44,7 @@ describe("GenerateResultConsumer", () => {
             consumer.generateResult(playerName);
 
             // Assert
-            expect(boardGenerator.generate).toHaveBeenCalledWith(mode);
+            expect(boardGenerator.generate).toHaveBeenCalledWith(mode, null);
         });
 
         it("should pass generated board to control result", () => {
@@ -53,7 +53,7 @@ describe("GenerateResultConsumer", () => {
             boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
 
             // Act
-            consumer.generateResult(playerName);
+            consumer.generateResult({ name: playerName });
 
             // Assert
             expect(boardCheatingConsumer.consume).toHaveBeenCalledWith(playerName, generatedBoard);
@@ -65,11 +65,11 @@ describe("GenerateResultConsumer", () => {
             boardCheatingConsumer.consume.mockReturnValueOnce(consumedBoard);
 
             // Act
-            const result = consumer.generateResult(playerName);
+            const result = consumer.generateResult({ name: playerName });
 
             // Assert
             expect(result).toEqual(consumedBoard);
-            expect(boardGenerator.generate).toHaveBeenCalledWith(mode);
+            expect(boardGenerator.generate).toHaveBeenCalledWith(mode, null);
             expect(boardCheatingConsumer.consume).toHaveBeenCalledWith(playerName, generatedBoard);
         });
     });
@@ -156,7 +156,7 @@ describe("GenerateResultConsumer", () => {
             consumer.generateSettlementResult(player, bet, odds);
 
             // Assert
-            expect(consumer.generateResult).toHaveBeenCalledWith(bet.name);
+            expect(consumer.generateResult).toHaveBeenCalledWith(bet);
         });
 
         it("always calculate from generated result", () => {

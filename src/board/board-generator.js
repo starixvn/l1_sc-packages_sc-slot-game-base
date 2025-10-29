@@ -13,7 +13,11 @@ export default class BoardGenerator {
         this.gameData = gameData;
     }
 
-    generate(difficulty) {
+    generate(difficulty, specificBoardDefinition) {
+        if (specificBoardDefinition) {
+            return this.generateByStrategy(specificBoardDefinition.fillingStrategies[difficulty]);
+        }
+
         const { slotsConfig } = this.gameData.gameConfigs;
         return this.generateByStrategy(slotsConfig.symbolWeight?.[difficulty] ?? this.getFillingStrategy(difficulty));
     }
