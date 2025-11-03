@@ -42,7 +42,7 @@
     "dependencies": {
         "chance": "^1.1.9",
         "lodash": "^4.17.21",
-        "sc-game-base": "6.3.4-beta.1",
+        "sc-game-base": "6.3.4-beta.2",
         "sc-game-management-client": "0.1.6"
     },
     "devDependencies": {
