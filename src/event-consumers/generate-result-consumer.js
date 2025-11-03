@@ -52,10 +52,10 @@ export default class GenerateResultConsumer {
         return { result, settlementResult };
     }
 
-    generateResult({ name, promotionId }) {
+    generateResult({ name, promotionId, freeSpin }) {
         const { mode } = this.gameData.gameConfigs.slotsConfig;
         const { enablePromotionRTP } = this.gameData.gameConfigs;
-        const board = this.boardGenerator.generate(mode, enablePromotionRTP && promotionId ? fsbDefinition : null);
+        const board = this.boardGenerator.generate(mode, freeSpin && enablePromotionRTP && promotionId ? fsbDefinition : null);
 
         return this.boardCheatingConsumer.consume(name, board);
     }
