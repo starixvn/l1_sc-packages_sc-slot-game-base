@@ -66,8 +66,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
         }
 
         const soonestExpiredFreeSpinSet = this.freeSpinsConsumer.getSoonestExpiredFreeSpinSet(player);
-        // Validate and set free spin flags
-        payload.freeSpin = this.validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player, payload.freeSpin);
+        
         if (this.hasValidPromotion(player)) {
             player.promotion.freeSpinAvailable = this.freeSpinsConsumer.getTotalPromotionAvaiableFreeSpins(player);
         }
@@ -76,7 +75,8 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             this.handleInvalidFreeSpin(player);
             return;
         }
-
+        // Validate and set free spin flags
+        payload.freeSpin = this.validateFreeSpinEligibility(soonestExpiredFreeSpinSet, player, payload.freeSpin);
         this.gameData.roundId = await this.idCountersConsumer.consume("round");
         const betInfo = await this.generateBetInfo(payload, soonestExpiredFreeSpinSet, player);
 
@@ -104,7 +104,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @returns {boolean} - Whether the player has a valid promotion
      */
     hasValidPromotion(player) {
-        return player.promotion != null && player.promotion && player.promotion.isClaimed;
+        return player.promotion != null && player.promotion && player.promotion.isClaimed && !player.promotion.isCompleted;
     }
 
     /**
@@ -123,7 +123,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
      * @returns {boolean} - Whether the player has a valid free spin source
      */
     hasValidFreeSpinSource(soonestExpiredFreeSpinSet, player) {
-        return soonestExpiredFreeSpinSet != null || this.hasValidPromotion(player);
+        return soonestExpiredFreeSpinSet != null || player.usePromotion;
     }
 
     /**

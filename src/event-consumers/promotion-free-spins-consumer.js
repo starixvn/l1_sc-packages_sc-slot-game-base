@@ -7,8 +7,9 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
      * @param {Object} dependencies.logService
      * @param {Object} dependencies.definition
      * @param {GameData} dependencies.gameData
+     * @param {FreeSpinsConsumer} dependencies.freeSpinsConsumer
      */
-    constructor({ gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition, gameData }) {
+    constructor({ gamePromotionApiClient, promotionFreeSpinsPublisher, logService, definition, gameData, freeSpinsConsumer }) {
         super({
             gameData,
             promotionFreeSpinsPublisher,
@@ -17,6 +18,7 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
         });
 
         this.definition = definition;
+        this.freeSpinsConsumer = freeSpinsConsumer;
     }
 
     isPromotionCompleted(player) {
@@ -67,5 +69,11 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
             ...baseData,
             betLevel: originalPromotion.betLevel,
         };
+    }
+
+    async handlePromotionFreeSpinsExpiry() {
+        const promotionIds = this.gameData.promotions.map((promotion) => promotion.promotionId);
+        await this.freeSpinsConsumer.stopExpiredPromotionChain(promotionIds);
+        await super.handlePromotionFreeSpinsExpiry();
     }
 }

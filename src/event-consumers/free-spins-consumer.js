@@ -228,4 +228,11 @@ export default class FreeSpinsConsumer {
             player.promotion.freeSpinAvailable = newlyCachedFreeSpin.available;
         }
     }
+
+    async stopExpiredPromotionChain(runningPromotionIds) {
+        await this.freeSpinsRepository.updateMany(
+            { promotionId: { $nin: runningPromotionIds, $exists: true }, expiryTime: { $gt: new Date() } },
+            { expiryTime: new Date() }
+        );
+    }
 }
