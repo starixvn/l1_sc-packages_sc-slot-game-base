@@ -98,4 +98,5 @@ export default new mongoose.Schema({
     promotionId: { type: String, required: false },
     appType: { type: Number, default: 0 },
     siteName: { type: String },
+    xMode: { type: Number, default: 1 },
 });

@@ -148,10 +148,10 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             betInfo.amount = bet;
         }
 
-        betInfo.totalAmount = math.round(betInfo.amount * betInfo.betChoice.length, 2);
+        betInfo.totalAmount = math.round((betInfo.amount * betInfo.betChoice.length) / player.session.xMode, 2);
 
         betInfo.contributionRate = this.getContributionRate(slotsConfig, player, payload);
-        betInfo.contributionAmount = math.round(betInfo.contributionRate * betInfo.totalAmount, 4);
+        betInfo.contributionAmount = math.round(betInfo.contribtionRate * betInfo.totalAmount, 4);
 
         return betInfo;
     }
@@ -255,6 +255,7 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             newBet.operatorId = player.session.operatorId;
             newBet.playerId = player.session.playerId;
             newBet.siteName = player.session.siteName;
+            newBet.xMode = player.session.xMode;
         }
 
         await this.roundsRepository.create(newBet);
