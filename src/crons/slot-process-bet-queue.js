@@ -143,12 +143,15 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
 
         if (freeSpinInfo) {
             const { bet, paylines } = freeSpinInfo;
-
+            const xMode = freeSpinInfo.xMode ?? 1;
             betInfo.betChoice = paylines;
             betInfo.amount = bet;
+            betInfo.xMode = xMode;
+            betInfo.totalAmount = math.round((betInfo.amount * betInfo.betChoice.length) / xMode, 2);
+        } else {
+            betInfo.xMode = player.session.xMode;
+            betInfo.totalAmount = math.round((betInfo.amount * betInfo.betChoice.length) / betInfo.xMode, 2);
         }
-
-        betInfo.totalAmount = math.round((betInfo.amount * betInfo.betChoice.length) / player.session.xMode, 2);
 
         betInfo.contributionRate = this.getContributionRate(slotsConfig, player, payload);
         betInfo.contributionAmount = math.round(betInfo.contribtionRate * betInfo.totalAmount, 4);
