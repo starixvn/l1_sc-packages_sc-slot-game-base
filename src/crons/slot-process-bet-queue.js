@@ -147,9 +147,10 @@ export default class SlotProcessBetQueue extends Core.Crons.ProcessBetQueue {
             betInfo.amount = bet;
             betInfo.xMode = xMode;
         } else {
-            const isPromotionFreeSpin = payload.freeSpin && payload.promotionId;
-            betInfo.xMode = isPromotionFreeSpin ? 1 : player.session.xMode;
-            betInfo.amount = betInfo.amount / betInfo.xMode;
+            betInfo.xMode = player.session.xMode;
+            if (!payload.usePromotion) {
+                betInfo.amount /= betInfo.xMode;
+            }
         }
 
         betInfo.totalAmount = math.round(betInfo.amount * betInfo.betChoice.length, 2);
