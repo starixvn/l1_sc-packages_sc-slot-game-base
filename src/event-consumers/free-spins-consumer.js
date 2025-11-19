@@ -77,7 +77,7 @@ export default class FreeSpinsConsumer {
             uid: player.UID,
             name: memberName,
             playerId: player.session?.playerId,
-            xMode: player.usePromotion ? 1 : player.session.xMode,
+            xMode: player.session.xMode,
             ...newlyCachedFreeSpin,
         };
         const newlyCreatedFreeSpin = await this.freeSpinsRepository.create(gainedFreeSpin);
