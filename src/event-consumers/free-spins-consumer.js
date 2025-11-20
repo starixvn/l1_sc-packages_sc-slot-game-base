@@ -71,13 +71,13 @@ export default class FreeSpinsConsumer {
             available: numberOfFreeSpins,
             time: createdTime,
             expiryTime: player.usePromotion ? player.promotion.endDate : expiryTime,
+            xMode,
             ...(player.usePromotion && { promotionId: player.promotion.promotionId }),
         };
         const gainedFreeSpin = {
             uid: player.UID,
             name: memberName,
             playerId: player.session?.playerId,
-            xMode,
             ...newlyCachedFreeSpin,
         };
         const newlyCreatedFreeSpin = await this.freeSpinsRepository.create(gainedFreeSpin);
