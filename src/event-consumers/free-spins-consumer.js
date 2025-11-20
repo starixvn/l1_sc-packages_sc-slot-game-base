@@ -54,7 +54,7 @@ export default class FreeSpinsConsumer {
         return [...freeSpinsOfPlayer].reverse().find((freeSpin) => freeSpin.available > 0 && new Date(freeSpin.expiryTime) > currentDateTime);
     }
 
-    async gainFreeSpin(player, { roundId, bet, paylines, numberOfFreeSpins }, timeToLive) {
+    async gainFreeSpin(player, { roundId, bet, paylines, numberOfFreeSpins, xMode }, timeToLive) {
         const createdTime = new Date();
         const expiryTime = new Date(createdTime.getTime()).setSeconds(createdTime.getSeconds() + timeToLive);
         const memberName = player.profile.name;
@@ -77,7 +77,7 @@ export default class FreeSpinsConsumer {
             uid: player.UID,
             name: memberName,
             playerId: player.session?.playerId,
-            xMode: player.session.xMode,
+            xMode,
             ...newlyCachedFreeSpin,
         };
         const newlyCreatedFreeSpin = await this.freeSpinsRepository.create(gainedFreeSpin);

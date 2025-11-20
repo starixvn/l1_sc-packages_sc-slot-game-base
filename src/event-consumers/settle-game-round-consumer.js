@@ -164,11 +164,11 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
     async processFreeSpins(player, betTicket, settlementResult) {
         if (settlementResult.freeSpins?.odds > 0) {
-            const { id: roundId, bet, paylines } = betTicket;
+            const { id: roundId, bet, paylines, xMode } = betTicket;
 
             await this.freeSpinsConumer.gainFreeSpin(
                 player,
-                { roundId, bet, paylines, numberOfFreeSpins: settlementResult.freeSpins.odds },
+                { roundId, bet, paylines, numberOfFreeSpins: settlementResult.freeSpins.odds, xMode },
                 this.definition.freeSpinLiveSeconds
             );
         }
