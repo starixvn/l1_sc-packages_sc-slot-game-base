@@ -317,6 +317,7 @@ describe("slot-process-bet-queue", () => {
                 const player = {
                     session: {
                         disableJackpotGames: false,
+                        xMode: 1,
                     },
                 };
                 it("Should calculate contribution rate & amount with normal spin", async () => {
@@ -368,6 +369,7 @@ describe("slot-process-bet-queue", () => {
                 const player = {
                     session: {
                         disableJackpotGames: true,
+                        xMode: 1,
                     },
                 };
                 it("contributionRate & contributionAmount should be 0", async () => {
@@ -406,6 +408,7 @@ describe("slot-process-bet-queue", () => {
             const player = {
                 session: {
                     disableJackpotGames: false,
+                    xMode: 1,
                 },
             };
             it("contributionRate & contributionAmount should be 0", async () => {
