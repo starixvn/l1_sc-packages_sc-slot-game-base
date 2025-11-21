@@ -1,3 +1,10 @@
+# [3.3.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.2.1...v3.3.0) (2025-11-21)
+
+
+### Features
+
+* add new board settings for fsb ([fd948c1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/fd948c1a397c450459ee9c8fb084d7b11867a35e))
+
 ## [3.2.1](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.2.0...v3.2.1) (2025-10-10)
 
 
