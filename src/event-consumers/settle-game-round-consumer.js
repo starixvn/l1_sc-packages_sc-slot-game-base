@@ -213,7 +213,7 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
             })
         ).amount;
 
-        const winningAmount = math.round(baseWinningAmount / bet.rate, 4);
+        const winningAmount = math.round(baseWinningAmount / bet.rate, 6);
 
         const hitJackpotResult = await this.hitJackpot(player, {
             gameRoundId: roundId,
@@ -338,8 +338,8 @@ export default class SettleGameRoundConsumer extends Core.BaseEventConsumers.Set
 
         betResult.totalBetAmount = bet.totalAmount;
         betResult.bigWin = (betResult.totalWin + bonus) / bigWinRatio >= betResult.totalBetAmount;
-        betResult.totalWin = parseFloat((betResult.totalWin + bonus).toFixed(2));
-        betResult.netWin = parseFloat((betResult.totalWin + bonus - betResult.totalBetAmount).toFixed(2));
+        betResult.totalWin = math.round(betResult.totalWin + bonus, 6);
+        betResult.netWin = math.round(betResult.totalWin + bonus - betResult.totalBetAmount, 6);
         betResult.totalLost = betResult.totalBetAmount - betResult.totalWin > 0 ? betResult.totalBetAmount - betResult.totalWin : 0;
 
         return betResult;

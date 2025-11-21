@@ -73,7 +73,7 @@ export default class JackpotConsumer {
 
     calculatePoolAdjustment({ contributedByMember, poolConfig, baseTotalAmount }) {
         const contributionRatio = contributedByMember ? poolConfig.playerSettings.contrib : poolConfig.botSettings.contrib;
-        const contributionAmount = math.round(baseTotalAmount * contributionRatio, 4);
+        const contributionAmount = math.round(baseTotalAmount * contributionRatio, 6);
 
         return {
             amount: contributionAmount,
