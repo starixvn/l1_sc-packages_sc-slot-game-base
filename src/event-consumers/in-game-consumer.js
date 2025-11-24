@@ -119,6 +119,7 @@ export default class InGameConsumer extends Core.BaseEventConsumers.InGameConsum
 
         return {
             total: totalOfFreeSpins,
+            xMode: soonestExpiredFreeSpinSet.xMode ?? 1,
             bet: soonestExpiredFreeSpinSet.bet,
             paylines: soonestExpiredFreeSpinSet.paylines,
             ...(soonestExpiredFreeSpinSet && soonestExpiredFreeSpinSet.promotionId && { promotionId: soonestExpiredFreeSpinSet.promotionId }),
