@@ -133,6 +133,7 @@ describe("IngameConsumer", () => {
                 total: 2,
                 bet: 1,
                 paylines: [1, 2, 3],
+                xMode: 1,
             };
 
             freeSpinsConsumer.getTotalAvaiableFreeSpins.mockReturnValueOnce(expectedFreeSpins.total);
@@ -256,6 +257,7 @@ describe("IngameConsumer", () => {
                 total: 0,
                 bet: 0,
                 paylines: [],
+                xMode: 1,
             };
             freeSpinsConsumer.getTotalAvaiableFreeSpins.mockReturnValueOnce(0);
 
@@ -273,6 +275,7 @@ describe("IngameConsumer", () => {
                     total: 2,
                     bet: 1,
                     paylines: [1, 2, 3],
+                    xMode: 1,
                 };
 
                 freeSpinsConsumer.getTotalAvaiableFreeSpins.mockReturnValueOnce(expectedFreeSpins.total);
