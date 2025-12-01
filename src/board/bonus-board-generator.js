@@ -1,5 +1,6 @@
 import Chance from "chance";
 
+import math from "lodash/math";
 import SlotGameDefinition from "./../slot-game-definition";
 import defaultDefinition from "./default-definition";
 
@@ -23,7 +24,7 @@ export default class BonusBoardGenerator {
                 ? this.chance.natural(this.calculateBonusRateRange(minRate, maxRate, numberOfPaylines))
                 : this.chance.natural({ min: minRate, max: maxRate });
 
-            const amount = parseFloat((bonusRate * betAmount).toFixed(2));
+            const amount = math.round(bonusRate * betAmount, 6);
             const bonus = { amount, picked: false };
 
             bonusBoard.push(bonus);
@@ -42,6 +43,6 @@ export default class BonusBoardGenerator {
         const min = Math.max((minRate / this.totalPaylines) * paylinesRate, 1);
         const max = Math.max((maxRate / this.totalPaylines) * paylinesRate, 3);
 
-        return { min: Math.floor(parseFloat(min.toFixed(2))), max: Math.floor(parseFloat(max.toFixed(2))) };
+        return { min: Math.floor(min), max: Math.floor(max) };
     }
 }
