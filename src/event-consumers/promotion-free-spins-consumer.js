@@ -72,7 +72,7 @@ export default class PromotionFreeSpinsConsumer extends Core.BaseEventConsumers.
     }
 
     async handlePromotionFreeSpinsExpiry() {
-        const promotionIds = this.gameData.promotions.map((promotion) => promotion.promotionId);
+        const promotionIds = this.gameData.expiringPromotions.map((promotion) => promotion._id);
         await this.freeSpinsConsumer.stopExpiredPromotionChain(promotionIds);
         await super.handlePromotionFreeSpinsExpiry();
     }

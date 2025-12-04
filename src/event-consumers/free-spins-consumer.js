@@ -231,7 +231,7 @@ export default class FreeSpinsConsumer {
 
     async stopExpiredPromotionChain(runningPromotionIds) {
         await this.freeSpinsRepository.updateMany(
-            { promotionId: { $nin: runningPromotionIds, $exists: true }, expiryTime: { $gt: new Date() } },
+            { promotionId: { $in: runningPromotionIds }, expiryTime: { $gt: new Date() } },
             { expiryTime: new Date() }
         );
     }
