@@ -1,3 +1,22 @@
+# [3.4.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.3.0...v3.4.0) (2025-12-04)
+
+
+### Bug Fixes
+
+* save xMode by player session for promotion ticket bets ([b65de27](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/b65de27695a66e188dca348938aa3d95ff6835c6))
+
+
+### Features
+
+* add xMode into freeSpins in-game ([6c5fbf0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/6c5fbf0700ac37a3d2d33c6adbd0b4c5add8387b))
+* add xMode to free spins - Epic GL-6111 ([e8aeef0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/e8aeef0d0011a91ee156e8375310dd0c07ce2b18))
+* assign xMode is 1 for old data ([7620e50](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/7620e508ba5904868c69e0b3440cd2ba6d48b50d))
+* calculate amount with xMode - Epic GL-6111 ([7746789](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/77467892f030ac83f1ec2b39f85d770a21b07b94))
+* round floating number to 6 - Epic GL-6111 ([3c3b8e3](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3c3b8e3b30edfd883a658cd780e24deaab9fc9ea))
+* save amount with actual value ([165b99e](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/165b99e8fe955c3d25e6d35913a78887f8535bf9))
+* save xMode by bet Info ([3ea88b4](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/3ea88b4d1a06c75426d138579d78fc572f681be1))
+* update bonus chest generation - Epic GL-6111 ([6d5a12d](https://git3.nexdev.net/sc-packages/sc-slot-game-base/commit/6d5a12db35e2338a14ccef825be0a77ddeae96fd))
+
 # [3.3.0](https://git3.nexdev.net/sc-packages/sc-slot-game-base/compare/v3.2.1...v3.3.0) (2025-11-21)
 
 
